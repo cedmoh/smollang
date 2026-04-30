@@ -1,54 +1,257 @@
-# Curly Braces
+# Syntax
 
-Curly braces denote an expression block. This is the only use case for the curly braces.
+## Comments
+
+Single-Line Comment:
 
 ```
-x val { 1 + 2 }
+# this is a single line comment
 ```
 
-# Parenthesis
+Multi-Line Comment:
 
-Parenthesis are only used to list function parameters. They are not used for grouping expressions. For grouping expressions, or changing precedence curly braces must be used.
+```
+###
+This is a multi line comment
+Also used for documentation
+###
+```
 
-# Square Brackets
+Inline Comment:
 
-Square brackets are used for list literals and pattern matching on lists.
+```
+## this is an inline comment ##
+```
 
-# Angle Brackets
+## Parenthesis
 
-Angle Bracket pairs are used for generic type parameters.
+Parenthesis are used to group expressions and construct complex expressions.
 
-A single right angle bracket is used in the pipe expression to denote the value being piped.
+## Curly Braces
+
+Curly braces are used to denote objects.
+
+Example:
+
+```
+person val {
+  name 'Alice',
+  age 30,
+  isStudent false,
+
+  salary getSalary(),
+
+  study || print 'Studying...',
+}
+```
+
+## Square Brackets
+
+Square brackets are used to denote arrays.
+
+Example:
+
+```
+numbers val [1, 2, 3, 4, 5]
+```
+
+Square brackets cannot be used for array indexing, instead there is a `get` function in the standard library.
+
+## Angle Brackets
+
+Use cases for angle brackets include:
+
+- generic type parameters in function declarations
+- pipe expressions; a single right angle bracket is used to denote the value being piped
 
 There are no greater than or less than operators, instead there are `gt` and `lt` functions in the standard library.
 
+# Operators
+
+## Unary Operators
+
+### Arithmetic
+
+Negation: `-`
+
+### Logical
+
+Logical Not: `!`
+
+## Binary Operators
+
+Assignment: `=`
+
+### Arithmetic
+
+Addition: `+`
+
+Subtraction: `-`
+
+Multiplication: `*`
+
+Division: `/`
+
+Modulus: `%`
+
+Exponent: `^`
+
+### Arithmetic Assignment
+
+Addition Assignment: `+=`
+
+Subtraction Assignment: `-=`
+
+Multiplication Assignment : `*=`
+
+Division Assignment: `/=`
+
+Modulus Assignment: `%=`
+
+### Comparison
+
+Equal to: `==`
+
+Not Equal to: `!=`
+
+### Logical
+
+Logical AND: `and`
+
+Logical OR: `or`
+
+# Data Types
+
+## Scalar
+
+### Boolean
+
+True value: `true`
+
+False Value: `false`
+
+Boolean Value in Literal Assignment:
+
+```
+x val false
+```
+
+Boolean Value in Assignment:
+
+```
+x boo val y
+```
+
+### Numeric
+
+#### Integer
+
+Integer in Literal Assignment:
+
+```
+x val 42
+```
+
+```
+y val -100_234
+```
+
+#### Decimal
+
+Decimal in Literal Assignment:
+
+```
+offsetX val 99.95
+```
+
+```
+offsetY val -1_234.005
+```
+
+#### Hexadecimal
+
+Hexadecimal in Literal Assignment:
+
+```
+color val #FF0099
+```
+
+```
+alpha val #000000FF
+```
+
+#### Binary
+
+Binary in Literal Assignment:
+
+```
+num val b0010
+```
+
+```
+mask val b_1010100
+```
+
+#### Octal
+
+Octal in Literal Assignment:
+
+```
+octalValue val o0755
+```
+
+```
+octalValue val o_0755
+```
+
+## Compound
+
+### String
+
+String in Literal Assignment:
+
+```
+msg val 'Hello, World!'
+```
+
+String with Escape Sequences:
+
+```
+msg val 'Hello, \nWorld!'
+```
+
+String with Unicode Characters:
+
+```
+msg val 'Hello, 世界!'
+```
+
 # Simple Expressions
 
-Simple expressions are expressions that do not contain any curly braces. They include:
+Simple expressions are expressions that do not contain any parenthesis. They include:
 
-- literals (e.g. string, number, boolean )
+- literals (e.g. string, number, boolean, array)
 - identifiers (e.g. variable names, function names)
 - field access (e.g. `myStruct.field`)
-- function calls (e.g. `myFunction`, `myFunction arg1, { 1 + 2 }`)
+- function calls (e.g. `myFunction()`, `myFunction(arg1, 1 + 2)`)
 - then expressions (e.g. `isTrue then 'Yes' else 'No'`)
 - pipe expressions (e.g. `myValue > myFunction it`)
 - match expressions (e.g. `myValue match on 0 do 'Zero' on _ do 'Non-zero'`)
 
 # Complex Expressions
 
-Complex expressions are expressions that contain curly braces. They are any expression that is not a simple expression.
+They are any expression that is not a simple expression.
 
 ```
-myFunction { 1 + 2 }
+myFunction(1 + 2)
 ```
 
 ```
-x val {
-myBoolean then ret 0
+x val (
+  myBoolean then ret 0
 
-    myFunction
-
-}
+  myFunction
+)
 ```
 
 # Then Expression
@@ -67,56 +270,130 @@ Pipe expressions are a way to pass the result of one expression as an argument t
 myValue > myFunction it
 ```
 
-# Function Declaration
+# Variables
 
-Function declaration in Smollang is done using the `fn` keyword followed by the function name and its parameters.
+Immutable Uninitialized Variable Declaration:
+
+```
+x val
+```
+
+**NOTE:** Immutable variable declaration without initialization is illegal and will not compile.
+
+**NOTE:** Uninitialized variable declaration requires the type to include `nil`.
+
+Immutable Variable Initialization with Literal:
+
+```
+x val 'hello'
+```
+
+Mutable Variable Declaration Initialized with Literal:
+
+```
+x var 'hello'
+```
+
+Variable Initialization with complex Expression:
+
+```
+x val ( 2 + 2 )
+```
+
+```
+x val (2 * 3) + (4 / 2)
+```
+
+Variable Initialization with Multiline Block Expression:
+
+```
+x val (
+  2 + 2
+)
+```
+
+Variable Initialization with Function Call:
+
+```
+x val myFunction
+```
+
+Variable Initialization with Identifier:
+
+```
+x val y
+```
+
+# Functions
+
+## Function Declaration
 
 Function declaration without parameters or body:
 
 ```
-myFunction fn
+myFunction ||
 ```
 
 Function declaration with body:
 
 ```
-muFunction fn print 'Hello, World!'
+myFunction || print 'Hello, World!'
 ```
 
 Function declaration with parameters:
 
 ```
-myFunction fn(param1) print param1
+myFunction |param1, param2| print(param1, param2)
 ```
 
-# Function Call
+## Function Call
 
-Functions can be called by using their name followed by an expression.
-
-```
-myFunction { 1 + 2 }
-```
-
-The expression must generally be wrapped in curly braces, however curly bracevites can be omitted if the expression is a simple expression.
+Functions can be called using their name followed by an expression.
 
 ```
-# Calling a function with a string literal
+myFunction 'Hello, World!'
+```
 
+If the function has no parameters, the call can be made with parenthesis.
+
+```
+myFunctionWithNoParameters()
+```
+
+If the function has one parameter and the argument is a simple expression, the call can be made without parenthesis.
+
+```
+myFunctionWithOneSimpleParameter isGood then 'Good' else 'Bad'
+```
+
+If the function has multiple parameters or the argument is not a simple expression, the call must be made with parenthesis.
+
+```
+myFunctionWithOneComplexParameter(1 + 2)
+
+myFunctionWithMultipleSimpleParameters(param1, 123, 'Hello')
+```
+
+Calling a function with a string literal
+
+```
 print 'Hello, World!'
 ```
 
-```
-# Calling a function with an identifier
+Calling a function with an identifier
 
+```
 myFunction param1
 ```
 
-If the expression is not a simple expression, curly braces must be used.
+Calling a function with a field access
 
 ```
-myFunction { 1 + 2 \* 3 }
+myFunction myObject.field
 ```
 
+Calling a function with a function call as an argument
+
 ```
-muFunction { isGood && isShort }
+myFunction anotherFunction(arg1, arg2)
 ```

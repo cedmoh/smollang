@@ -1,0 +1,308 @@
+program =  { SOI ~ body ~ EOI }
+body    = _{ xps? }
+
+// Keywords
+// declarations
+var = @{ "var" }
+val = @{ "val" }
+fn  = _{ "fn" }
+// control flow
+do    = _{ "do" }
+end   = _{ "end" }
+ret   = _{ "ret" }
+for   = _{ "for" }
+in    = _{ "in" }
+while = _{ "while" }
+loop  = _{ "loop" }
+br    = _{ "br" }
+cont  = @{ "cont" }
+if    = _{ "if" }
+elsif = _{ "elsif" }
+else  = _{ "else" }
+match = @{ "match" }
+// literals
+true  = @{ "true" }
+false = @{ "false" }
+not   = @{ "not" }
+nil   = @{ "nil" }
+// ops
+set     = { "set" }
+add     = { "add" }
+sub     = { "sub" }
+mul     = { "mul" }
+div     = { "div" }
+exp     = { "exp" }
+rem     = { "rem" }
+gte     = { "gte" }
+gt      = { "gt" }
+lte     = { "lte" }
+lt      = { "lt" }
+eq      = { "eq" }
+neq     = { "neq" }
+and     = { "and" }
+or      = { "or" }
+to      = { "to" }
+til     = { "til" }
+keyword = {
+  
+  | var
+  | val
+  | fn
+  | do
+  | end
+  | ret
+  | for
+  | in
+  | while
+  | loop
+  | br
+  | cont
+  | if
+  | elsif
+  | else
+  | match
+  | true
+  | false
+  | not
+  | nil
+  | set
+  | add
+  | sub
+  | mul
+  | div
+  | exp
+  | rem
+  | gte
+  | gt
+  | lte
+  | lt
+  | eq
+  | neq
+  | and
+  | or
+  | til
+  | to
+}
+
+// Operators
+assignment             = @{ "=" | set }
+addition               = @{ "+" | add }
+subtraction            = @{ "-" | sub }
+multiplication         = @{ "*" | mul }
+division               = @{ "/" | div }
+exponent               = @{ "^" | exp }
+modulo                 = @{ "%" | rem }
+greater_than_or_equals = @{ ">=" | gte }
+greater_than           = @{ ">" | gt }
+less_than_or_equals    = @{ "<=" | lte }
+less_than              = @{ "<" | lt }
+equals                 = @{ "==" | eq }
+not_equals             = @{ "!=" | neq }
+logic_and              = @{ "&&" | and }
+logic_or               = @{ "||" | or }
+range_incl             = @{ "..=" | to }
+range                  = @{ ".." | til }
+op                     = _{
+  
+  | addition
+  | subtraction
+  | multiplication
+  | division
+  | exponent
+  | modulo
+  | greater_than_or_equals
+  | greater_than
+  | less_than_or_equals
+  | less_than
+  | equals
+  | not_equals
+  | logic_and
+  | logic_or
+  | range_incl
+  | range
+}
+
+// Operation
+operation = { operand ~ (op ~ operand)+ }
+operand   = { evaluation }
+
+// Expressions
+xps         = _{ (nls ~ xp ~ nls)+ }
+xp          =  { operation | evaluation }
+par_xp      = _{ "(" ~ xp ~ ")" }
+evaluation  = _{
+  
+  | assign
+  | block
+  | dl
+  | loop_flow
+  | while_flow
+  | for_flow
+  | if_chain
+  | match_xp
+  | call
+  | member
+  | identifier
+  | lit
+  | par_xp
+  | returned_xp
+  | broken_xp
+  | cont
+}
+call_xp     = _{
+  
+  | assign
+  | dl
+  | loop_flow
+  | while_flow
+  | for_flow
+  | if_chain
+  | match_xp
+  | call
+  | member
+  | identifier
+  | lit
+  | par_xp
+}
+broken_xp   =  { br ~ xp? }
+returned_xp =  { ret ~ xp? }
+
+// Assignment
+assign = { identifier ~ "=" ~ nls ~ xp }
+
+// Member
+member    =  { (member_xp ~ nls ~ "." ~ nls)+ ~ member_xp }
+member_xp = _{
+  
+  | call
+  | identifier
+  | lit
+  | par_xp
+}
+
+// Call
+call            =  { callee ~ call_generics? ~ call_args }
+call_generics   =  { "<" ~ generic_param+ ~ ">" }
+generic_param   =  { identifier }
+callee          =  { identifier }
+call_args       =  { call_args_empty | args_par | args_naked }
+call_args_empty = _{ "(" ~ nls ~ ")" }
+args_par        = _{ "(" ~ nls ~ xp ~ nls ~ (nls ~ "," ~ nls ~ xp)* ~ nls ~ ")" }
+args_naked      = _{ call_xp ~ (nls ~ "," ~ nls ~ call_xp)* }
+
+// Declaration
+dl = { var_dl | fn_dl }
+
+// Identifiers
+identifier = @{ !(number_lit | (keyword ~ !ASCII_ALPHANUMERIC)) ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+// Blocks
+block         =  { "(" ~ nls ~ block_content ~ nls ~ ")" }
+block_content = _{ (xp ~ nls)* }
+
+fn_dl   = { fn_name? ~ fn_args ~ fn_body? }
+fn_name = { identifier }
+fn_args = { "|" ~ fn_arg* ~ "|" }
+fn_arg  = { identifier }
+fn_body = { xp }
+
+// Variables
+var_dl         =  { var_nomination ~ assignment? ~ var_initial? }
+var_name       = @{ identifier }
+var_type       = @{ identifier }
+val_or_var     = @{ var | val }
+var_initial    =  { xp }
+var_nomination = _{ var_name ~ var_type? ~ val_or_var }
+
+// Literals
+lit         =  {
+  
+  | nil_lit
+  | array_lit
+  | object_lit
+  | boolean_lit
+  | string_lit
+  | number_lit
+  | hexadecimal_lit
+}
+nil_lit     =  { nil }
+string_lit  = @{ "'" ~ string_text ~ "'" }
+string_text = ${ ('\u{00}'..'\u{26}' | '\u{28}'..'\u{10FFFF}')* }
+// any ascii character except for ' (single quote)
+number_lit = _{ decimal_lit | binary_lit | octal_lit | hexadecimal_lit }
+// the negation in the end is to protect against cases like `1..3` and `1.abs`
+decimal_lit     = { "-"? ~ (ASCII_DIGIT | "_")+ ~ ("." ~ (ASCII_DIGIT | "_")* ~ !("." | ASCII_ALPHA))? }
+hexadecimal_lit = { "#" ~ ('a'..'f' | 'A'..'F' | ASCII_DIGIT | "_")+ }
+binary_lit      = { "b" ~ ('0'..'1' | "_")+ }
+octal_lit       = { "o" ~ ('0'..'7' | "_")+ }
+boolean_lit     = { true | false }
+array_lit       = { "[" ~ nls ~ array_entries ~ nls ~ "]" }
+array_entries   = { array_entry? ~ (nls ~ "," ~ nls ~ array_entry)* ~ nls ~ ","? }
+array_entry     = { xp }
+object_lit      = { "{" ~ nls ~ object_entries ~ nls ~ "}" }
+object_entries  = { object_entry? ~ (nls ~ "," ~ nls ~ object_entry)* ~ nls ~ ","? }
+object_entry    = { object_key ~ object_value }
+object_key      = { identifier | lit | par_xp }
+object_value    = { xp }
+
+// If
+if_chain        = { if_seg ~ nls ~ (elsif_seg ~ nls)* ~ else_seg? }
+if_condition    = { "("? ~ xp ~ ")"? }
+if_seg          = { if ~ if_condition ~ nls ~ do? ~ nls ~ if_body }
+if_body         = { xp }
+elsif_seg       = { elsif ~ if_condition ~ nls ~ do? ~ nls ~ elsif_body }
+elsif_condition = { "("? ~ xp ~ ")"? }
+elsif_body      = { xp }
+else_seg        = { else ~ nls ~ else_body }
+else_body       = { xp }
+
+// Pattern
+pattern               = {
+    array_pattern
+  | destructuring_pattern
+  | tuple_pattern
+  | var_pattern
+}
+wildcard              = { "_" }
+rest                  = { ".." }
+rest_term             = { rest ~ identifier? }
+pattern_term          = { identifier | wildcard | rest_term }
+var_pattern           = { pattern_term }
+tuple_pattern         = { (pattern_term) ~ ("," ~ pattern_term)+ }
+array_pattern         = { "[" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_term | rest_term)) ~ "]" }
+destructuring_pattern = { "{" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_term | rest_term))+ ~ "}" }
+
+// Match
+match_xp    = { match ~ match_term ~ match_block }
+match_term  = { xp ~ ("," ~ xp)* }
+match_block = { "{" ~ nls ~ (match_arm ~ "," ~ nls)* ~ (match_arm ~ ","?)? ~ nls ~ "}" }
+match_arm   = { pattern ~ do ~ xp }
+
+// Loop
+loop_flow = { loop ~ nls ~ loop_body }
+loop_body = { xp }
+
+// While
+while_flow      = { while ~ nls ~ while_condition ~ nls ~ while_body }
+while_condition = { xp }
+while_body      = { xp }
+
+// For
+for_flow = { for ~ nls ~ for_item ~ nls ~ in ~ nls ~ for_iter ~ nls ~ for_body }
+for_item = { identifier }
+// TODO: should be pattern
+for_iter = { xp }
+for_body = { xp }
+
+// Comments
+COMMENT             = _{ !hexadecimal_lit ~ (multi_comment | inline_comment | single_comment) ~ nls }
+single_comment_body =  { (!NEWLINE ~ ANY)* }
+single_comment      =  { !"###" ~ !"##" ~ "#" ~ single_comment_body? }
+multi_comment_body  =  { (!"###" ~ ANY)* }
+multi_comment       =  { "###" ~ multi_comment_body ~ "###" }
+inline_comment_body =  { (!"##" ~ ANY)* }
+inline_comment      =  { "##" ~ inline_comment_body? ~ "##" }
+
+WHITESPACE = _{ " " }
+
+nls = _{ (NEWLINE)* }
