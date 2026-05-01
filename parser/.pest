@@ -93,10 +93,10 @@ multiplication         = @{ "*" | mul }
 division               = @{ "/" | div }
 exponent               = @{ "^" | exp }
 modulo                 = @{ "%" | rem }
-greater_than_or_equals = @{ ">=" | gte }
-greater_than           = @{ ">" | gt }
-less_than_or_equals    = @{ "<=" | lte }
-less_than              = @{ "<" | lt }
+greater_than_or_equals = @{ gte }
+greater_than           = @{ gt }
+less_than_or_equals    = @{ lte }
+less_than              = @{ lt }
 equals                 = @{ "==" | eq }
 not_equals             = @{ "!=" | neq }
 logic_and              = @{ "&&" | and }
@@ -129,9 +129,9 @@ expressions               = _{ (newlines ~ expression ~ newlines)+ }
 expression                =  {
   
   | then_expression
+  | pipe_expression
   | operation
   | assignment_expression
-  | block
   | declaration
   | match_expression
   | call
@@ -151,6 +151,7 @@ operand   = {
     // every expression except operation
   
   | then_expression
+  | pipe_expression
   | assignment_expression
   | block
   | declaration
@@ -165,25 +166,9 @@ operand   = {
   | continue_expression
 }
 
-// Call
-call_expression     = {
-  
-  | assignment_expression
-  | declaration
-  | loop_flow
-  | while_flow
-  | for_flow
-  | if_chain
-  | match_expression
-  | call
-  | member
-  | identifier
-  | literal
-  | expression_in_parenthesis
-}
-continue_expression =  { cont }
-broken_expression   =  { br ~ expression? }
-returned_expression =  { ret ~ expression? }
+continue_expression = { cont }
+broken_expression   = { br ~ expression? }
+returned_expression = { ret ~ expression? }
 
 // Assignment
 assignment_expression = { identifier ~ assignment ~ newlines ~ expression }
@@ -198,6 +183,28 @@ member_xp = _{
   | expression_in_parenthesis
 }
 
+// Pipe
+pipe_expression                 =  { pipe_first_expression ~ (newlines ~ ">" ~ newlines ~ pipe_second_expression)+ }
+pipe_shared_allowed_expressions = _{
+    // every expression except pipe_expression and operation
+  
+  | then_expression
+  | assignment_expression
+  | block
+  | declaration
+  | match_expression
+  | call
+  | member
+  | identifier
+  | literal
+  | expression_in_parenthesis
+  | returned_expression
+  | broken_expression
+  | continue_expression
+}
+pipe_first_expression           = _{ pipe_shared_allowed_expressions }
+pipe_second_expression          = _{ operation | pipe_shared_allowed_expressions }
+
 // Call
 call                          =  { callee ~ call_generics? ~ call_arguments }
 call_generics                 =  { "<" ~ call_generic_parameter+ ~ ">" }
@@ -206,7 +213,22 @@ callee                        =  { identifier }
 call_arguments                =  { call_arguments_empty | call_arguments_in_parenthesis | call_arguments_naked }
 call_arguments_empty          = _{ "(" ~ newlines ~ ")" }
 call_arguments_in_parenthesis = _{ "(" ~ newlines ~ expression ~ newlines ~ (newlines ~ "," ~ newlines ~ expression)* ~ newlines ~ ")" }
-call_arguments_naked          = _{ call_expression ~ (newlines ~ "," ~ newlines ~ call_expression)* }
+call_arguments_naked          = _{ expression_in_call ~ (newlines ~ "," ~ newlines ~ expression_in_call)* }
+expression_in_call            =  {
+  
+  | assignment_expression
+  | declaration
+  | loop_flow
+  | while_flow
+  | for_flow
+  | if_chain
+  | match_expression
+  | call
+  | member
+  | identifier
+  | literal
+  | expression_in_parenthesis
+}
 
 // Declaration
 declaration = _{ variable_declaration | function_declaration }

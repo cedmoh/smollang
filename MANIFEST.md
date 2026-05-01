@@ -270,6 +270,20 @@ Pipe expressions are a way to pass the result of one expression as an argument t
 myValue > myFunction it
 ```
 
+Nested pipe expressions inside blocks:
+
+```
+1
+> 2
+> 3
+> 4
+> (
+    a > b > c > d
+  )
+> 5
+> 6
+```
+
 # Variables
 
 Immutable Uninitialized Variable Declaration:
