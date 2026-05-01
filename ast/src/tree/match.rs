@@ -15,8 +15,17 @@ pub struct Match {
 }
 
 /// A match arm, which consists of a pattern and a block of code to execute if the pattern matches.
+///
+/// # Example
+///
+/// ```
+/// 'couple' -> print 2
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct MatchArm {
+    /// The pattern to match against the expression.
     pub pattern: Pattern,
+
+    /// The block of code to execute if the pattern matches.
     pub body: Block,
 }

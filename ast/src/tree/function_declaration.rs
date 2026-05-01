@@ -1,5 +1,18 @@
 use super::{Expression, Identifier};
 
+/// Represents a function declaration.
+///
+/// # Examples
+///     
+/// ```
+/// add |x,y| x + y
+/// ```
+///
+/// ```
+/// hello |name| (
+///     print('Hello, ' + name)
+/// )
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionDeclaration {
     pub name: Option<Identifier>,
@@ -7,16 +20,20 @@ pub struct FunctionDeclaration {
     pub body: Option<FunctionBody>,
 }
 
+/// Represents a function parameter.
+/// TODO: Add support for default parameter values.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionParameter {
     pub name: Identifier,
 }
 
+/// Represents the parameters of a function declaration.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct FunctionParameters {
     pub items: Vec<FunctionParameter>,
 }
 
+/// Represents the body of a function declaration.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionBody {
     pub body: Box<Expression>,
