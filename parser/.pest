@@ -28,12 +28,6 @@ not   = @{ "not" }
 nil   = @{ "nil" }
 // ops
 set     = { "set" }
-add     = { "add" }
-sub     = { "sub" }
-mul     = { "mul" }
-div     = { "div" }
-exp     = { "exp" }
-rem     = { "rem" }
 gte     = { "gte" }
 gt      = { "gt" }
 lte     = { "lte" }
@@ -68,12 +62,6 @@ keyword = {
   | not
   | nil
   | set
-  | add
-  | sub
-  | mul
-  | div
-  | exp
-  | rem
   | gte
   | gt
   | lte
@@ -87,23 +75,29 @@ keyword = {
 }
 
 // Operators
-addition               = @{ "+" | add }
-subtraction            = @{ "-" | sub }
-multiplication         = @{ "*" | mul }
-division               = @{ "/" | div }
-exponent               = @{ "^" | exp }
-modulo                 = @{ "%" | rem }
-greater_than_or_equals = @{ gte }
-greater_than           = @{ gt }
-less_than_or_equals    = @{ lte }
-less_than              = @{ lt }
+addition               = @{ "+" }
+subtraction            = @{ "-" }
+multiplication         = @{ "*" }
+division               = @{ "/" }
+exponent               = @{ "^" }
+modulo                 = @{ "%" }
+greater_than_or_equals = @{ ">=" | gte }
+greater_than           = @{ ">" | gt }
+less_than_or_equals    = @{ "<=" | lte }
+less_than              = @{ "<" | lt }
 equals                 = @{ "==" | eq }
 not_equals             = @{ "!=" | neq }
 logic_and              = @{ "&&" | and }
 logic_or               = @{ "||" | or }
-range_inclusive        = @{ "..=" | to }
-range                  = @{ ".." | til }
-assignment             = _{ "=" | set }
+range_inclusive        = @{ "..=" }
+range                  = @{ ".." }
+assignment_set_symbol  = _{ "=" | set }
+pipe_to_symbol         = _{ "|>" | to }
+then_check_symbol      = _{ "?" | then }
+then_else_symbol       = _{ ":" | else }
+match_check_symbol     = _{ "~=" | match }
+match_arm_symbol       = _{ "->" | do }
+match_separator_symbol = _{ "," }
 op                     = _{
   
   | addition
@@ -171,7 +165,7 @@ broken_expression   = { br ~ expression? }
 returned_expression = { ret ~ expression? }
 
 // Assignment
-assignment_expression = { identifier ~ assignment ~ newlines ~ expression }
+assignment_expression = { identifier ~ assignment_set_symbol ~ newlines ~ expression }
 
 // Member
 member    =  { (member_xp ~ newlines ~ "." ~ newlines)+ ~ member_xp }
@@ -184,7 +178,7 @@ member_xp = _{
 }
 
 // Pipe
-pipe_expression                 =  { pipe_first_expression ~ (newlines ~ ">" ~ newlines ~ pipe_second_expression)+ }
+pipe_expression                 =  { pipe_first_expression ~ (newlines ~ pipe_to_symbol ~ newlines ~ pipe_second_expression)+ }
 pipe_shared_allowed_expressions = _{
     // every expression except pipe_expression and operation
   
@@ -250,7 +244,7 @@ function_body        = { expression }
 variable_declaration           = _{ mutable_variable_declaration | immutable_variable_declaration }
 mutable_variable_declaration   =  { variable_name ~ var ~ variable_initialization? }
 immutable_variable_declaration =  { variable_name ~ val ~ variable_initialization? }
-variable_initialization        =  { assignment ~ newlines ~ expression }
+variable_initialization        =  { assignment_set_symbol ~ newlines ~ expression }
 variable_name                  = @{ identifier }
 
 // Literals
@@ -268,9 +262,17 @@ nil_literal    =  { nil }
 string_literal = @{ "'" ~ string_text ~ "'" }
 string_text    = ${ ('\u{00}'..'\u{26}' | '\u{28}'..'\u{10FFFF}')* }
 // any ascii character except for ' (single quote)
-number_literal = _{ decimal_literal | binary_literal | octal_literal | hexadecimal_literal }
+number_literal = _{
+  
+  | decimal_literal
+  | integer_literal
+  | binary_literal
+  | octal_literal
+  | hexadecimal_literal
+}
 // the negation in the end is to protect against cases like `1..3` and `1.abs`
-decimal_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ ~ ("." ~ (ASCII_DIGIT | "_")* ~ !("." | ASCII_ALPHA))? }
+integer_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ }
+decimal_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ ~ ("." ~ (ASCII_DIGIT | "_")*)? ~ !("." | ASCII_ALPHA) }
 hexadecimal_literal = { "#" ~ ('a'..'f' | 'A'..'F' | ASCII_DIGIT | "_")+ }
 binary_literal      = { "b" ~ ('0'..'1' | "_")+ }
 octal_literal       = { "o" ~ ('0'..'7' | "_")+ }
@@ -285,7 +287,7 @@ object_key          = { identifier | literal | expression_in_parenthesis }
 object_value        = { expression }
 
 // Then
-then_expression       = { then_first_expression ~ then ~ expression ~ else ~ expression }
+then_expression       = { then_first_expression ~ then_check_symbol ~ expression ~ (then_else_symbol ~ expression)? }
 then_first_expression = {
     // everything except then_expression and operation
   
@@ -316,7 +318,7 @@ else_body       = { expression }
 
 // Pattern
 pattern               = {
-    array_pattern
+  | array_pattern
   | destructuring_pattern
   | tuple_pattern
   | variable_pattern
@@ -324,17 +326,32 @@ pattern               = {
 wildcard              = { "_" }
 rest                  = { ".." }
 rest_term             = { rest ~ identifier? }
-pattern_term          = { identifier | wildcard | rest_term }
+pattern_term          = { identifier | literal | wildcard | rest_term }
 variable_pattern      = { pattern_term }
 tuple_pattern         = { (pattern_term) ~ ("," ~ pattern_term)+ }
 array_pattern         = { "[" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_term | rest_term)) ~ "]" }
 destructuring_pattern = { "{" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_term | rest_term))+ ~ "}" }
 
 // Match
-match_expression = { match ~ match_term ~ match_block }
-match_term       = { expression ~ ("," ~ expression)* }
-match_block      = { "{" ~ newlines ~ (match_arm ~ "," ~ newlines)* ~ (match_arm ~ ","?)? ~ newlines ~ "}" }
-match_arm        = { pattern ~ do ~ expression }
+match_expression = { match_term ~ newlines ~ match ~ newlines ~ match_arms }
+match_term       = {
+    // everything except match_expression, then_expression and operation
+  
+  | assignment_expression
+  | block
+  | declaration
+  | call
+  | member
+  | identifier
+  | literal
+  | expression_in_parenthesis
+  | returned_expression
+  | broken_expression
+  | continue_expression
+}
+match_arms       = { (match_arm_block | (match_arm_inline ~ match_separator_symbol))* ~ (match_arm_block | match_arm_inline) ~ match_separator_symbol? }
+match_arm_block  = { pattern ~ newlines ~ match_arm_symbol ~ newlines ~ block }
+match_arm_inline = { pattern ~ newlines ~ match_arm_symbol ~ expression }
 
 // Loop
 loop_flow = { loop ~ newlines ~ loop_body }

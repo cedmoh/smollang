@@ -235,8 +235,8 @@ Simple expressions are expressions that do not contain any parenthesis. They inc
 - field access (e.g. `myStruct.field`)
 - function calls (e.g. `myFunction()`, `myFunction(arg1, 1 + 2)`)
 - then expressions (e.g. `isTrue then 'Yes' else 'No'`)
-- pipe expressions (e.g. `myValue > myFunction it`)
-- match expressions (e.g. `myValue match on 0 do 'Zero' on _ do 'Non-zero'`)
+- pipe expressions (e.g. `myValue |> myFunction it`)
+- match expressions (e.g. `myValue match 0 do 'Zero' _ do 'Non-zero'`)
 
 # Complex Expressions
 
@@ -267,21 +267,21 @@ isTrue then 'Yes' else 'No'
 Pipe expressions are a way to pass the result of one expression as an argument to another expression.
 
 ```
-myValue > myFunction it
+myValue |> myFunction it
 ```
 
 Nested pipe expressions inside blocks:
 
 ```
 1
-> 2
-> 3
-> 4
-> (
-    a > b > c > d
+|> 2
+|> 3
+|> 4
+|> (
+    a |> b |> c |> d
   )
-> 5
-> 6
+|> 5
+|> 6
 ```
 
 # Variables
