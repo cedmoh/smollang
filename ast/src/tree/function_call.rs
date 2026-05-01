@@ -12,16 +12,16 @@ use super::{Expression, Expressions};
 /// add(1, 2)
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct Call {
+pub struct FunctionCall {
     /// The expression representing the function being called.
     pub callee: Box<Expression>,
 
     /// The arguments passed to the function call.
-    pub arguments: CallArguments,
+    pub arguments: FunctionCallArguments,
 }
 
 /// Represents the arguments passed to a function call.
 #[derive(Debug, Default, Clone, PartialEq)]
-pub struct CallArguments {
+pub struct FunctionCallArguments {
     pub expressions: Expressions,
 }

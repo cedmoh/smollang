@@ -72,6 +72,12 @@ pub struct IntegerLiteral {
     pub value: i64,
 }
 
+impl IntegerLiteral {
+    pub fn new(value: i64) -> Self {
+        Self { value }
+    }
+}
+
 /// A decimal literal, which represents a decimal value.
 ///     
 /// # Example

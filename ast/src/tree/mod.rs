@@ -9,7 +9,9 @@ mod literal;
 mod r#match;
 mod member;
 mod pattern;
+mod pipe;
 mod program;
+mod then;
 mod variable_declaration;
 
 pub use assignment::*;
@@ -23,5 +25,7 @@ pub use literal::*;
 pub use r#match::*;
 pub use member::*;
 pub use pattern::*;
+pub use pipe::*;
 pub use program::*;
+pub use then::*;
 pub use variable_declaration::*;

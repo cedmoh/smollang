@@ -47,3 +47,13 @@ pub struct Dyadic {
     pub left: Box<Expression>,
     pub right: Box<Expression>,
 }
+
+impl Dyadic {
+    pub fn new(operator: DyadicOperator, left: Expression, right: Expression) -> Self {
+        Self {
+            operator,
+            left: Box::new(left),
+            right: Box::new(right),
+        }
+    }
+}

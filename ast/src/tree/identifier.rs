@@ -13,14 +13,14 @@ pub struct Identifier {
     pub id: String,
 }
 
-impl Display for Identifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.id)
+impl Identifier {
+    pub fn new(id: String) -> Self {
+        Self { id }
     }
 }
 
-impl<T: Into<String>> From<T> for Identifier {
-    fn from(id: T) -> Self {
-        Identifier { id: id.into() }
+impl Display for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.id)
     }
 }
