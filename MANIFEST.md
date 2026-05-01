@@ -55,7 +55,15 @@ Example:
 numbers val [1, 2, 3, 4, 5]
 ```
 
-Square brackets cannot be used for array indexing, instead there is a `get` function in the standard library.
+Square brackets cannot be used for array indexing. Instead either the `get` function from the standard library or field access with a dynamic field name can be used.
+
+```
+numbers.get 0
+```
+
+```
+numbers.(index)
+```
 
 ## Angle Brackets
 
@@ -267,10 +275,10 @@ isTrue then 'Yes' else 'No'
 Pipe expressions are a way to pass the result of one expression as an argument to another expression.
 
 ```
-myValue |> myFunction it
+myValue to myFunction it
 ```
 
-Nested pipe expressions inside blocks:
+Nested pipe expressions inside blocks and using symbols instead of the `to` keyword:
 
 ```
 1
@@ -283,6 +291,52 @@ Nested pipe expressions inside blocks:
 |> 5
 |> 6
 ```
+
+# Match Expression
+
+Match expressions are a way to pattern match on a value and execute different expressions based on the pattern.
+
+```
+myValue match
+  0 do 'Zero',
+  1 do 'One',
+  _ do 'Other'
+```
+
+With symbols instead of keywords:
+
+```
+myValue ~=
+  1 -> 1
+  2 -> 'bye'
+  3 -> ()
+  4 -> print 'hello'
+  5 -> hello
+```
+
+# Field Access
+
+Field access is a way to access the fields of an object.
+
+```
+myObject.field
+```
+
+Field access can also be used to access the fields of an object returned by a function call.
+
+```
+myFunction().field
+```
+
+Field access can be done with a dynamic field name as well:
+
+```
+myObject.(fieldName)
+```
+
+# Operator Precedence
+
+**TODO**
 
 # Variables
 
