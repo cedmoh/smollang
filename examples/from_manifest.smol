@@ -1,0 +1,52 @@
+# this is a single line comment
+
+###
+This is a multi line comment
+Also used for documentation
+###
+
+## this is an inline comment ##
+
+person val {
+name 'Alice',
+age 30,
+isStudent false,
+
+salary getSalary(),
+
+study || print 'Studying...', 
+}
+
+numbers val [1, 2, 3, 4, 5]
+
+x val false
+
+x val y
+
+x val 42
+
+y val -100_234
+
+offsetX val 99.95
+
+offsetY val -1_234.005
+
+color val #FF0099
+
+alpha val #000000FF
+
+num val b0010
+
+mask val b_1010100
+
+octalValue val o0755
+
+octalValue val o_0755
+
+msg val 'Hello, World!'
+
+msg val 'Hello, \nWorld!'
+
+msg val 'Hello, 世界!'
+
+myFunction(1 + 2)

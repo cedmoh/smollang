@@ -139,7 +139,7 @@ x val false
 Boolean Value in Assignment:
 
 ```
-x boo val y
+x val y
 ```
 
 ### Numeric
