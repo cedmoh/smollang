@@ -1,3 +1,5 @@
+mod evaluation_result;
+
 use ast::Program;
 
 use crate::Value;

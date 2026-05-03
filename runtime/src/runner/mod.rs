@@ -2,7 +2,7 @@ use crate::{Environment, Evaluator, Value};
 use ast::Program;
 
 pub struct Runner {
-    environment: Environment,
+    pub environment: Environment,
 }
 
 impl Runner {

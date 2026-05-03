@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 ast = { path = "../ast" }
+nanoid = "0.5.0"
