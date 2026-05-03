@@ -14,6 +14,7 @@ pub use value::*;
 
 #[cfg(test)]
 mod tests {
+
     use ast::{
         Dyadic, DyadicOperator, Expression, Expressions, Identifier, IntegerLiteral, Literal,
         Program, VariableDeclarationBuilder,
@@ -24,41 +25,19 @@ mod tests {
     #[test]
     fn should_not_throw() {
         // Arrange
-        let mut runner = Runner::new();
+        let runner = Runner::new();
 
         // Act
-        runner.run(Program::default());
-    }
-
-    #[test]
-    fn should_be_able_to_use_global_variables() {
-        // Arrange
-        let mut runner = Runner::new();
-
-        let x_identifier = "x";
-        let x_value = 5.;
-
-        runner
-            .environment
-            .add_global_variable(x_identifier, Value::Number(x_value))
-            .expect("The variable is not defined in the global scope");
-
-        // Act
-        // The program is just an identifier expression that references the global variable that we just defined.
-        let program = Program::new(Expressions::new(vec![Expression::Identifier(
-            Identifier::new(x_identifier.to_string()),
-        )]));
-
-        let result = runner.run(program);
+        let result = runner.run(Program::default());
 
         // Assert
-        assert_eq!(result, Value::Number(5.));
+        assert!(result.is_ok());
     }
 
     #[test]
     fn should_run_the_program_and_return_the_last_expression() {
         // Arrange
-        let mut runner = Runner::new();
+        let runner = Runner::new();
 
         let x_identifier = Identifier::new("x".to_string());
         let x_value = 5;
@@ -91,9 +70,38 @@ mod tests {
                 Expression::Identifier(y_identifier),
             )),
         ]));
-        let result = runner.run(program);
+        let result = runner
+            .run(program)
+            .expect("Expected no runtime errors in program.");
 
         // Assert
         assert_eq!(result, Value::Number(15.));
+    }
+
+    #[test]
+    fn should_be_able_to_use_global_variables() {
+        // Arrange
+        let x_identifier = "x";
+        let x_value = 5.;
+
+        let mut environment = Environment::new();
+        environment
+            .add_global_variable(x_identifier, Value::Number(x_value))
+            .expect("The variable should not be defined in the global scope");
+
+        let runner = Runner::with_environment(environment);
+
+        // Act
+        // The program is just an identifier expression that references the global variable that we just defined.
+        let program = Program::new(Expressions::new(vec![Expression::Identifier(
+            Identifier::new(x_identifier.to_string()),
+        )]));
+
+        let result = runner
+            .run(program)
+            .expect("Expected no runtime errors in program.");
+
+        // Assert
+        assert_eq!(result, Value::Number(5.));
     }
 }

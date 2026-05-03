@@ -27,9 +27,9 @@ impl Scope {
         Self::default()
     }
 
-    pub fn with_parent(parent: Scope) -> Self {
-        Self {
-            parent: Some(Box::new(parent)),
+    pub fn with_parent<'b>(parent: Box<Scope>) -> Scope {
+        Scope {
+            parent: Some(parent),
             ..Default::default()
         }
     }
@@ -104,7 +104,7 @@ impl Scope {
 }
 
 #[derive(Debug)]
-enum AssignVariableError {
+pub enum AssignVariableError {
     /// The variable is immutable and cannot be assigned to.
     VariableIsImmutable,
 

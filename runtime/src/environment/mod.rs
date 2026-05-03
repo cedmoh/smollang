@@ -3,7 +3,7 @@ use crate::{AddScopeItemError, Scope, Value};
 /// The environment in which the program is executed, containing global variables and functions.
 #[derive(Debug, Default)]
 pub struct Environment {
-    global_scope: Scope,
+    pub global_scope: Scope,
 }
 
 impl Environment {
