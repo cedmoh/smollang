@@ -17,3 +17,9 @@ pub struct Assignment {
     /// The value being assigned
     pub value: Box<Expression>,
 }
+
+impl Assignment {
+    pub fn new(identifier: Identifier, value: Box<Expression>) -> Self {
+        Self { identifier, value }
+    }
+}

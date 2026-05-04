@@ -28,19 +28,38 @@ impl Runner {
 #[derive(Debug)]
 pub enum RunResult {
     /// The program ran successfully and returned a value.
-    Success(Value),
+    Finished(Value),
 
-    /// The program panicked with an unhandled error.
-    Panic(String),
+    /// The program threw a runtime error.
+    RuntimeError(Value),
+    // TODO: Add a variant for when the program panics,
+    // which is different from a runtime error since it indicates a bug in the interpreter rather than an error in the program being run.
 }
 
 impl From<EvaluationResult> for RunResult {
     fn from(evaluation_result: EvaluationResult) -> Self {
         match evaluation_result {
-            EvaluationResult::Throw(err) => RunResult::Panic(format!("Runtime error: {:?}", err)),
+            EvaluationResult::Throw(err) => RunResult::RuntimeError(err),
             EvaluationResult::Return(value) | EvaluationResult::Value(value) => {
-                RunResult::Success(value)
+                RunResult::Finished(value)
             }
+        }
+    }
+}
+
+impl RunResult {
+    pub fn is_finished(&self) -> bool {
+        matches!(self, RunResult::Finished(_))
+    }
+
+    pub fn is_runtime_error(&self) -> bool {
+        matches!(self, RunResult::RuntimeError(_))
+    }
+
+    pub fn expect_finished(self, msg: &str) -> Value {
+        match self {
+            RunResult::Finished(value) => value,
+            RunResult::RuntimeError(err) => panic!("{}: {:?}", msg, err),
         }
     }
 }

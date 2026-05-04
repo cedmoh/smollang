@@ -31,7 +31,7 @@ mod tests {
         let result = runner.run(Program::default());
 
         // Assert
-        assert!(result.is_ok());
+        assert!(result.is_finished());
     }
 
     #[test]
@@ -70,9 +70,10 @@ mod tests {
                 Expression::Identifier(y_identifier),
             )),
         ]));
+
         let result = runner
             .run(program)
-            .expect("Expected no runtime errors in program.");
+            .expect_finished("Expected no runtime errors in program.");
 
         // Assert
         assert_eq!(result, Value::Number(15.));
@@ -99,7 +100,7 @@ mod tests {
 
         let result = runner
             .run(program)
-            .expect("Expected no runtime errors in program.");
+            .expect_finished("Expected no runtime errors in program.");
 
         // Assert
         assert_eq!(result, Value::Number(5.));

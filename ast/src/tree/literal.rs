@@ -90,6 +90,12 @@ pub struct DecimalLiteral {
     pub value: f64,
 }
 
+impl DecimalLiteral {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+}
+
 /// A hexadecimal literal, which represents a hexadecimal value.
 ///     
 /// # Example
