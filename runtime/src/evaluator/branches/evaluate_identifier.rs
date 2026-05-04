@@ -1,9 +1,13 @@
 use ast::Identifier;
 
-use crate::{Scope, ScopeItem, Value, evaluator::evaluation_result::EvaluationResult};
+use crate::{Evaluator, Scope, ScopeItem, Value, evaluator::evaluation_result::EvaluationResult};
 
 /// Function to evaluate an identifier expression.
-pub fn evaluate_identifier(identifier: Identifier, scope: &Scope) -> EvaluationResult {
+pub fn evaluate_identifier(
+    identifier: Identifier,
+    _evaluator: &Evaluator,
+    scope: &Scope,
+) -> EvaluationResult {
     match scope.lookup(&identifier.id) {
         Some(ScopeItem::Variable { value, .. }) => EvaluationResult::Value(
             // TODO: Remove when value is copyable.

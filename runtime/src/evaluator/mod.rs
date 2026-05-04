@@ -48,58 +48,17 @@ impl Evaluator {
     }
 
     pub fn evaluate_expression(
-        &mut self,
+        &self,
         expression: Expression,
-        scope: &mut Scope,
+        mut scope: &mut Scope,
     ) -> EvaluationResult {
         match expression {
             Expression::Assignment(_assignment) => todo!(),
             Expression::Block(_block) => todo!(),
-            Expression::Dyadic(dyadic) =>
-            // TODO: Move to own branch
-            {
-                let left_value = match self.evaluate_expression(*dyadic.left, scope) {
-                    EvaluationResult::Value(value) => value,
-                    EvaluationResult::Throw(err) => return EvaluationResult::Throw(err),
-                    EvaluationResult::Return(value) => return EvaluationResult::Return(value),
-                };
-
-                let right_value = match self.evaluate_expression(*dyadic.right, scope) {
-                    EvaluationResult::Value(value) => value,
-                    EvaluationResult::Throw(err) => return EvaluationResult::Throw(err),
-                    EvaluationResult::Return(value) => return EvaluationResult::Return(value),
-                };
-
-                match (left_value, right_value, dyadic.operator) {
-                    (Value::Number(left), Value::Number(right), ast::DyadicOperator::Add) => {
-                        EvaluationResult::Value(Value::Number(left + right))
-                    }
-                    (Value::Number(left), Value::Number(right), ast::DyadicOperator::Subtract) => {
-                        EvaluationResult::Value(Value::Number(left - right))
-                    }
-                    (Value::Number(left), Value::Number(right), ast::DyadicOperator::Multiply) => {
-                        EvaluationResult::Value(Value::Number(left * right))
-                    }
-                    (Value::Number(left), Value::Number(right), ast::DyadicOperator::Divide) => {
-                        if right == 0. {
-                            // TODO: This should be a custom error type instead of a string.
-                            EvaluationResult::Throw(Value::String(
-                                "Cannot divide by zero.".to_string(),
-                            ))
-                        } else {
-                            EvaluationResult::Value(Value::Number(left / right))
-                        }
-                    }
-                    // TODO: Support more operators and operand types.
-                    (op, left, right) => EvaluationResult::Throw(Value::String(format!(
-                        "Unsupported operands for operator {:?}: {:?} and {:?}",
-                        op, left, right
-                    ))),
-                }
-            }
+            Expression::Dyadic(dyadic) => evaluate_dyadic(dyadic, &self, &mut scope),
             Expression::FunctionCall(_function_call) => todo!(),
             Expression::FunctionDeclaration(_function_declaration) => todo!(),
-            Expression::Identifier(identifier) => evaluate_identifier(identifier, scope),
+            Expression::Identifier(identifier) => evaluate_identifier(identifier, &self, &scope),
             Expression::Literal(literal) =>
             // TODO: Move to own branch
             {
