@@ -59,55 +59,12 @@ impl Evaluator {
             Expression::FunctionCall(_function_call) => todo!(),
             Expression::FunctionDeclaration(_function_declaration) => todo!(),
             Expression::Identifier(identifier) => evaluate_identifier(identifier, &self, &scope),
-            Expression::Literal(literal) =>
-            // TODO: Move to own branch
-            {
-                let value = match literal {
-                    Literal::Integer(int) => Value::Number(int.value as f64),
-                    Literal::String(string) => Value::String(string.value),
-                    Literal::Boolean(boolean) => Value::Boolean(boolean.value),
-                    Literal::Nil => Value::Nil,
-                    Literal::Decimal(_decimal_literal) => todo!(),
-                    Literal::Hexadecimal(_hexadecimal_literal) => todo!(),
-                    Literal::Binary(_binary_literal) => todo!(),
-                    Literal::Octal(_octal_literal) => todo!(),
-                };
-
-                EvaluationResult::Value(value)
-            }
+            Expression::Literal(literal) => evaluate_literal(literal),
             Expression::Match(_match) => todo!(),
             Expression::Member(_member) => todo!(),
             Expression::Return(_return) => todo!(),
-            Expression::VariableDeclaration(variable_declaration) =>
-            // TODO: Move to own branch
-            {
-                let initial_value: Option<Value> = match variable_declaration.initial_value {
-                    Some(initial) => match self.evaluate_expression(*initial, scope) {
-                        EvaluationResult::Value(value) => Some(value),
-                        EvaluationResult::Throw(err) => return EvaluationResult::Throw(err),
-                        EvaluationResult::Return(_) => {
-                            unreachable!(
-                                "A return statement is not valid in the initial value of a variable declaration."
-                            )
-                        }
-                    },
-                    None => None,
-                };
-
-                // TODO: Add utility function for adding a variable to the scope and handling the result,
-                // since this will be a common operation.
-                match scope
-                    .add_variable(
-                        &variable_declaration.name.id,
-                        initial_value.unwrap_or(Value::Nil),
-                        variable_declaration.is_mutable,
-                    )
-                    .map_err(|error| Value::String(format!("Error adding variable: {:?}", error)))
-                    .map(|_| Value::Nil)
-                {
-                    Ok(value) => EvaluationResult::Value(value),
-                    Err(err) => EvaluationResult::Throw(err),
-                }
+            Expression::VariableDeclaration(variable_declaration) => {
+                evaluate_variable_declaration(variable_declaration, &self, &mut scope)
             }
         }
     }

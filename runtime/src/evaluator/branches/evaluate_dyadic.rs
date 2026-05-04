@@ -45,6 +45,7 @@ pub fn evaluate_dyadic(
         DyadicOperator::GreaterThanOrEqual => Ok(Value::Boolean(left_value.ge(&right_value))),
         DyadicOperator::And => left_value.and(right_value),
         DyadicOperator::Or => left_value.or(right_value),
+        // TODO: Implement range operators when arrays are implemented.
         DyadicOperator::RangeInclusive => todo!("When arrays are implemented"),
         DyadicOperator::Range => todo!("When arrays are implemented"),
     };

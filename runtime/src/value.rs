@@ -2,6 +2,7 @@ use std::ops::{Add, Div, Mul, Rem, Sub};
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub enum Value {
+    // TODO: Evaluate if f64 is the right choice for numbers.
     Number(f64),
     Boolean(bool),
     String(String),
