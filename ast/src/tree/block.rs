@@ -14,5 +14,5 @@ use super::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Block {
     /// The expressions in the block
-    pub body: Vec<Expression>,
+    pub body: Expressions,
 }

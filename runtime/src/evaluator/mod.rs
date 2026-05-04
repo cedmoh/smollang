@@ -1,11 +1,13 @@
 mod branches;
 mod evaluation_result;
+mod util;
 
-use crate::{Environment, Scope, Value};
-use ast::{Expression, Literal, Program};
+use crate::{Environment, Scope};
+use ast::{Expression, Program};
 pub use branches::*;
 pub use evaluation_result::EvaluationResult;
 use std::{cell::RefCell, rc::Rc};
+pub use util::evaluate_expressions_and_return_last_value;
 
 #[derive(Debug)]
 pub struct Evaluator {
@@ -18,33 +20,14 @@ impl Evaluator {
     }
 
     /// Run all of the expressions in the program and return the value of the last expression.
-    pub fn evaluate_program(&mut self, program: Program) -> Result<Value, Value> {
-        let mut items = program.body.items;
-
+    pub fn evaluate_program(&mut self, program: Program) -> EvaluationResult {
         let mut scope = Scope::with_parent(Box::new(
             // TODO: This is a bit of a hack to get around the fact that the scope needs to be mutable,
             // but the environment is not. This should be refactored.
             self.environment.take().global_scope,
         ));
 
-        // TODO: Add utility function for evaluating a sequence of expressions and returning the value of the last expression,
-        // since this will be a common operation.
-        match items.pop() {
-            None => Ok(Value::Nil),
-            Some(last) => {
-                for expr in items {
-                    match self.evaluate_expression(expr, &mut scope) {
-                        EvaluationResult::Throw(err) => return Err(err),
-                        _ => continue,
-                    }
-                }
-
-                match self.evaluate_expression(last, &mut scope) {
-                    EvaluationResult::Throw(err) => Err(err),
-                    EvaluationResult::Value(x) | EvaluationResult::Return(x) => Ok(x),
-                }
-            }
-        }
+        evaluate_expressions_and_return_last_value(program.body.items, self, &mut scope)
     }
 
     pub fn evaluate_expression(
@@ -53,8 +36,11 @@ impl Evaluator {
         mut scope: &mut Scope,
     ) -> EvaluationResult {
         match expression {
-            Expression::Assignment(_assignment) => todo!(),
-            Expression::Block(_block) => todo!(),
+            Expression::Assignment(assignment) => {
+                evaluate_assignment(assignment, &self, &mut scope)
+            }
+
+            Expression::Block(block) => evaluate_block(block, &self, &mut scope),
             Expression::Dyadic(dyadic) => evaluate_dyadic(dyadic, &self, &mut scope),
             Expression::FunctionCall(_function_call) => todo!(),
             Expression::FunctionDeclaration(_function_declaration) => todo!(),
