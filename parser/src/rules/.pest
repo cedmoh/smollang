@@ -122,6 +122,7 @@ op                     = _{
 expressions               = _{ (newlines ~ expression ~ newlines)+ }
 expression                =  {
   
+  | block
   | then_expression
   | pipe_expression
   | operation
@@ -318,6 +319,7 @@ else_body       = { expression }
 
 // Pattern
 pattern               = {
+  
   | array_pattern
   | destructuring_pattern
   | tuple_pattern
@@ -333,8 +335,8 @@ array_pattern         = { "[" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_ter
 destructuring_pattern = { "{" ~ (pattern_term | rest_term) ~ ("," ~ (pattern_term | rest_term))+ ~ "}" }
 
 // Match
-match_expression = { match_term ~ newlines ~ match ~ newlines ~ match_arms }
-match_term       = {
+match_expression =  { match_term ~ newlines ~ match_check_symbol ~ newlines ~ match_arms }
+match_term       =  {
     // everything except match_expression, then_expression and operation
   
   | assignment_expression
@@ -349,9 +351,8 @@ match_term       = {
   | broken_expression
   | continue_expression
 }
-match_arms       = { (match_arm_block | (match_arm_inline ~ match_separator_symbol))* ~ (match_arm_block | match_arm_inline) ~ match_separator_symbol? }
-match_arm_block  = { pattern ~ newlines ~ match_arm_symbol ~ newlines ~ block }
-match_arm_inline = { pattern ~ newlines ~ match_arm_symbol ~ expression }
+match_arms       = _{ (match_arm ~ newlines ~ match_separator_symbol? ~ newlines)+ }
+match_arm        =  { pattern ~ newlines ~ match_arm_symbol ~ newlines ~ expression }
 
 // Loop
 loop_flow = { loop ~ newlines ~ loop_body }
