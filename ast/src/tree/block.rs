@@ -35,27 +35,27 @@ impl Block {
 /// A builder for creating a block expression.
 pub struct BlockBuilder {
     /// The expressions in the block.
-    expressions: Vec<Expression>,
+    expressions: Expressions,
 }
 
 impl BlockBuilder {
     /// Creates a new block builder.
     pub fn new() -> Self {
         Self {
-            expressions: Vec::new(),
+            expressions: Expressions::default(),
         }
     }
 
     /// Adds an expression to the block.
     pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
-        self.expressions.push(expression);
+        self.expressions.add_expression(expression);
         self
     }
 
     /// Builds the block expression.
     pub fn build(self) -> Block {
         Block {
-            body: Expressions::new(self.expressions.clone()),
+            body: self.expressions,
         }
     }
 }

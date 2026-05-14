@@ -1,5 +1,5 @@
 use crate::{
-    ast_builder::{build_block_expression, build_identifier_expression},
+    ast_builder::{build_block_expression, build_identifier_expression, build_call_expression},
     rule_parser::Rule,
 };
 use ast::Expression;
@@ -31,22 +31,39 @@ pub fn build_ast_expression(
         block => build_block_expression(inner_expression)
             .map(|b| Block(b))
             .map_err(|error| BuildInnerAstError(error.to_string())),
+
         then_expression => todo!(),
+
         pipe_expression => todo!(),
+
         operation => todo!(),
+
         assignment_expression => todo!(),
+
         declaration => todo!(),
+
         match_expression => todo!(),
-        call => todo!(),
+
+        call => build_call_expression(inner_expression)
+            .map(|c| FunctionCall(c))
+            .map_err(|error| BuildInnerAstError(error.to_string())),
+
         member => todo!(),
+
         identifier => build_identifier_expression(inner_expression)
             .map(|i| Identifier(i))
             .map_err(|error| BuildInnerAstError(error.to_string())),
+
         literal => todo!(),
+
         expression_in_parenthesis => todo!(),
+
         returned_expression => todo!(),
+
         broken_expression => todo!(),
+
         continue_expression => todo!(),
+
         x => Err(UnrecognizedExpression(x)),
     }
 }

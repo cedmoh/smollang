@@ -1,3 +1,4 @@
+use crate::Expression;
 use std::fmt::Display;
 
 /// An identifier, which is a name that can be used to refer to a value or a
@@ -17,6 +18,10 @@ pub struct Identifier {
 impl Identifier {
     pub fn new(id: String) -> Self {
         Self { id }
+    }
+
+    pub fn into_expression(self) -> Expression {
+        Expression::Identifier(self)
     }
 }
 

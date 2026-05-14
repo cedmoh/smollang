@@ -31,4 +31,9 @@ impl Expressions {
     pub fn new(items: Vec<Expression>) -> Self {
         Self { items }
     }
+
+    pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
+        self.items.push(expression);
+        self
+    }
 }

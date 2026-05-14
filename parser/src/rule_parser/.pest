@@ -209,7 +209,7 @@ call_arguments                =  { call_arguments_empty | call_arguments_in_pare
 call_arguments_empty          = _{ "(" ~ newlines ~ ")" }
 call_arguments_in_parenthesis = _{ "(" ~ newlines ~ expression ~ newlines ~ (newlines ~ "," ~ newlines ~ expression)* ~ newlines ~ ")" }
 call_arguments_naked          = _{ expression_in_call ~ (newlines ~ "," ~ newlines ~ expression_in_call)* }
-expression_in_call            =  {
+expression_in_call            = _{
   
   | assignment_expression
   | declaration
