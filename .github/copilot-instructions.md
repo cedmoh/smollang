@@ -12,7 +12,7 @@ Using `Result<T, E>` is the preferred way to handle errors in Rust. The `?` oper
 
 A function returning `Result<T, E>` should define a custom error type `E` that is an enum with variants for each possible error that can occur in the function.
 
-When prototyping, `expect()` should be used to handle errors.
+When prototyping, `expect()` could be used to handle errors.
 
 - If a check made before the `expect()` makes sure that the error will never occur, then it is acceptable to use `expect()` in the final code. The error message should be descriptive and describe the assumption that is made that leads to the conclusion that the error will never occur. (e.g. `expect("Expected input to have been validated before being parsed.")`).
 
@@ -27,6 +27,12 @@ The struct must have a `builder(<required_parameters>)` associated function that
 ## Naming Conventions
 
 The project must follow the guidelines for naming conventions in Rust, described in the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/naming.html).
+
+## Asynchronous Code and Concurrency
+
+When using asynchronous code in Rust, prefer `async` functions and the `await` syntax over callbacks or manual future handling.
+
+Error handling in async contexts should follow the same conventions as synchronous code. Use `Result<T, E>` and the `?` operator to propagate errors from async functions.
 
 ## Documentation
 
