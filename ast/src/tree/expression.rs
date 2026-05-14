@@ -1,6 +1,6 @@
 use crate::{
     Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier,
-    Literal, Match, Member, Return, VariableDeclaration,
+    Literal, Match, Member, Pipe, Return, Then, VariableDeclaration,
 };
 
 /// An expression, which is a piece of code that can be evaluated to produce a
@@ -12,6 +12,8 @@ pub enum Expression {
     Dyadic(Dyadic),
     FunctionCall(FunctionCall),
     FunctionDeclaration(FunctionDeclaration),
+    Then(Then),
+    Pipe(Pipe),
     Identifier(Identifier),
     Literal(Literal),
     Match(Match),
@@ -34,6 +36,14 @@ impl Expressions {
 
     pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
         self.items.push(expression);
+        self
+    }
+
+    pub fn add_expressions(
+        &mut self,
+        expressions: Vec<Expression>,
+    ) -> &mut Self {
+        self.items.extend(expressions);
         self
     }
 }
@@ -65,6 +75,12 @@ impl From<FunctionCall> for Expression {
 impl From<FunctionDeclaration> for Expression {
     fn from(function_declaration: FunctionDeclaration) -> Self {
         Expression::FunctionDeclaration(function_declaration)
+    }
+}
+
+impl From<Then> for Expression {
+    fn from(then_expression: Then) -> Self {
+        Expression::Then(then_expression)
     }
 }
 

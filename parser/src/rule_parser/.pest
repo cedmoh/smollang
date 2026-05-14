@@ -119,11 +119,11 @@ op                     = _{
 }
 
 // Expressions
-expressions               = _{ (newlines ~ expression ~ newlines)+ }
-expression                =  {
+expressions            = _{ (newlines ~ expression ~ newlines)+ }
+expression             =  {
   
-  | block
   | then_expression
+  | block
   | pipe_expression
   | operation
   | assignment_expression
@@ -133,12 +133,11 @@ expression                =  {
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
   | returned_expression
   | broken_expression
   | continue_expression
 }
-expression_in_parenthesis = _{ "(" ~ expression ~ ")" }
+dynamic_key_expression = _{ "(" ~ expression ~ ")" }
 
 // Operation
 operation = { operand ~ (op ~ operand)+ }
@@ -155,7 +154,7 @@ operand   = {
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
+  | dynamic_key_expression
   | returned_expression
   | broken_expression
   | continue_expression
@@ -175,7 +174,7 @@ member_xp = _{
   | call
   | identifier
   | literal
-  | expression_in_parenthesis
+  | dynamic_key_expression
 }
 
 // Pipe
@@ -192,7 +191,7 @@ pipe_shared_allowed_expressions = _{
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
+  | dynamic_key_expression
   | returned_expression
   | broken_expression
   | continue_expression
@@ -222,7 +221,7 @@ expression_in_call            = _{
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
+  | dynamic_key_expression
 }
 
 // Declaration
@@ -284,11 +283,14 @@ array_entry         = { expression }
 object_literal      = { "{" ~ newlines ~ object_entries ~ newlines ~ "}" }
 object_entries      = { object_entry? ~ (newlines ~ "," ~ newlines ~ object_entry)* ~ newlines ~ ","? }
 object_entry        = { object_key ~ object_value }
-object_key          = { identifier | literal | expression_in_parenthesis }
+object_key          = { identifier | literal | dynamic_key_expression }
 object_value        = { expression }
 
 // Then
-then_expression       = { then_first_expression ~ then_check_symbol ~ expression ~ (then_else_symbol ~ expression)? }
+then_expression       = { then_condition ~ then_check_symbol ~ then_body ~ (then_else_symbol ~ then_else_body)? }
+then_condition        = { then_first_expression }
+then_body             = { expression }
+then_else_body        = { expression }
 then_first_expression = {
     // everything except then_expression and operation
   
@@ -300,7 +302,6 @@ then_first_expression = {
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
   | returned_expression
   | broken_expression
   | continue_expression
@@ -346,7 +347,7 @@ match_term       =  {
   | member
   | identifier
   | literal
-  | expression_in_parenthesis
+  | dynamic_key_expression
   | returned_expression
   | broken_expression
   | continue_expression

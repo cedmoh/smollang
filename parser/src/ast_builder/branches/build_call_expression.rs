@@ -15,8 +15,8 @@ use thiserror::Error;
 /// Call without arguments:
 /// ```
 /// - call
-///  - callee > identifier: "hello"
-///  - call_arguments: "()"
+///   - callee > identifier: "hello"
+///   - call_arguments: "()"
 /// ```
 ///
 /// Call with arguments:

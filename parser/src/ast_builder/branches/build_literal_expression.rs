@@ -25,8 +25,8 @@ use thiserror::Error;
 /// ```
 /// ```
 /// literal > object_literal > object_entries > object_entry
-///  - object_key > identifier: "hello"
-///  - object_value > expression > ...
+///   - object_key > identifier: "hello"
+///   - object_value > expression > ...
 /// ```
 pub fn build_literal_expression(
     pair: Pair<Rule>,

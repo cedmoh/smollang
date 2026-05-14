@@ -21,7 +21,6 @@ pub struct FunctionDeclaration {
 }
 
 /// Represents a function parameter.
-/// TODO: Add support for default parameter values.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionParameter {
     pub name: Identifier,
@@ -48,5 +47,5 @@ pub struct FunctionBody {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Return {
-    pub xp: Option<Box<Expression>>,
+    pub expression: Option<Box<Expression>>,
 }

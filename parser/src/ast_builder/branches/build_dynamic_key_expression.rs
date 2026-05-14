@@ -13,26 +13,28 @@ use thiserror::Error;
 /// # Example
 ///
 /// ```
-/// - expression_in_parenthesis
+/// - dynamic_key_expression
 ///   - expression
 /// ```
-pub fn build_expression_in_parenthesis(
+pub fn build_dynamic_key_expression(
     pair: Pair<Rule>,
 ) -> Result<Expression, BuildExpressionInParenthesisError> {
+    use BuildExpressionInParenthesisError::*;
+    use Rule::dynamic_key_expression;
+
     let rule = pair.as_rule();
 
-    if rule != Rule::expression_in_parenthesis {
-        return Err(BuildExpressionInParenthesisError::RuleIsNotAnExpressionInParenthesis(rule));
+    if rule != dynamic_key_expression {
+        return Err(RuleIsNotAnExpressionInParenthesis(rule));
     };
 
     let mut inner = pair.into_inner();
 
     let Some(inner_expression) = inner.next() else {
-        return Err(BuildExpressionInParenthesisError::EmptyParentheses);
+        return Err(EmptyParentheses);
     };
 
-    build_ast_expression(inner_expression)
-        .map_err(BuildExpressionInParenthesisError::BuildAstExpressionError)
+    build_ast_expression(inner_expression).map_err(BuildAstExpressionError)
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -43,7 +45,9 @@ pub enum BuildExpressionInParenthesisError {
     RuleIsNotAnExpressionInParenthesis(Rule),
 
     /// The parentheses are empty.
-    #[error("Expected an expression in parenthesis, but found empty parentheses.")]
+    #[error(
+        "Expected an expression in parenthesis, but found empty parentheses."
+    )]
     EmptyParentheses,
 
     /// An error occurred while building the inner AST expression.
