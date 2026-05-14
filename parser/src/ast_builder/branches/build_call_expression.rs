@@ -50,11 +50,12 @@ pub fn build_call_expression(
         .expect("Expected callee to contain an identifier");
 
     // Build the callee as an identifier expression
+    // TODO: In the future, we want to support more complex expressions as
+    // the callee (e.g., member expressions)
     let callee_expression =
-        Expression::Identifier(build_identifier_expression(callee_identifier)?);
+        build_identifier_expression(callee_identifier)?.into();
 
-    // Process call_arguments (if present)
-    let mut arguments_expressions = Vec::new();
+    let mut function_call_builder = FunctionCall::builder(callee_expression);
 
     if let Some(call_arguments_pair) = inner.next() {
         // Skip call_generics if present, process call_arguments
@@ -71,20 +72,13 @@ pub fn build_call_expression(
         if let Some(args_pair) = arguments_inner {
             // call_arguments contains individual expressions
             for expression_pair in args_pair.into_inner() {
-                let expression = build_ast_expression(expression_pair)?;
-                arguments_expressions.push(expression);
+                function_call_builder
+                    .add_argument(build_ast_expression(expression_pair)?);
             }
         }
     }
 
-    let arguments = FunctionCallArguments {
-        expressions: Expressions::new(arguments_expressions),
-    };
-
-    Ok(FunctionCall {
-        callee: Box::new(callee_expression),
-        arguments,
-    })
+    Ok(function_call_builder.build())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -125,18 +119,12 @@ mod tests {
         // Act
         let call_expression = build_call_expression(call_rule);
 
+        let expected_call_expression =
+            FunctionCall::builder(Identifier::new("hello".into()).into())
+                .build();
+
         // Assert
-        assert_eq!(
-            call_expression,
-            Ok(FunctionCall {
-                callee: Box::new(Expression::Identifier(Identifier::new(
-                    "hello".to_string()
-                ))),
-                arguments: FunctionCallArguments {
-                    expressions: Expressions::new(vec![]),
-                },
-            })
-        );
+        assert_eq!(call_expression, Ok(expected_call_expression));
     }
 
     #[test]
@@ -153,11 +141,11 @@ mod tests {
         let call_expression = build_call_expression(call_rule);
 
         // Assert
-        let callee_expression = Identifier::new("add".into()).into_expression();
-        let function_call = FunctionCall::builder(callee_expression)
-            .with_argument(Identifier::new("x".into()).into_expression())
-            .with_argument(Identifier::new("y".into()).into_expression())
-            .build();
+        let function_call =
+            FunctionCall::builder(Identifier::new("add".into()).into())
+                .with_argument(Identifier::new("x".into()).into())
+                .with_argument(Identifier::new("y".into()).into())
+                .build();
 
         assert_eq!(call_expression, Ok(function_call));
     }
