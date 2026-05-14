@@ -3,8 +3,11 @@ use ast::Expression;
 use pest::iterators::Pair;
 use thiserror::Error;
 
-/// Converts a sequence of expression rules into an abstract syntax tree (AST) representation of an expression.
-pub fn build_ast_expression(pair: Pair<Rule>) -> Result<Expression, BuildAstExpressionError> {
+/// Converts a sequence of expression rules into an abstract syntax tree (AST)
+/// representation of an expression.
+pub fn build_ast_expression(
+    pair: Pair<Rule>,
+) -> Result<Expression, BuildAstExpressionError> {
     let rule = pair.as_rule();
 
     if rule != Rule::expression {
@@ -20,7 +23,9 @@ pub fn build_ast_expression(pair: Pair<Rule>) -> Result<Expression, BuildAstExpr
     match inner_expression.as_rule() {
         Rule::block => build_block_expression(inner_expression)
             .map(|block| Expression::Block(block))
-            .map_err(|error| BuildAstExpressionError::BuildInnerAstError(error.to_string())),
+            .map_err(|error| {
+                BuildAstExpressionError::BuildInnerAstError(error.to_string())
+            }),
         Rule::then_expression => todo!(),
         Rule::pipe_expression => todo!(),
         Rule::operation => todo!(),

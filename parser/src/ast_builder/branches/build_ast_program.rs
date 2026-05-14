@@ -36,7 +36,8 @@ pub fn build_ast_program(
     let mut program_builder = Program::builder();
 
     for maybe_expression in program.into_inner() {
-        // If we encounter the end of input, we can stop processing further expressions.
+        // If we encounter the end of input, we can stop processing further
+        // expressions.
         if maybe_expression.as_rule() == rule_parser::Rule::EOI {
             break;
         }

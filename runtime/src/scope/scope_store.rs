@@ -29,7 +29,10 @@ impl ScopeStore {
         Ok(())
     }
 
-    pub fn add_anonymous_item(&mut self, item: ScopeItem) -> Result<ScopeId, AddScopeItemError> {
+    pub fn add_anonymous_item(
+        &mut self,
+        item: ScopeItem,
+    ) -> Result<ScopeId, AddScopeItemError> {
         // TODO: Find a better way to generate unique IDs for anonymous items.
         let unique_id = nanoid!(8);
 
@@ -44,7 +47,10 @@ impl ScopeStore {
         self.store.get(scope_id)
     }
 
-    pub fn get_item_mut(&mut self, scope_id: &ScopeId) -> Option<&mut ScopeItem> {
+    pub fn get_item_mut(
+        &mut self,
+        scope_id: &ScopeId,
+    ) -> Option<&mut ScopeItem> {
         self.store.get_mut(scope_id)
     }
 }

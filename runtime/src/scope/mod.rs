@@ -47,7 +47,8 @@ impl Scope {
         )
     }
 
-    /// Look up a variable or function in the current scope and its parent scopes.
+    /// Look up a variable or function in the current scope and its parent
+    /// scopes.
     pub fn lookup(&self, locator: ScopeItemLocator) -> Option<&ScopeItem> {
         let scope_id = ScopeId::new(locator.to_string());
 
@@ -63,14 +64,18 @@ impl Scope {
     }
 
     /// Look up a variable or function in the current scope only.
-    pub fn lookup_current_scope(&self, locator: ScopeItemLocator) -> Option<&ScopeItem> {
+    pub fn lookup_current_scope(
+        &self,
+        locator: ScopeItemLocator,
+    ) -> Option<&ScopeItem> {
         let scope_id = ScopeId::new(locator.to_string());
 
         self.items.get_item(&scope_id)
     }
 
-    /// Assign a new value to an existing variable in the current scope or its parent scopes.
-    /// Returns an error if the variable is immutable or does not exist.
+    /// Assign a new value to an existing variable in the current scope or its
+    /// parent scopes. Returns an error if the variable is immutable or does
+    /// not exist.
     pub fn assign_variable(
         &mut self,
         locator: ScopeItemLocator,
@@ -90,7 +95,9 @@ impl Scope {
                 ScopeItem::Variable {
                     is_mutable: false, ..
                 } => Err(AssignVariableError::VariableIsImmutable),
-                ScopeItem::Function => Err(AssignVariableError::ItemIsNotAVariable),
+                ScopeItem::Function => {
+                    Err(AssignVariableError::ItemIsNotAVariable)
+                }
             };
         }
 

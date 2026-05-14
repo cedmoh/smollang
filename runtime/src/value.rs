@@ -23,7 +23,10 @@ impl Add for Value {
             (Value::String(left_str), Value::String(right_str)) => {
                 Ok(Value::String(left_str + &right_str))
             }
-            (left, right) => Err(format!("Cannot add values '{:?}' and '{:?}'.", left, right)),
+            (left, right) => Err(format!(
+                "Cannot add values '{:?}' and '{:?}'.",
+                left, right
+            )),
         }
     }
 }

@@ -20,7 +20,8 @@ pub fn evaluate_dyadic(
         }
     };
 
-    let right_value = match evaluator.evaluate_expression(*dyadic.right, scope) {
+    let right_value = match evaluator.evaluate_expression(*dyadic.right, scope)
+    {
         EvaluationResult::Value(value) => value,
         EvaluationResult::Throw(err) => return Throw(err),
         EvaluationResult::Return(_) => {
@@ -37,12 +38,24 @@ pub fn evaluate_dyadic(
         DyadicOperator::Divide => left_value.div(right_value),
         DyadicOperator::Modulo => left_value.rem(right_value),
         DyadicOperator::Power => left_value.pow(right_value),
-        DyadicOperator::Equal => Ok(Value::Boolean(left_value.eq(&right_value))),
-        DyadicOperator::NotEqual => Ok(Value::Boolean(left_value.ne(&right_value))),
-        DyadicOperator::LessThan => Ok(Value::Boolean(left_value.lt(&right_value))),
-        DyadicOperator::GreaterThan => Ok(Value::Boolean(left_value.gt(&right_value))),
-        DyadicOperator::LessThanOrEqual => Ok(Value::Boolean(left_value.le(&right_value))),
-        DyadicOperator::GreaterThanOrEqual => Ok(Value::Boolean(left_value.ge(&right_value))),
+        DyadicOperator::Equal => {
+            Ok(Value::Boolean(left_value.eq(&right_value)))
+        }
+        DyadicOperator::NotEqual => {
+            Ok(Value::Boolean(left_value.ne(&right_value)))
+        }
+        DyadicOperator::LessThan => {
+            Ok(Value::Boolean(left_value.lt(&right_value)))
+        }
+        DyadicOperator::GreaterThan => {
+            Ok(Value::Boolean(left_value.gt(&right_value)))
+        }
+        DyadicOperator::LessThanOrEqual => {
+            Ok(Value::Boolean(left_value.le(&right_value)))
+        }
+        DyadicOperator::GreaterThanOrEqual => {
+            Ok(Value::Boolean(left_value.ge(&right_value)))
+        }
         DyadicOperator::And => left_value.and(right_value),
         DyadicOperator::Or => left_value.or(right_value),
         // TODO: Implement range operators when arrays are implemented.

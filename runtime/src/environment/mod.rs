@@ -1,6 +1,7 @@
 use crate::{AddScopeItemError, Scope, Value};
 
-/// The environment in which the program is executed, containing global variables and functions.
+/// The environment in which the program is executed, containing global
+/// variables and functions.
 #[derive(Debug, Default)]
 pub struct Environment {
     pub global_scope: Scope,
@@ -20,7 +21,8 @@ impl Environment {
     ) -> Result<(), AddGlobalVariableError> {
         self.global_scope
             .add_variable(
-                identifier, value, // Global variables are immutable by default.
+                identifier,
+                value, // Global variables are immutable by default.
                 false,
             )
             .map_err(|error| AddGlobalVariableError::AddScopeItemError(error))

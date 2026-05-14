@@ -6,14 +6,17 @@ use ast::Block;
 use pest::iterators::Pair;
 use thiserror::Error;
 
-/// Converts the pest rules of a parsed block expression into an AST representation.
+/// Converts the pest rules of a parsed block expression into an AST
+/// representation.
 ///
 /// ```
 /// - block
 ///   - expression > ...
 ///   - expression > ...
 /// ```
-pub fn build_block_expression(pair: Pair<Rule>) -> Result<Block, BuildBlockExpressionError> {
+pub fn build_block_expression(
+    pair: Pair<Rule>,
+) -> Result<Block, BuildBlockExpressionError> {
     let rule = pair.as_rule();
 
     if rule != Rule::block {
@@ -27,7 +30,11 @@ pub fn build_block_expression(pair: Pair<Rule>) -> Result<Block, BuildBlockExpre
     for inner_expression in inner {
         match build_ast_expression(inner_expression) {
             Ok(expression) => block_builder.add_expression(expression),
-            Err(e) => return Err(BuildBlockExpressionError::BuildAstExpressionError(e)),
+            Err(e) => {
+                return Err(
+                    BuildBlockExpressionError::BuildAstExpressionError(e),
+                );
+            }
         };
     }
 
@@ -42,7 +49,9 @@ pub enum BuildBlockExpressionError {
     RuleIsNotABlock(Rule),
 
     /// An error occurred while building an expression within the block.
-    #[error("An error occurred while building an expression within the block: {0}")]
+    #[error(
+        "An error occurred while building an expression within the block: {0}"
+    )]
     BuildAstExpressionError(#[from] BuildAstExpressionError),
 }
 
@@ -85,9 +94,9 @@ mod tests {
 
         // Assert
         let mut block_builder = Block::builder();
-        block_builder.add_expression(Expression::Literal(Literal::Integer(IntegerLiteral::new(
-            69,
-        ))));
+        block_builder.add_expression(Expression::Literal(Literal::Integer(
+            IntegerLiteral::new(69),
+        )));
 
         assert_eq!(block_expression, Ok(block_builder.build()));
     }

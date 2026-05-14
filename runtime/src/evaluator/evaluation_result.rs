@@ -14,12 +14,14 @@ pub enum EvaluationResult {
 }
 
 impl EvaluationResult {
-    /// Returns `true` if the evaluation result is a throw, and `false` otherwise.
+    /// Returns `true` if the evaluation result is a throw, and `false`
+    /// otherwise.
     pub fn is_err(&self) -> bool {
         matches!(self, EvaluationResult::Throw(_))
     }
 
-    /// Returns `true` if the evaluation result is a value or return, and `false` otherwise.
+    /// Returns `true` if the evaluation result is a value or return, and
+    /// `false` otherwise.
     pub fn is_ok(&self) -> bool {
         matches!(
             self,

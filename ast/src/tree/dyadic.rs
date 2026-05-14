@@ -1,7 +1,7 @@
 use super::*;
 
-/// A dyadic operator, which is an operator that takes two operands and performs a specific operation on them.
-/// The following operators are supported:
+/// A dyadic operator, which is an operator that takes two operands and performs
+/// a specific operation on them. The following operators are supported:
 /// - Arithmetic operators: `+`, `-`, `*`, `/`, `%`, `^`
 /// - Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `
 /// - Logical operators: `and`, `or`
@@ -26,7 +26,8 @@ pub enum DyadicOperator {
     Range,
 }
 
-/// A dyadic expression, which is an expression that consists of two sub-expressions and an operator.
+/// A dyadic expression, which is an expression that consists of two
+/// sub-expressions and an operator.
 ///
 /// # Examples
 ///
@@ -49,7 +50,11 @@ pub struct Dyadic {
 }
 
 impl Dyadic {
-    pub fn new(operator: DyadicOperator, left: Expression, right: Expression) -> Self {
+    pub fn new(
+        operator: DyadicOperator,
+        left: Expression,
+        right: Expression,
+    ) -> Self {
         Self {
             operator,
             left: Box::new(left),

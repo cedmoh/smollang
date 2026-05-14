@@ -2,7 +2,9 @@ mod ast_builder;
 mod parse_string_to_program_ast;
 mod rule_parser;
 
-pub use parse_string_to_program_ast::{ParseProgramError, parse_string_to_program_ast};
+pub use parse_string_to_program_ast::{
+    ParseProgramError, parse_string_to_program_ast,
+};
 
 #[cfg(test)]
 mod tests {

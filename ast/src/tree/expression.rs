@@ -1,9 +1,10 @@
 use crate::{
-    Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier, Literal, Match,
-    Member, Return, VariableDeclaration,
+    Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier,
+    Literal, Match, Member, Return, VariableDeclaration,
 };
 
-/// An expression, which is a piece of code that can be evaluated to produce a value.
+/// An expression, which is a piece of code that can be evaluated to produce a
+/// value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expression {
     Assignment(Assignment),
@@ -19,7 +20,8 @@ pub enum Expression {
     VariableDeclaration(VariableDeclaration),
 }
 
-/// A list of expressions, which can be used in various contexts such as function arguments, tuple elements, etc.
+/// A list of expressions, which can be used in various contexts such as
+/// function arguments, tuple elements, etc.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Expressions {
     pub items: Vec<Expression>,

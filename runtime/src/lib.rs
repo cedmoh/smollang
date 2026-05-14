@@ -16,8 +16,8 @@ pub use value::*;
 mod tests {
 
     use ast::{
-        Dyadic, DyadicOperator, Expression, Expressions, Identifier, IntegerLiteral, Literal,
-        Program, VariableDeclarationBuilder,
+        Dyadic, DyadicOperator, Expression, Expressions, Identifier,
+        IntegerLiteral, Literal, Program, VariableDeclarationBuilder,
     };
 
     use super::*;
@@ -45,25 +45,27 @@ mod tests {
         let y_value = 10;
 
         // Act
-        // The program is a sequence of expressions that declares two variables and then adds them together.
+        // The program is a sequence of expressions that declares two variables
+        // and then adds them together.
         let program = Program::new(Expressions::new(vec![
             // Declare a variable `x` with the value of `5`.
             Expression::VariableDeclaration(
                 VariableDeclarationBuilder::new(x_identifier.clone())
-                    .with_initial_value(Expression::Literal(Literal::Integer(IntegerLiteral::new(
-                        x_value,
-                    ))))
+                    .with_initial_value(Expression::Literal(Literal::Integer(
+                        IntegerLiteral::new(x_value),
+                    )))
                     .build(),
             ),
             // Declare a variable `y` with the value of `10`.
             Expression::VariableDeclaration(
                 VariableDeclarationBuilder::new(y_identifier.clone())
-                    .with_initial_value(Expression::Literal(Literal::Integer(IntegerLiteral::new(
-                        y_value,
-                    ))))
+                    .with_initial_value(Expression::Literal(Literal::Integer(
+                        IntegerLiteral::new(y_value),
+                    )))
                     .build(),
             ),
-            // Add `x` and `y` together as the last expression of the program, which should be returned as the result of running the program.
+            // Add `x` and `y` together as the last expression of the program,
+            // which should be returned as the result of running the program.
             Expression::Dyadic(Dyadic::new(
                 DyadicOperator::Add,
                 Expression::Identifier(x_identifier),
@@ -93,10 +95,12 @@ mod tests {
         let runner = Runner::with_environment(environment);
 
         // Act
-        // The program is just an identifier expression that references the global variable that we just defined.
-        let program = Program::new(Expressions::new(vec![Expression::Identifier(
-            Identifier::new(x_identifier.to_string()),
-        )]));
+        // The program is just an identifier expression that references the
+        // global variable that we just defined.
+        let program =
+            Program::new(Expressions::new(vec![Expression::Identifier(
+                Identifier::new(x_identifier.to_string()),
+            )]));
 
         let result = runner
             .run(program)

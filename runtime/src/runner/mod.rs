@@ -21,7 +21,9 @@ impl Runner {
     }
 
     pub fn run(&self, program: Program) -> RunResult {
-        Into::<RunResult>::into(Evaluator::new(self.environment.clone()).evaluate_program(program))
+        Into::<RunResult>::into(
+            Evaluator::new(self.environment.clone()).evaluate_program(program),
+        )
     }
 }
 
@@ -33,16 +35,16 @@ pub enum RunResult {
     /// The program threw a runtime error.
     RuntimeError(Value),
     // TODO: Add a variant for when the program panics,
-    // which is different from a runtime error since it indicates a bug in the interpreter rather than an error in the program being run.
+    // which is different from a runtime error since it indicates a bug in the
+    // interpreter rather than an error in the program being run.
 }
 
 impl From<EvaluationResult> for RunResult {
     fn from(evaluation_result: EvaluationResult) -> Self {
         match evaluation_result {
             EvaluationResult::Throw(err) => RunResult::RuntimeError(err),
-            EvaluationResult::Return(value) | EvaluationResult::Value(value) => {
-                RunResult::Finished(value)
-            }
+            EvaluationResult::Return(value)
+            | EvaluationResult::Value(value) => RunResult::Finished(value),
         }
     }
 }

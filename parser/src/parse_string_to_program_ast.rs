@@ -6,8 +6,10 @@ use crate::{
     rule_parser::parse_string_to_program_rule,
 };
 
-/// This function serves as the main entry point for parsing a Smollang program from a string input.
-/// It first converts the input string into a sequence of pest rules, and then transforms those rules into an abstract syntax tree (AST) representation of the program.
+/// This function serves as the main entry point for parsing a Smollang program
+/// from a string input. It first converts the input string into a sequence of
+/// pest rules, and then transforms those rules into an abstract syntax tree
+/// (AST) representation of the program.
 pub fn parse_string_to_program_ast(
     input: &str,
 ) -> Result<Program, ParseProgramError> {
