@@ -1,5 +1,5 @@
 use crate::{
-    ast_builder::{build_ast_expression, BuildAstExpressionError},
+    ast_builder::{BuildAstExpressionError, build_ast_expression},
     rule_parser::Rule,
 };
 use ast::Expression;

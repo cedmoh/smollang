@@ -123,7 +123,6 @@ expressions            = _{ (newlines ~ expression ~ newlines)+ }
 expression             =  {
   
   | then_expression
-  | block
   | pipe_expression
   | operation
   | assignment_expression
@@ -136,6 +135,7 @@ expression             =  {
   | returned_expression
   | broken_expression
   | continue_expression
+  | block
 }
 dynamic_key_expression = _{ "(" ~ expression ~ ")" }
 
@@ -147,7 +147,6 @@ operand   = {
   | then_expression
   | pipe_expression
   | assignment_expression
-  | block
   | declaration
   | match_expression
   | call
@@ -158,6 +157,7 @@ operand   = {
   | returned_expression
   | broken_expression
   | continue_expression
+  | block
 }
 
 continue_expression = { cont }
@@ -178,26 +178,25 @@ member_xp = _{
 }
 
 // Pipe
-pipe_expression                 =  { pipe_first_expression ~ (newlines ~ pipe_to_symbol ~ newlines ~ pipe_second_expression)+ }
+pipe_expression                 =  { pipe_first_arm ~ (newlines ~ pipe_to_symbol ~ newlines ~ pipe_arm)+ }
 pipe_shared_allowed_expressions = _{
     // every expression except pipe_expression and operation
   
   | then_expression
   | assignment_expression
-  | block
   | declaration
   | match_expression
   | call
   | member
   | identifier
   | literal
-  | dynamic_key_expression
   | returned_expression
   | broken_expression
   | continue_expression
+  | block
 }
-pipe_first_expression           = _{ pipe_shared_allowed_expressions }
-pipe_second_expression          = _{ operation | pipe_shared_allowed_expressions }
+pipe_first_arm                  =  { pipe_shared_allowed_expressions }
+pipe_arm                        =  { operation | pipe_shared_allowed_expressions }
 
 // Call
 call                          =  { callee ~ call_generics? ~ call_arguments }
@@ -295,7 +294,6 @@ then_first_expression = {
     // everything except then_expression and operation
   
   | assignment_expression
-  | block
   | declaration
   | match_expression
   | call
@@ -305,6 +303,7 @@ then_first_expression = {
   | returned_expression
   | broken_expression
   | continue_expression
+  | block
 }
 
 // If
@@ -341,16 +340,15 @@ match_term       =  {
     // everything except match_expression, then_expression and operation
   
   | assignment_expression
-  | block
   | declaration
   | call
   | member
   | identifier
   | literal
-  | dynamic_key_expression
   | returned_expression
   | broken_expression
   | continue_expression
+  | block
 }
 match_arms       = _{ (match_arm ~ newlines ~ match_separator_symbol? ~ newlines)+ }
 match_arm        =  { pattern ~ newlines ~ match_arm_symbol ~ newlines ~ expression }

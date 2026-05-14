@@ -1,4 +1,4 @@
-use crate::{Expression, Expressions};
+use crate::Expression;
 
 /// A pipe expression, which allows for chaining multiple expressions together.
 ///
@@ -9,12 +9,12 @@ use crate::{Expression, Expressions};
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pipe {
-    pub expressions: Expressions,
+    pub arms: PipeArms,
 }
 
 impl Pipe {
-    pub fn new(expressions: Expressions) -> Self {
-        Self { expressions }
+    pub fn new(arms: PipeArms) -> Self {
+        Self { arms }
     }
 
     pub fn builder(
@@ -25,8 +25,35 @@ impl Pipe {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct PipeArm {
+    pub expression: Expression,
+}
+
+impl PipeArm {
+    pub fn new(expression: Expression) -> Self {
+        Self { expression }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PipeArms {
+    pub arms: Vec<PipeArm>,
+}
+
+impl PipeArms {
+    pub fn new(arms: Vec<PipeArm>) -> Self {
+        Self { arms }
+    }
+
+    pub fn add_arm(&mut self, arm: PipeArm) -> &mut Self {
+        self.arms.push(arm);
+        self
+    }
+}
+
 pub struct PipeBuilder {
-    expressions: Expressions,
+    arms: PipeArms,
 }
 
 impl PipeBuilder {
@@ -35,24 +62,24 @@ impl PipeBuilder {
         second_expression: Expression,
     ) -> Self {
         Self {
-            expressions: Expressions::new(vec![
-                first_expression,
-                second_expression,
+            arms: PipeArms::new(vec![
+                PipeArm::new(first_expression),
+                PipeArm::new(second_expression),
             ]),
         }
     }
 
-    pub fn with_expression(mut self, expression: Expression) -> Self {
-        self.expressions.add_expression(expression);
+    pub fn with_arm(mut self, expression: Expression) -> Self {
+        self.arms.add_arm(PipeArm::new(expression));
         self
     }
 
-    pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
-        self.expressions.add_expression(expression);
+    pub fn add_arm(&mut self, expression: Expression) -> &mut Self {
+        self.arms.add_arm(PipeArm::new(expression));
         self
     }
 
     pub fn build(self) -> Pipe {
-        Pipe::new(self.expressions)
+        Pipe::new(self.arms)
     }
 }

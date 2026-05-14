@@ -49,3 +49,25 @@ All public functions must have tests. Tests must be written using the [Rust test
 Tests should follow the Arrange-Act-Assert pattern, which is a common pattern for writing tests.
 
 Test names should follow the convention of `should_<expected_behavior>_when_<condition>`, for example: `should_return_true_when_input_is_valid`.
+
+## Using `use::<module>::*`
+
+The `use` syntax can be used to import all variants of an enum within the current scope.
+
+This can be useful when using the variants of an error enum within a function that returns a `Result<T, E>` where `E` is the error enum. This allows for using the variants of the error enum without having to prefix them with the enum name.
+
+When using `use::<module>::*`, it should be used at the beginning of the function where the variants are used, and it should be used in a way that does not cause confusion about where the variants are coming from.
+
+Example:
+
+```rust
+fn example_function() -> Result<(), MyError> {
+    use MyError::*;
+
+    if some_condition {
+        return Err(VariantOne);
+    } else {
+        return Err(VariantTwo);
+    }
+}
+```
