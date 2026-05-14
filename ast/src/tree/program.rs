@@ -1,4 +1,4 @@
-use super::Expressions;
+use crate::{Expression, Expressions};
 
 /// A program represents a File. It consists of a sequence of expressions that will be executed in order.
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -10,5 +10,25 @@ pub struct Program {
 impl Program {
     pub fn new(body: Expressions) -> Self {
         Self { body }
+    }
+
+    pub fn builder() -> ProgramBuilder {
+        ProgramBuilder::default()
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct ProgramBuilder {
+    body: Expressions,
+}
+
+impl ProgramBuilder {
+    pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
+        self.body.items.push(expression);
+        self
+    }
+
+    pub fn build(self) -> Program {
+        Program { body: self.body }
     }
 }

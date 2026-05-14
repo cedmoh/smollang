@@ -1,4 +1,22 @@
 mod ast_builder;
-mod rules;
+mod parse_string_to_program_ast;
+mod rule_parser;
 
-pub use {ast_builder::rules_to_ast, rules::parse_to_rules};
+pub use parse_string_to_program_ast::{ParseProgramError, parse_string_to_program_ast};
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_parse_block_expression() {
+        // Arrange
+        let input = r#""#;
+
+        // Act
+        let ast = parse_string_to_program_ast(input);
+
+        // Assert
+        assert!(ast.is_ok());
+    }
+}

@@ -1,7 +1,7 @@
 use pest::pratt_parser::{Assoc, Op, PrattParser};
 use std::sync::LazyLock;
 
-use crate::rules::rule_parser::Rule;
+use crate::rule_parser::rule_parser::Rule;
 
 pub static PRATT_PARSER: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
     use Assoc::{Left, Right};

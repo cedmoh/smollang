@@ -1,8 +1,7 @@
-use std::fmt::Display;
-
-use crate::rules::Rule;
+use crate::{ast_builder::build_block_expression, rule_parser::Rule};
 use ast::Expression;
 use pest::iterators::Pair;
+use thiserror::Error;
 
 /// Converts a sequence of expression rules into an abstract syntax tree (AST) representation of an expression.
 pub fn build_ast_expression(pair: Pair<Rule>) -> Result<Expression, BuildAstExpressionError> {
@@ -19,7 +18,9 @@ pub fn build_ast_expression(pair: Pair<Rule>) -> Result<Expression, BuildAstExpr
     };
 
     match inner_expression.as_rule() {
-        Rule::block => todo!(),
+        Rule::block => build_block_expression(inner_expression)
+            .map(|block| Expression::Block(block))
+            .map_err(|error| BuildAstExpressionError::BuildInnerAstError(error.to_string())),
         Rule::then_expression => todo!(),
         Rule::pipe_expression => todo!(),
         Rule::operation => todo!(),
@@ -38,28 +39,21 @@ pub fn build_ast_expression(pair: Pair<Rule>) -> Result<Expression, BuildAstExpr
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Error)]
 pub enum BuildAstExpressionError {
     /// The expression is empty.
+    #[error("The expression is empty.")]
     EmptyExpression,
 
     /// The first rule is not an expression.
+    #[error("Expected an expression, but found rule: {0:?}")]
     RuleIsNotAnExpression(Rule),
 
     /// The expression is not recognized.
+    #[error("Unrecognized expression. Found rule: {0:?}")]
     UnrecognizedExpression(Rule),
-}
 
-impl Display for BuildAstExpressionError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            BuildAstExpressionError::EmptyExpression => write!(f, "The expression is empty."),
-            BuildAstExpressionError::RuleIsNotAnExpression(rule) => {
-                write!(f, "Rule is not an expression. Found rule: {:?}", rule)
-            }
-            BuildAstExpressionError::UnrecognizedExpression(rule) => {
-                write!(f, "Unrecognized expression. Found rule: {:?}", rule)
-            }
-        }
-    }
+    /// An error occurred while building an inner AST expression.
+    #[error("An error occurred while building an inner AST expression: {0}")]
+    BuildInnerAstError(String),
 }
