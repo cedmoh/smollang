@@ -6,11 +6,12 @@ use crate::{
         BuildAstExpressionError, build_assignment_expression,
         build_ast_expression, build_block_expression, build_broken_expression,
         build_call_expression, build_continue_expression,
-        build_declaration_expression, build_dynamic_key_expression,
+        build_dynamic_key_expression, build_function_declaration_expression,
         build_identifier_expression, build_literal_expression,
         build_match_expression, build_member_expression,
         build_operation_expression, build_pipe_expression,
         build_returned_expression, build_then_expression,
+        build_variable_declaration_expression,
     },
     rule_parser::Rule,
 };
@@ -29,11 +30,11 @@ pub fn match_rule_to_expression_builder(
     match inner_expression.as_rule() {
         expression => build_ast_expression(inner_expression)
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
-        // - 
+        // ---
         block => build_block_expression(inner_expression)
             .map(|b| Block(b))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
-        // -
+        // ---
         then_expression => build_then_expression(inner_expression)
             .map(|t| Then(t))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
@@ -50,8 +51,12 @@ pub fn match_rule_to_expression_builder(
             .map(|a| Assignment(a))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
-        declaration => build_declaration_expression(inner_expression)
+        variable_declaration => build_variable_declaration_expression(inner_expression)
             .map(|v| VariableDeclaration(v))
+            .map_err(|error| BuildExpressionVariantError(error.to_string())),
+        // ---
+        function_declaration => build_function_declaration_expression(inner_expression)
+            .map(|v| FunctionDeclaration(v))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
         match_expression => build_match_expression(inner_expression)

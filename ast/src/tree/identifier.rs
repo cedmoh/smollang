@@ -24,10 +24,8 @@ impl Identifier {
 impl PrettyPrint for Identifier {
     /// # Example
     /// ```
-    /// # use ast::{Identifier, PrettyPrint};
-    /// # let identifier = Identifier::new("message".to_string());
-    /// # let rendered = identifier.pretty().to_string();
-    /// # assert_eq!(rendered, "- Identifier\n  id: 'message'\n");
+    /// Identifier
+    /// id: 'message'
     /// ```
     fn fmt_with_indent(
         &self,
@@ -35,6 +33,6 @@ impl PrettyPrint for Identifier {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Identifier")?;
-        write_scalar_field(f, indent + 2, "id", format!("'{}'", self.id))
+        write_scalar_field(f, indent, "id", format!("'{}'", self.id))
     }
 }

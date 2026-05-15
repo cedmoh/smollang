@@ -101,11 +101,11 @@ impl PrettyPrint for Dyadic {
         indent: usize,
     ) -> std::fmt::Result {
         write_node_label(f, indent, "Dyadic")?;
-        write_field_label(f, indent + 2, "operator")?;
-        self.operator.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "left")?;
-        self.left.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "right")?;
-        self.right.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "operator")?;
+        self.operator.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "left")?;
+        self.left.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "right")?;
+        self.right.fmt_with_indent(f, indent + 2)
     }
 }

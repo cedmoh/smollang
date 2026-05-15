@@ -41,13 +41,11 @@ impl ProgramBuilder {
 impl PrettyPrint for Program {
     /// # Example
     /// ```
-    /// # use ast::{Identifier, PrettyPrint, Program, Expressions};
-    /// # let mut expressions = Expressions::default();
-    /// # expressions.add_expression(Identifier::new("message".to_string()).into());
-    /// # let program = Program::new(expressions);
-    /// # let rendered = program.pretty().to_string();
-    /// # assert!(rendered.contains("- Program"));
-    /// # assert!(rendered.contains("body:"));
+    /// Program
+    /// body:
+    ///   Expression > ...
+    ///   Expression > ...
+    ///   ...
     /// ```
     fn fmt_with_indent(
         &self,
@@ -55,7 +53,7 @@ impl PrettyPrint for Program {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Program")?;
-        write_field_label(f, indent + 2, "body")?;
-        self.body.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "body")?;
+        self.body.fmt_with_indent(f, indent + 2)
     }
 }

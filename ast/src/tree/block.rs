@@ -63,13 +63,21 @@ impl BlockBuilder {
 }
 
 impl PrettyPrint for Block {
+    /// # Example
+    /// ```
+    /// Block
+    /// body:
+    ///   Expression > ...
+    ///   Expression > ...
+    ///   ...
+    /// ```
     fn fmt_with_indent(
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
     ) -> std::fmt::Result {
         write_node_label(f, indent, "Block")?;
-        write_field_label(f, indent + 2, "body")?;
-        self.body.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "body")?;
+        self.body.fmt_with_indent(f, indent + 2)
     }
 }

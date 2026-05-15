@@ -142,7 +142,7 @@ impl PrettyPrint for Literal {
         indent: usize,
     ) -> fmt::Result {
         match self {
-            Literal::Nil => write_node_label(f, indent, "Nil"),
+            Literal::Nil => write_node_label(f, indent, "nil"),
             Literal::Boolean(boolean_literal) => {
                 boolean_literal.fmt_with_indent(f, indent)
             }

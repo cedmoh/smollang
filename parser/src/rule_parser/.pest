@@ -165,7 +165,9 @@ broken_expression   = { br ~ expression? }
 returned_expression = { ret ~ expression? }
 
 // Assignment
-assignment_expression = { identifier ~ assignment_set_symbol ~ newlines ~ expression }
+assignment_expression      = { assignment_left_hand_side ~ newlines ~ assignment_set_symbol ~ newlines ~ assignment_right_hand_side }
+assignment_left_hand_side  = { identifier }
+assignment_right_hand_side = { expression }
 
 // Member
 member    =  { (member_xp ~ newlines ~ "." ~ newlines)+ ~ member_xp }
@@ -235,7 +237,7 @@ block_content = _{ (expression ~ newlines)* }
 
 function_declaration = { function_name? ~ function_arguments ~ function_body? }
 function_name        = { identifier }
-function_arguments   = { "|" ~ function_argument* ~ "|" }
+function_arguments   = { "|" ~ (function_argument)? ~ ("," ~ function_argument)* ~ "|" }
 function_argument    = { identifier }
 function_body        = { expression }
 

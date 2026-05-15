@@ -60,6 +60,18 @@ pub fn write_indent(f: &mut Formatter<'_>, indent: usize) -> fmt::Result {
     Ok(())
 }
 
+/// Writes a `<none>` placeholder for an optional field that is `None`.
+pub fn write_none(f: &mut Formatter<'_>, indent: usize) -> fmt::Result {
+    write_indent(f, indent)?;
+    writeln!(f, "<none>")
+}
+
+/// Writes an `<empty>` placeholder for an empty list or block of code.
+pub fn write_empty(f: &mut Formatter<'_>, indent: usize) -> fmt::Result {
+    write_indent(f, indent)?;
+    writeln!(f, "<empty>")
+}
+
 /// Writes a node label prefixed with `-`.
 pub fn write_node_label(
     f: &mut Formatter<'_>,
@@ -67,7 +79,7 @@ pub fn write_node_label(
     label: &str,
 ) -> fmt::Result {
     write_indent(f, indent)?;
-    writeln!(f, "- {label}")
+    writeln!(f, "{label}")
 }
 
 /// Writes a scalar field in `name: value` form.
@@ -78,7 +90,7 @@ pub fn write_scalar_field<T: Display>(
     value: T,
 ) -> fmt::Result {
     write_indent(f, indent)?;
-    writeln!(f, ".{name}: {value}")
+    writeln!(f, "{name}: {value}")
 }
 
 /// Writes a field label that will be followed by a nested value.

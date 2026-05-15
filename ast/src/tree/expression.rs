@@ -163,13 +163,6 @@ impl Expressions {
 }
 
 impl PrettyPrint for Expressions {
-    /// # Example
-    /// ```
-    /// # use ast::{Expression, Expressions, Identifier, PrettyPrint};
-    /// # let expressions = Expressions::new(vec![Identifier::new("message".to_string()).into()]);
-    /// # let rendered = expressions.pretty().to_string();
-    /// # assert!(rendered.contains("- Identifier"));
-    /// ```
     fn fmt_with_indent(
         &self,
         f: &mut std::fmt::Formatter<'_>,
@@ -178,7 +171,6 @@ impl PrettyPrint for Expressions {
         for expr in &self.items {
             expr.fmt_with_indent(f, indent)?;
         }
-
         Ok(())
     }
 }

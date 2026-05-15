@@ -15,15 +15,15 @@ use super::*;
 pub struct Assignment {
     /// The identifier being assigned to  
     /// TODO: This should allow for patterns and member access
-    pub identifier: Identifier,
+    pub left: Identifier,
 
     /// The value being assigned
-    pub value: Box<Expression>,
+    pub right: Box<Expression>,
 }
 
 impl Assignment {
-    pub fn new(identifier: Identifier, value: Box<Expression>) -> Self {
-        Self { identifier, value }
+    pub fn new(left: Identifier, right: Box<Expression>) -> Self {
+        Self { left, right }
     }
 }
 
@@ -34,9 +34,9 @@ impl PrettyPrint for Assignment {
         indent: usize,
     ) -> std::fmt::Result {
         write_node_label(f, indent, "Assignment")?;
-        write_field_label(f, indent + 2, "identifier")?;
-        self.identifier.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "value")?;
-        self.value.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "left")?;
+        self.left.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "right")?;
+        self.right.fmt_with_indent(f, indent + 2)
     }
 }

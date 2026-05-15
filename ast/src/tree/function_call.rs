@@ -73,10 +73,10 @@ impl PrettyPrint for FunctionCall {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "FunctionCall")?;
-        write_field_label(f, indent + 2, "callee")?;
-        self.callee.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "arguments")?;
-        self.arguments.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "callee")?;
+        self.callee.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "arguments")?;
+        self.arguments.fmt_with_indent(f, indent + 2)
     }
 }
 

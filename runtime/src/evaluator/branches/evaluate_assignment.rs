@@ -8,7 +8,7 @@ pub fn evaluate_assignment(
     scope: &mut Scope,
 ) -> EvaluationResult {
     // Evaluate the expression on the right-hand side
-    let value = match evaluator.evaluate_expression(*assignment.value, scope) {
+    let value = match evaluator.evaluate_expression(*assignment.right, scope) {
         EvaluationResult::Value(value) => value,
         EvaluationResult::Throw(err) => return EvaluationResult::Throw(err),
         EvaluationResult::Return(_) => {
@@ -22,7 +22,7 @@ pub fn evaluate_assignment(
     // TODO: Add utility function for assigning a variable in the scope and
     // handling the result, since this will be a common operation.
     match scope
-        .assign_variable(&assignment.identifier.id, value)
+        .assign_variable(&assignment.left.id, value)
         .map_err(|error| {
             Value::String(format!("Error assigning variable: {:?}", error))
         })

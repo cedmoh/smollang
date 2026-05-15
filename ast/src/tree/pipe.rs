@@ -1,5 +1,5 @@
-use crate::{Expression, write_field_label};
-use crate::{PrettyPrint, write_node_label};
+use crate::PrettyPrint;
+use crate::{Expression, write_field_label, write_node_label};
 use std::fmt;
 
 /// A pipe expression, which allows for chaining multiple expressions together.
@@ -93,8 +93,8 @@ impl PrettyPrint for Pipe {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Pipe")?;
-        write_field_label(f, indent + 2, "arms")?;
-        self.arms.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "arms")?;
+        self.arms.fmt_with_indent(f, indent + 2)
     }
 }
 
