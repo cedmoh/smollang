@@ -12,15 +12,19 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed call expression into an AST
 /// representation.
 ///
+/// # Examples
+///
 /// Call without arguments:
-/// ```
+///
+/// ```pest
 /// - call
 ///   - callee > identifier: "hello"
 ///   - call_arguments: "()"
 /// ```
 ///
 /// Call with arguments:
-/// ```
+///
+/// ```pest
 /// - call
 ///   - callee > identifier: "print"
 ///   - call_arguments

@@ -9,9 +9,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed then expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - then_expression
 ///   - then_condition > then_first_expression > literal > ...
 ///   - then_body > expression > ...

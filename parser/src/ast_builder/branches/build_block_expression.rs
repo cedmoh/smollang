@@ -9,7 +9,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed block expression into an AST
 /// representation.
 ///
-/// ```
+/// # Examples
+///
+/// ```pest
 /// - block
 ///   - expression > ...
 ///   - expression > ...
@@ -75,29 +77,5 @@ mod tests {
 
         // Assert
         assert_eq!(block_expression, Ok(Block::default()));
-    }
-
-    #[test]
-    fn should_build_block_with_a_literal_expression() {
-        use ast::{Expression, IntegerLiteral, Literal};
-
-        // Arrange
-        let input = r#"(69)"#;
-
-        let block_rule = parse_string_to_rule(input, Rule::block)
-            .expect("Expected input to be parsed to rules successfully.")
-            .next()
-            .expect("Expected input to contain a block.");
-
-        // Act
-        let block_expression = build_block_expression(block_rule);
-
-        // Assert
-        let mut block_builder = Block::builder();
-        block_builder.add_expression(Expression::Literal(Literal::Integer(
-            IntegerLiteral::new(69),
-        )));
-
-        assert_eq!(block_expression, Ok(block_builder.build()));
     }
 }

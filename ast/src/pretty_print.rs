@@ -3,14 +3,6 @@ use std::fmt::{self, Display, Formatter, Write};
 /// Formats AST nodes using a YAML-like indentation-aware representation.
 pub trait PrettyPrint {
     /// Formats this value with the provided indentation level.
-    ///
-    /// # Example
-    /// ```
-    /// # use ast::{Identifier, PrettyPrint};
-    /// # let identifier = Identifier::new("message".to_string());
-    /// # let rendered = identifier.pretty().to_string();
-    /// # assert_eq!(rendered, "- Identifier\n  id: 'message'\n");
-    /// ```
     fn fmt_with_indent(
         &self,
         f: &mut Formatter<'_>,

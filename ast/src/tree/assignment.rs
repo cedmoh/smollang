@@ -4,9 +4,9 @@ use super::*;
 
 /// An assignment expression
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// x = 5
 /// ```
 /// In this example, `x = 5` is an assignment expression that assigns the value

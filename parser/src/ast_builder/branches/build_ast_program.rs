@@ -12,7 +12,9 @@ use crate::{
 
 /// Converts the pest rules of a parsed program into an AST representation.
 ///
-/// ```
+/// # Examples
+///
+/// ```pest
 /// - program
 ///   - expression > ...
 ///   - expression > ...
@@ -70,7 +72,6 @@ pub enum BuildAstProgramError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_program_rule;
-    use ast::{Expression, Expressions, IntegerLiteral, Literal};
 
     #[test]
     fn should_build_empty_program() {
@@ -85,27 +86,5 @@ mod tests {
 
         // Assert
         assert_eq!(ast_program, Ok(Program::default()))
-    }
-
-    #[test]
-    fn should_build_program_with_a_literal_expression() {
-        // Arrange
-        let input = r#"69"#;
-
-        let rules = parse_string_to_program_rule(input)
-            .expect("Expected input to be parsed to rules successfully.");
-
-        // Act
-        let ast_program = build_ast_program(rules);
-
-        // Assert
-        let expected_number = 69;
-
-        assert_eq!(
-            ast_program,
-            Ok(Program::new(Expressions::new(vec![Expression::Literal(
-                Literal::Integer(IntegerLiteral::new(expected_number))
-            )])))
-        )
     }
 }

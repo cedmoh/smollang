@@ -242,11 +242,9 @@ function_argument    = { identifier }
 function_body        = { expression }
 
 // Variables
-variable_declaration           = _{ mutable_variable_declaration | immutable_variable_declaration }
-mutable_variable_declaration   =  { variable_name ~ var ~ variable_initialization? }
-immutable_variable_declaration =  { variable_name ~ val ~ variable_initialization? }
-variable_initialization        =  { assignment_set_symbol ~ newlines ~ expression }
-variable_name                  = @{ identifier }
+variable_declaration    =  { variable_name ~ ((val ~ variable_initialization) | (var ~ variable_initialization?)) }
+variable_initialization =  { newlines ~ expression }
+variable_name           = @{ identifier }
 
 // Literals
 literal        =  {

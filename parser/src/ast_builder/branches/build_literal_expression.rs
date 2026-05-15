@@ -6,24 +6,24 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed literal expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// literal > nil_literal > nil: "nil"
 /// ```
-/// ```
+/// ```pest
 /// literal > boolean_literal > true: "true"
 /// ```
-/// ```
+/// ```pest
 /// literal > string_literal > string_text: "hello"
 /// ```
-/// ```
+/// ```pest
 /// literal > decimal_literal: "15"
 /// ```
-/// ```
+/// ```pest
 /// literal > array_literal > array_entries > array_entry > expression > ...
 /// ```
-/// ```
+/// ```pest
 /// literal > object_literal > object_entries > object_entry
 ///   - object_key > identifier: "hello"
 ///   - object_value > expression > ...

@@ -5,7 +5,10 @@ use thiserror::Error;
 
 /// Converts the pest rules of a parsed identifier expression into an AST
 /// representation.
-/// ```
+///
+/// # Examples
+///
+/// ```pest
 /// - identifier: "myVariable"
 /// ```
 pub fn build_identifier_expression(

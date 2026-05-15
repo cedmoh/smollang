@@ -10,9 +10,9 @@ use thiserror::Error;
 /// representation. This simply unwraps the parentheses and returns the inner
 /// expression.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - dynamic_key_expression
 ///   - expression
 /// ```

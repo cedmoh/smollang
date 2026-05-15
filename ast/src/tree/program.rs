@@ -39,8 +39,9 @@ impl ProgramBuilder {
 }
 
 impl PrettyPrint for Program {
-    /// # Example
-    /// ```
+    /// # Examples
+    ///
+    /// ```pest
     /// Program
     /// body:
     ///   Expression > ...

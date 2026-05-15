@@ -10,9 +10,9 @@ use thiserror::Error;
 /// returns a Return type as a placeholder. This should be updated when a
 /// proper Continue type is added to the AST.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - continue_expression
 /// ```
 pub fn build_continue_expression(

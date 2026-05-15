@@ -4,9 +4,9 @@ use std::fmt;
 
 /// A pipe expression, which allows for chaining multiple expressions together.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// 1 |> add(it, 2) |> multiply(it, 3)
 /// ```
 #[derive(Debug, Clone, PartialEq)]

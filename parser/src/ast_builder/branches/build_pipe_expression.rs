@@ -8,9 +8,9 @@ use super::utils::match_rule_to_expression_builder;
 /// Converts the pest rules of a parsed pipe expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// pipe_expression
 ///   - pipe_first_arm > block: "()"
 ///   - pipe_arm > identifier: "t"

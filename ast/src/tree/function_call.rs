@@ -6,11 +6,11 @@ use std::fmt;
 ///
 /// # Examples
 ///
-/// ```
+/// ```smollang
 /// print 'Hello, World!'
 /// ```
 ///
-/// ```
+/// ```smollang
 /// add(1, 2)
 /// ```
 #[derive(Debug, Clone, PartialEq)]

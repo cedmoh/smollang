@@ -7,9 +7,9 @@ use std::fmt;
 /// match an expression against a series of patterns and execute the
 /// corresponding block of code for the first pattern that matches.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// tuple match [x,y] do 'couple', _ do 'other'
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -21,9 +21,9 @@ pub struct Match {
 /// A match arm, which consists of a pattern and a block of code to execute if
 /// the pattern matches.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// 'couple' -> print 2
 /// ```
 #[derive(Debug, Clone, PartialEq)]

@@ -16,14 +16,14 @@ use thiserror::Error;
 ///
 /// Empty unnamed function declaration without parameters or body:
 ///
-/// ```
+/// ```pest
 /// function_declaration
 ///  - function_arguments: "||"
 /// ```
 ///
 /// Empty named function declaration without parameters or body:
 ///
-/// ```
+/// ```pest
 /// function_declaration
 ///    - function_name > identifier: "x"
 ///    - function_arguments: "||"
@@ -31,7 +31,7 @@ use thiserror::Error;
 ///
 /// Function declaration without parameters but with body:
 ///
-/// ```
+/// ```pest
 /// function_declaration
 ///     - function_name > identifier: "print"
 ///     - function_arguments: "||"
@@ -40,7 +40,7 @@ use thiserror::Error;
 ///
 /// Function declaration with arguments and body:
 ///
-/// ```
+/// ```pest
 /// function_declaration
 ///     - function_name > identifier: "add"
 ///     - function_arguments
@@ -165,7 +165,7 @@ mod tests {
     #[test]
     fn should_build_function_declaration_with_name_arguments_and_body() {
         // Arrange
-        let input = r#"add |x y| x"#;
+        let input = r#"add |x, y| x"#;
 
         let function_rule =
             parse_string_to_rule(input, Rule::function_declaration)

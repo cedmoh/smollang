@@ -33,15 +33,15 @@ pub enum DyadicOperator {
 ///
 /// # Examples
 ///
-/// ```
+/// ```smollang
 /// true and false
 /// ```
 ///
-/// ```
+/// ```smollang
 /// x * y + z
 /// ```
 ///
-/// ```
+/// ```smollang
 /// 1..10
 /// ```
 #[derive(Debug, Clone, PartialEq)]

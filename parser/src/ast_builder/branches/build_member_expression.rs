@@ -6,9 +6,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed member expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - member
 ///   - identifier/call/literal > first
 ///   - identifier/call/literal > second

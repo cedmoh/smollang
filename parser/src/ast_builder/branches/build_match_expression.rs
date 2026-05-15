@@ -6,9 +6,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed match expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - match_expression
 ///   - expression > match_term
 ///   - match_arms

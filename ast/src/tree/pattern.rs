@@ -5,9 +5,9 @@ use crate::{PrettyPrint, write_node_label, write_scalar_field};
 /// A pattern, which is used in match expressions to specify the structure of
 /// the value being matched.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```text
 /// [x, y]
 /// ```
 /// In this example, `[x, y]` is a pattern that matches a tuple with two

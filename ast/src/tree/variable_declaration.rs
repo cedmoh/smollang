@@ -1,10 +1,30 @@
 use crate::{
-    PrettyPrint, write_field_label, write_indent, write_node_label,
+    PrettyPrint, write_field_label, write_node_label, write_none,
     write_scalar_field,
 };
 
 use super::*;
 use std::fmt;
+
+/// # Examples
+///
+/// Mutable variable declaration without initial value:
+///
+/// ```smollang
+/// x var
+/// ```
+///
+/// Mutable variable declaration with initial value:
+///
+/// ```smollang
+/// x var 5
+/// ```
+///
+/// Immutable variable declaration with initial value:
+///
+/// ```smollang
+/// x val (5 + 3)
+/// ```
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VariableDeclaration {
@@ -19,6 +39,28 @@ pub struct VariableDeclaration {
     /// expression will be evaluated and assigned to the variable upon
     /// declaration.
     pub initial_value: Option<Box<Expression>>,
+}
+
+impl VariableDeclaration {
+    /// Creates a new [`VariableDeclarationBuilder`] with the given variable
+    /// name.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ast::{Identifier, VariableDeclaration};
+    ///
+    /// let declaration = VariableDeclaration::builder(Identifier::new("x".to_string()))
+    ///     .with_mutability(true)
+    ///     .build();
+    ///
+    /// assert_eq!(declaration.name, Identifier::new("x".to_string()));
+    /// assert!(declaration.is_mutable);
+    /// assert!(declaration.initial_value.is_none());
+    /// ```
+    pub fn builder(name: Identifier) -> VariableDeclarationBuilder {
+        VariableDeclarationBuilder::new(name)
+    }
 }
 
 pub struct VariableDeclarationBuilder {
@@ -36,8 +78,13 @@ impl VariableDeclarationBuilder {
         }
     }
 
-    pub fn mutable(mut self) -> Self {
+    pub fn mutable(&mut self) -> &mut Self {
         self.is_mutable = true;
+        self
+    }
+
+    pub fn with_mutability(mut self, is_mutable: bool) -> Self {
+        self.is_mutable = is_mutable;
         self
     }
 
@@ -62,17 +109,14 @@ impl PrettyPrint for VariableDeclaration {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "VariableDeclaration")?;
-        write_field_label(f, indent + 2, "name")?;
-        self.name.fmt_with_indent(f, indent + 4)?;
-        write_scalar_field(f, indent + 2, "is_mutable", self.is_mutable)?;
-        write_field_label(f, indent + 2, "initial_value")?;
+        write_field_label(f, indent, "name")?;
+        self.name.fmt_with_indent(f, indent + 2)?;
+        write_scalar_field(f, indent, "is_mutable", self.is_mutable)?;
+        write_field_label(f, indent, "initial_value")?;
 
         match &self.initial_value {
-            Some(initial_value) => initial_value.fmt_with_indent(f, indent + 4),
-            None => {
-                write_indent(f, indent + 4)?;
-                writeln!(f, "null")
-            }
+            Some(initial_value) => initial_value.fmt_with_indent(f, indent + 2),
+            None => write_none(f, indent),
         }
     }
 }

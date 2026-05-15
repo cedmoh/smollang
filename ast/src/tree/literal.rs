@@ -6,25 +6,25 @@ use std::fmt;
 ///
 /// # Examples
 ///
-/// ```
+/// ```smollang
 /// nil
 /// ```
-/// ```
+/// ```smollang
 /// true
 /// ```
-/// ```
+/// ```smollang
 /// "Hello, world!"
 /// ```
-/// ```
+/// ```smollang
 /// 5
 /// ```
-/// ```
+/// ```smollang
 /// 3.14
 /// ```
-/// ```
+/// ```smollang
 /// 0xFF
 /// ```
-/// ```
+/// ```smollang
 /// 0b1010
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -41,9 +41,9 @@ pub enum Literal {
 
 /// A boolean literal, which represents a boolean value (true or false).
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// true
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -53,9 +53,9 @@ pub struct BooleanLiteral {
 
 /// A string literal, which represents a string value.
 ///     
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// "Hello, world!"
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -65,9 +65,9 @@ pub struct StringLiteral {
 
 /// An integer literal, which represents an integer value.
 ///     
-/// # Example
+/// # Examples
 ///     
-/// ```
+/// ```smollang
 /// 5
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -83,9 +83,9 @@ impl IntegerLiteral {
 
 /// A decimal literal, which represents a decimal value.
 ///     
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// 3.14
 /// ```
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
@@ -101,9 +101,9 @@ impl DecimalLiteral {
 
 /// A hexadecimal literal, which represents a hexadecimal value.
 ///     
-/// # Example
+/// # Examples
 ///     
-/// ```
+/// ```smollang
 /// 0xFF
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -113,9 +113,9 @@ pub struct HexadecimalLiteral {
 
 /// A binary literal, which represents a binary value.
 ///   
-/// # Example
+/// # Examples
 ///  
-/// ```
+/// ```smollang
 /// 0b1010
 /// ```   
 #[derive(Debug, Clone, PartialEq)]
@@ -125,9 +125,9 @@ pub struct BinaryLiteral {
 
 /// An octal literal, which represents an octal value.
 ///     
-/// # Example
+/// # Examples
 ///     
-/// ```
+/// ```smollang
 /// 0o77
 /// ```
 #[derive(Debug, Clone, PartialEq)]

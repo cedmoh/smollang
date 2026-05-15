@@ -6,9 +6,9 @@ use super::*;
 /// order and the value of the block is the value of the last expression in the
 /// block.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// x val (
 ///    2 + 2
 /// )
@@ -63,8 +63,9 @@ impl BlockBuilder {
 }
 
 impl PrettyPrint for Block {
-    /// # Example
-    /// ```
+    /// # Examples
+    ///
+    /// ```text
     /// Block
     /// body:
     ///   Expression > ...

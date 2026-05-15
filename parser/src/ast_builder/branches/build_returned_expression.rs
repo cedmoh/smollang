@@ -6,9 +6,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed return expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - returned_expression
 ///   - expression (optional)
 /// ```

@@ -9,9 +9,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed operation expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// - operation
 ///   - operand > literal > ...
 ///   - addition: "+"

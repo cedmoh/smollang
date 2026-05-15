@@ -12,9 +12,9 @@ use thiserror::Error;
 /// Converts the pest rules of a parsed assignment expression into an AST
 /// representation.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```pest
 /// assignment_expression
 ///   - assignment_left_hand_side > identifier > ...
 ///   - assignment_right_hand_side > expression > ...

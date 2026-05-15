@@ -5,9 +5,10 @@ use std::fmt;
 
 /// A member expression, which represents accessing a member of an object or a
 /// module.     
-/// # Example
 ///
-/// ```
+/// # Examples
+///
+/// ```smollang
 /// math.sin(3.14)
 /// ```
 /// In this example, `math.sin` is a member expression that accesses the `sin`

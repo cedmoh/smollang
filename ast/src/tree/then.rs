@@ -5,15 +5,17 @@ use std::fmt;
 
 /// Represents a "then" expression, which is used in conditional statements.
 ///
-/// # Example
+/// # Examples
 ///
 /// Then expression with an else body:
-/// ```
+///
+/// ```smollang
 /// (x > 0) then 'positive' else 'non-positive'
 /// ```
 ///
 /// Then expression without an else body:
-/// ```
+///
+/// ```smollang
 /// (x > 0) then 'positive'
 /// ```
 #[derive(Debug, Clone, PartialEq)]

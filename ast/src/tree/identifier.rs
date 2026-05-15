@@ -5,9 +5,9 @@ use std::fmt;
 /// function. Identifiers are used in variable declarations, function
 /// declarations, and as the left-hand side of an assignment.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// print message
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -22,8 +22,9 @@ impl Identifier {
 }
 
 impl PrettyPrint for Identifier {
-    /// # Example
-    /// ```
+    /// # Examples
+    ///
+    /// ```text
     /// Identifier
     /// id: 'message'
     /// ```

@@ -11,13 +11,13 @@ use std::fmt;
 ///
 /// Empty function declaration:
 ///
-/// ```
+/// ```smollang
 /// empty ||
 /// ```
 ///
 /// Function declaration with parameters and body:
 ///     
-/// ```
+/// ```smollang
 /// add |x,y| x + y
 /// ```
 #[derive(Debug, Clone, PartialEq)]
@@ -132,9 +132,9 @@ impl FunctionDeclarationBuilder {
 
 /// A return expression, which is used to return a value from a function.
 ///
-/// # Example
+/// # Examples
 ///
-/// ```
+/// ```smollang
 /// ret 5
 /// ```
 #[derive(Debug, Clone, PartialEq)]
