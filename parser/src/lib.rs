@@ -5,6 +5,7 @@ mod rule_parser;
 pub use parse_string_to_program_ast::{
     ParseProgramError, parse_string_to_program_ast,
 };
+pub use rule_parser::parse_string_to_rule;
 
 #[cfg(test)]
 mod tests {

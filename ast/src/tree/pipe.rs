@@ -1,5 +1,5 @@
 use crate::{Expression, write_field_label};
-use crate::{PrettyPrint, write_node_label, write_scalar_field};
+use crate::{PrettyPrint, write_node_label};
 use std::fmt;
 
 /// A pipe expression, which allows for chaining multiple expressions together.

@@ -7,7 +7,6 @@ mod value;
 
 pub use environment::*;
 pub use evaluator::*;
-pub use function::*;
 pub use runner::*;
 pub use scope::*;
 pub use value::*;

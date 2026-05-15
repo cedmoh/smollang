@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use ast::Program;
 use pest::iterators::Pairs;
 use thiserror::Error;
