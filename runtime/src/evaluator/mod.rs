@@ -68,6 +68,8 @@ impl Evaluator {
                     &mut scope,
                 )
             }
+            Expression::Then(then) => todo!(),
+            Expression::Pipe(pipe) => todo!(),
         }
     }
 }
