@@ -36,7 +36,9 @@ pub enum BuildContinueExpressionError {
     #[error("Expected a continue expression, but found rule: {0:?}")]
     RuleIsNotAContinue(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The continue expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "The continue expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

@@ -27,19 +27,27 @@ pub fn build_ast_expression(
 }
 
 #[derive(Debug, PartialEq, Error)]
+#[non_exhaustive]
 pub enum BuildAstExpressionError {
     #[error("The expression is empty.")]
+    /// The expression is empty.
     EmptyExpression,
 
-    #[error("Expected an expression, but found rule: {0:?}")]
+    #[error("Expected an expression, but found rule > {0:?}")]
+    /// The provided rule is not an expression.
     RuleIsNotAnExpression(Rule),
 
-    #[error("Unrecognized expression. Found rule: {0:?}")]
+    #[error("Unrecognized expression. Found rule > {0:?}")]
+    /// The expression is unrecognized.
     UnrecognizedExpression(Rule),
 
-    #[error("An error occurred while building an inner AST expression: {0}")]
-    BuildInnerAstError(String),
+    #[error("An error occurred while building an expression variant > {0}")]
+    /// An error occurred while building an expression variant.
+    BuildExpressionVariantError(String),
 
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    #[error(
+        "This expression cannot be built yet, as it is unimplemented. Rule: {0:?}"
+    )]
+    /// This expression cannot be built yet, as it is unimplemented.
     Unimplemented(Rule),
 }

@@ -35,7 +35,9 @@ pub enum BuildAssignmentExpressionError {
     #[error("Expected an assignment expression, but found rule: {0:?}")]
     RuleIsNotAnAssignment(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The assignment expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "Assignment expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

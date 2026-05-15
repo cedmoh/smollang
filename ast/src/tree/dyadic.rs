@@ -1,3 +1,5 @@
+use crate::{PrettyPrint, write_field_label, write_node_label};
+
 use super::*;
 
 /// A dyadic operator, which is an operator that takes two operands and performs
@@ -60,5 +62,50 @@ impl Dyadic {
             left: Box::new(left),
             right: Box::new(right),
         }
+    }
+}
+
+impl PrettyPrint for DyadicOperator {
+    fn fmt_with_indent(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        indent: usize,
+    ) -> std::fmt::Result {
+        let label = match self {
+            DyadicOperator::Add => "Add",
+            DyadicOperator::Subtract => "Subtract",
+            DyadicOperator::Multiply => "Multiply",
+            DyadicOperator::Divide => "Divide",
+            DyadicOperator::Modulo => "Modulo",
+            DyadicOperator::Power => "Power",
+            DyadicOperator::Equal => "Equal",
+            DyadicOperator::NotEqual => "NotEqual",
+            DyadicOperator::LessThan => "LessThan",
+            DyadicOperator::GreaterThan => "GreaterThan",
+            DyadicOperator::LessThanOrEqual => "LessThanOrEqual",
+            DyadicOperator::GreaterThanOrEqual => "GreaterThanOrEqual",
+            DyadicOperator::And => "And",
+            DyadicOperator::Or => "Or",
+            DyadicOperator::RangeInclusive => "RangeInclusive",
+            DyadicOperator::Range => "Range",
+        };
+
+        write_node_label(f, indent, label)
+    }
+}
+
+impl PrettyPrint for Dyadic {
+    fn fmt_with_indent(
+        &self,
+        f: &mut std::fmt::Formatter<'_>,
+        indent: usize,
+    ) -> std::fmt::Result {
+        write_node_label(f, indent, "Dyadic")?;
+        write_field_label(f, indent + 2, "operator")?;
+        self.operator.fmt_with_indent(f, indent + 4)?;
+        write_field_label(f, indent + 2, "left")?;
+        self.left.fmt_with_indent(f, indent + 4)?;
+        write_field_label(f, indent + 2, "right")?;
+        self.right.fmt_with_indent(f, indent + 4)
     }
 }

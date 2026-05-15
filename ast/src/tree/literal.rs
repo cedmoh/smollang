@@ -1,3 +1,6 @@
+use crate::{PrettyPrint, write_node_label, write_scalar_field};
+use std::fmt;
+
 /// A literal value, which is a piece of code that represents a constant value.
 /// Literals include numbers, strings, booleans, and nil.
 ///
@@ -130,4 +133,114 @@ pub struct BinaryLiteral {
 #[derive(Debug, Clone, PartialEq)]
 pub struct OctalLiteral {
     pub value: i64,
+}
+
+impl PrettyPrint for Literal {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        match self {
+            Literal::Nil => write_node_label(f, indent, "Nil"),
+            Literal::Boolean(boolean_literal) => {
+                boolean_literal.fmt_with_indent(f, indent)
+            }
+            Literal::String(string_literal) => {
+                string_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Integer(integer_literal) => {
+                integer_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Decimal(decimal_literal) => {
+                decimal_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Hexadecimal(hexadecimal_literal) => {
+                hexadecimal_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Binary(binary_literal) => {
+                binary_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Octal(octal_literal) => {
+                octal_literal.fmt_with_indent(f, indent)
+            }
+        }
+    }
+}
+
+impl PrettyPrint for BooleanLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "BooleanLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
+}
+
+impl PrettyPrint for StringLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "StringLiteral")?;
+        write_scalar_field(f, indent + 2, "value", format!("'{}'", self.value))
+    }
+}
+
+impl PrettyPrint for IntegerLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "IntegerLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
+}
+
+impl PrettyPrint for DecimalLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "DecimalLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
+}
+
+impl PrettyPrint for HexadecimalLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "HexadecimalLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
+}
+
+impl PrettyPrint for BinaryLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "BinaryLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
+}
+
+impl PrettyPrint for OctalLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "OctalLiteral")?;
+        write_scalar_field(f, indent + 2, "value", self.value)
+    }
 }

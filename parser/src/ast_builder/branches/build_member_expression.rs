@@ -34,7 +34,9 @@ pub enum BuildMemberExpressionError {
     #[error("Expected a member expression, but found rule: {0:?}")]
     RuleIsNotAMember(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The member expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "The member expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

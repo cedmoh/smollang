@@ -37,7 +37,9 @@ pub enum BuildBrokenExpressionError {
     #[error("Expected a break expression, but found rule: {0:?}")]
     RuleIsNotABreak(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The break expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "The break expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

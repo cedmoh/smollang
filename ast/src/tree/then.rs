@@ -1,4 +1,7 @@
-use crate::Expression;
+use crate::{
+    Expression, PrettyPrint, write_field_label, write_indent, write_node_label,
+};
+use std::fmt;
 
 /// Represents a "then" expression, which is used in conditional statements.
 ///
@@ -78,5 +81,28 @@ impl ThenBuilder {
 
     pub fn build(self) -> Then {
         Then::new(self.condition, self.then_body, self.else_body)
+    }
+}
+
+impl PrettyPrint for Then {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "Then")?;
+        write_field_label(f, indent + 2, "condition")?;
+        self.condition.fmt_with_indent(f, indent + 4)?;
+        write_field_label(f, indent + 2, "then_body")?;
+        self.then_body.fmt_with_indent(f, indent + 4)?;
+        write_field_label(f, indent + 2, "else_body")?;
+
+        match &self.else_body {
+            Some(else_body) => else_body.fmt_with_indent(f, indent + 4),
+            None => {
+                write_indent(f, indent + 4)?;
+                writeln!(f, "null")
+            }
+        }
     }
 }

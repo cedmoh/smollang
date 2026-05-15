@@ -98,7 +98,7 @@ then_else_symbol       = _{ ":" | else }
 match_check_symbol     = _{ "~=" | match }
 match_arm_symbol       = _{ "->" | do }
 match_separator_symbol = _{ "," }
-op                     = _{
+operator               = _{
   
   | addition
   | subtraction
@@ -140,7 +140,7 @@ expression             =  {
 dynamic_key_expression = _{ "(" ~ expression ~ ")" }
 
 // Operation
-operation = { operand ~ (op ~ operand)+ }
+operation = { operand ~ (operator ~ operand)+ }
 operand   = {
     // every expression except operation
   

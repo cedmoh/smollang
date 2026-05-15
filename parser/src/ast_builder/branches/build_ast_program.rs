@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use ast::Program;
 use pest::iterators::Pairs;
+use thiserror::Error;
 
 use crate::{
     ast_builder::{
@@ -43,7 +44,7 @@ pub fn build_ast_program(
         }
 
         let ast_expression = build_ast_expression(maybe_expression)
-            .map_err(BuildAstProgramError::BuildAstExpressionError)?;
+            .map_err(BuildAstProgramError::BuildInnerExpressionError)?;
 
         program_builder.add_expression(ast_expression);
     }
@@ -51,40 +52,20 @@ pub fn build_ast_program(
     Ok(program_builder.build())
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Error)]
+#[non_exhaustive]
 pub enum BuildAstProgramError {
     /// The program is empty.
+    #[error("The program is empty. Expected at least one expression.")]
     EmptyProgram,
 
     /// The first rule is not a program.
+    #[error("Expected first rule to be a program. Found rule: {0:?}")]
     FirstRuleIsNotProgram(Rule),
 
     /// An error occurred while building an expression.
-    BuildAstExpressionError(BuildAstExpressionError),
-}
-
-impl Display for BuildAstProgramError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            BuildAstProgramError::EmptyProgram => {
-                write!(f, "The program is empty.")
-            }
-            BuildAstProgramError::FirstRuleIsNotProgram(rule) => {
-                write!(
-                    f,
-                    "Expected first rule to be a program. Found rule: {:?}",
-                    rule
-                )
-            }
-            BuildAstProgramError::BuildAstExpressionError(error) => {
-                write!(
-                    f,
-                    "An error occurred while building an expression > {}",
-                    error
-                )
-            }
-        }
-    }
+    #[error("An error occurred while building an inner expression > {0}")]
+    BuildInnerExpressionError(BuildAstExpressionError),
 }
 
 #[cfg(test)]

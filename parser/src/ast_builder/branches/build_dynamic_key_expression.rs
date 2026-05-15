@@ -18,20 +18,20 @@ use thiserror::Error;
 /// ```
 pub fn build_dynamic_key_expression(
     pair: Pair<Rule>,
-) -> Result<Expression, BuildExpressionInParenthesisError> {
-    use BuildExpressionInParenthesisError::*;
+) -> Result<Expression, BuildDynamicKeyExpressionError> {
+    use BuildDynamicKeyExpressionError::*;
     use Rule::dynamic_key_expression;
 
     let rule = pair.as_rule();
 
     if rule != dynamic_key_expression {
-        return Err(RuleIsNotAnExpressionInParenthesis(rule));
+        return Err(RuleIsNotADynamicKeyExpression(rule));
     };
 
     let mut inner = pair.into_inner();
 
     let Some(inner_expression) = inner.next() else {
-        return Err(EmptyParentheses);
+        return Err(EmptyDynamicKeyExpression);
     };
 
     build_ast_expression(inner_expression).map_err(BuildAstExpressionError)
@@ -39,16 +39,14 @@ pub fn build_dynamic_key_expression(
 
 #[derive(Debug, PartialEq, Error)]
 #[non_exhaustive]
-pub enum BuildExpressionInParenthesisError {
-    /// The first rule is not an expression in parenthesis.
-    #[error("Expected an expression in parenthesis, but found rule: {0:?}")]
-    RuleIsNotAnExpressionInParenthesis(Rule),
+pub enum BuildDynamicKeyExpressionError {
+    /// The first rule is not a dynamic key expression.
+    #[error("Expected a dynamic key expression, but found rule: {0:?}")]
+    RuleIsNotADynamicKeyExpression(Rule),
 
-    /// The parentheses are empty.
-    #[error(
-        "Expected an expression in parenthesis, but found empty parentheses."
-    )]
-    EmptyParentheses,
+    /// The dynamic key expression is empty.
+    #[error("Expected a dynamic key expression, but found empty expression.")]
+    EmptyDynamicKeyExpression,
 
     /// An error occurred while building the inner AST expression.
     #[error("An error occurred while building the inner AST expression: {0}")]

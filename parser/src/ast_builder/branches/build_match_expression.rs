@@ -36,7 +36,9 @@ pub enum BuildMatchExpressionError {
     #[error("Expected a match expression, but found rule: {0:?}")]
     RuleIsNotAMatch(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The match expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "The match expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

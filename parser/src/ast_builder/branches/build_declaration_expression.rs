@@ -38,7 +38,9 @@ pub enum BuildDeclarationExpressionError {
     #[error("Expected a declaration expression, but found rule: {0:?}")]
     RuleIsNotADeclaration(Rule),
 
-    /// This expression cannot be built yet, as it is unimplemented.
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
+    /// The declaration expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "The declaration expression cannot be built yet, as it is unimplemented."
+    )]
     Unimplemented,
 }

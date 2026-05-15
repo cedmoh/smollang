@@ -1,4 +1,5 @@
-use std::fmt::Display;
+use crate::{PrettyPrint, write_node_label, write_scalar_field};
+use std::fmt;
 
 /// An identifier, which is a name that can be used to refer to a value or a
 /// function. Identifiers are used in variable declarations, function
@@ -20,8 +21,20 @@ impl Identifier {
     }
 }
 
-impl Display for Identifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.id)
+impl PrettyPrint for Identifier {
+    /// # Example
+    /// ```
+    /// # use ast::{Identifier, PrettyPrint};
+    /// # let identifier = Identifier::new("message".to_string());
+    /// # let rendered = identifier.pretty().to_string();
+    /// # assert_eq!(rendered, "- Identifier\n  id: 'message'\n");
+    /// ```
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "Identifier")?;
+        write_scalar_field(f, indent + 2, "id", format!("'{}'", self.id))
     }
 }

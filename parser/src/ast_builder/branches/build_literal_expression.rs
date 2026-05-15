@@ -45,14 +45,14 @@ pub fn build_literal_expression(
     };
 
     match inner_literal.as_rule() {
-        nil_literal => Err(Unimplemented),
-        boolean_literal => Err(Unimplemented),
-        string_literal => Err(Unimplemented),
-        decimal_literal => Err(Unimplemented),
-        array_literal => Err(Unimplemented),
-        object_literal => Err(Unimplemented),
-        octal_literal => Err(Unimplemented),
-
+        nil_literal => Err(Unimplemented(inner_literal.as_rule())),
+        boolean_literal => Err(Unimplemented(inner_literal.as_rule())),
+        string_literal => Err(Unimplemented(inner_literal.as_rule())),
+        decimal_literal => Err(Unimplemented(inner_literal.as_rule())),
+        array_literal => Err(Unimplemented(inner_literal.as_rule())),
+        object_literal => Err(Unimplemented(inner_literal.as_rule())),
+        octal_literal => Err(Unimplemented(inner_literal.as_rule())),
+        //
         _ => Err(UnexpectedInnerLiteral(inner_literal.as_rule())),
     }
 }
@@ -60,15 +60,21 @@ pub fn build_literal_expression(
 #[derive(Debug, PartialEq, Error)]
 #[non_exhaustive]
 pub enum BuildLiteralExpressionError {
+    /// The first rule is not a literal expression.
     #[error("Expected a literal expression, but found rule: {0:?}")]
     RuleIsNotALiteral(Rule),
 
+    /// No inner literal was found in the literal expression.
     #[error("No inner literal found in the literal expression.")]
     NoInnerLiteral,
 
+    /// An unexpected inner literal was found in the literal expression.
     #[error("Unexpected inner literal found in the literal expression: {0:?}")]
     UnexpectedInnerLiteral(Rule),
 
-    #[error("This expression cannot be built yet, as it is unimplemented.")]
-    Unimplemented,
+    /// This literal expression cannot be built yet, as it is unimplemented.
+    #[error(
+        "This literal expression cannot be built yet, as it is unimplemented. Literal: {0:?}"
+    )]
+    Unimplemented(Rule),
 }
