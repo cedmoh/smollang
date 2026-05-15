@@ -42,9 +42,9 @@ impl PrettyPrint for Match {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Match")?;
-        write_node_label(f, indent + 2, "expression")?;
+        write_field_label(f, indent + 2, "expression")?;
         self.expression.fmt_with_indent(f, indent + 4)?;
-        write_node_label(f, indent + 2, "branches")?;
+        write_field_label(f, indent + 2, "branches")?;
         self.branches.fmt_with_indent(f, indent + 4)
     }
 }
@@ -56,7 +56,7 @@ impl PrettyPrint for MatchArm {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "MatchArm")?;
-        write_node_label(f, indent + 2, "pattern")?;
+        write_field_label(f, indent + 2, "pattern")?;
         self.pattern.fmt_with_indent(f, indent + 4)?;
         write_field_label(f, indent + 2, "body")?;
         self.body.fmt_with_indent(f, indent + 4)
