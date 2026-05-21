@@ -1,5 +1,3 @@
-use crate::{PrettyPrint, write_field_label, write_node_label};
-
 use super::*;
 
 /// An expression block, which is a sequence of expressions that are executed in
@@ -59,26 +57,5 @@ impl BlockBuilder {
         Block {
             body: self.expressions,
         }
-    }
-}
-
-impl PrettyPrint for Block {
-    /// # Examples
-    ///
-    /// ```text
-    /// Block
-    /// body:
-    ///   Expression > ...
-    ///   Expression > ...
-    ///   ...
-    /// ```
-    fn fmt_with_indent(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        indent: usize,
-    ) -> std::fmt::Result {
-        write_node_label(f, indent, "Block")?;
-        write_field_label(f, indent, "body")?;
-        self.body.fmt_with_indent(f, indent + 2)
     }
 }

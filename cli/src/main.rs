@@ -1,9 +1,9 @@
-use clap::{Arg, Command, command};
-use std::path::PathBuf;
-
+mod pretty_print;
 mod styles;
 
-use ast::PrettyPrint;
+use clap::{Arg, Command, command};
+use pretty_print::PrettyPrint;
+use std::path::PathBuf;
 use styles::CARGO_STYLING;
 
 fn main() -> anyhow::Result<()> {

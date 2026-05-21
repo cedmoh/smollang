@@ -1,7 +1,4 @@
-use crate::{
-    Expression, Expressions, PrettyPrint, write_field_label, write_node_label,
-};
-use std::fmt;
+use crate::{Expression, Expressions};
 
 /// A program represents a File. It consists of a sequence of expressions that
 /// will be executed in order.
@@ -35,26 +32,5 @@ impl ProgramBuilder {
 
     pub fn build(self) -> Program {
         Program { body: self.body }
-    }
-}
-
-impl PrettyPrint for Program {
-    /// # Examples
-    ///
-    /// ```pest
-    /// Program
-    /// body:
-    ///   Expression > ...
-    ///   Expression > ...
-    ///   ...
-    /// ```
-    fn fmt_with_indent(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-        indent: usize,
-    ) -> fmt::Result {
-        write_node_label(f, indent, "Program")?;
-        write_field_label(f, indent, "body")?;
-        self.body.fmt_with_indent(f, indent + 2)
     }
 }

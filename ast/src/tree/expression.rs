@@ -1,5 +1,3 @@
-use crate::PrettyPrint;
-
 use crate::{
     Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier,
     Literal, Match, Member, Pipe, Return, Then, VariableDeclaration,
@@ -22,46 +20,6 @@ pub enum Expression {
     Member(Member),
     Return(Return),
     VariableDeclaration(VariableDeclaration),
-}
-
-impl PrettyPrint for Expression {
-    fn fmt_with_indent(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        indent: usize,
-    ) -> std::fmt::Result {
-        match self {
-            Expression::Assignment(assignment) => {
-                assignment.fmt_with_indent(f, indent)
-            }
-            Expression::Block(block) => block.fmt_with_indent(f, indent),
-            Expression::Dyadic(dyadic) => dyadic.fmt_with_indent(f, indent),
-            Expression::FunctionCall(function_call) => {
-                function_call.fmt_with_indent(f, indent)
-            }
-            Expression::FunctionDeclaration(function_declaration) => {
-                function_declaration.fmt_with_indent(f, indent)
-            }
-            Expression::Then(then_expression) => {
-                then_expression.fmt_with_indent(f, indent)
-            }
-            Expression::Pipe(pipe) => pipe.fmt_with_indent(f, indent),
-            Expression::Identifier(identifier) => {
-                identifier.fmt_with_indent(f, indent)
-            }
-            Expression::Literal(literal) => literal.fmt_with_indent(f, indent),
-            Expression::Match(match_expression) => {
-                match_expression.fmt_with_indent(f, indent)
-            }
-            Expression::Member(member) => member.fmt_with_indent(f, indent),
-            Expression::Return(return_expression) => {
-                return_expression.fmt_with_indent(f, indent)
-            }
-            Expression::VariableDeclaration(variable_declaration) => {
-                variable_declaration.fmt_with_indent(f, indent)
-            }
-        }
-    }
 }
 
 impl From<Assignment> for Expression {
@@ -159,18 +117,5 @@ impl Expressions {
     ) -> &mut Self {
         self.items.extend(expressions);
         self
-    }
-}
-
-impl PrettyPrint for Expressions {
-    fn fmt_with_indent(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-        indent: usize,
-    ) -> std::fmt::Result {
-        for expr in &self.items {
-            expr.fmt_with_indent(f, indent)?;
-        }
-        Ok(())
     }
 }

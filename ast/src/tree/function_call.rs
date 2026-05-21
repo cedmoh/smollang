@@ -1,6 +1,4 @@
 use super::*;
-use crate::{PrettyPrint, write_field_label, write_node_label};
-use std::fmt;
 
 /// Represents a function call.
 ///
@@ -63,29 +61,5 @@ impl FunctionCallBuilder {
             callee: self.callee,
             arguments: self.arguments,
         }
-    }
-}
-
-impl PrettyPrint for FunctionCall {
-    fn fmt_with_indent(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-        indent: usize,
-    ) -> fmt::Result {
-        write_node_label(f, indent, "FunctionCall")?;
-        write_field_label(f, indent, "callee")?;
-        self.callee.fmt_with_indent(f, indent + 2)?;
-        write_field_label(f, indent, "arguments")?;
-        self.arguments.fmt_with_indent(f, indent + 2)
-    }
-}
-
-impl PrettyPrint for FunctionCallArguments {
-    fn fmt_with_indent(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-        indent: usize,
-    ) -> fmt::Result {
-        self.expressions.fmt_with_indent(f, indent)
     }
 }

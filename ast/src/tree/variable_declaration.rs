@@ -1,10 +1,4 @@
-use crate::{
-    PrettyPrint, write_field_label, write_node_label, write_none,
-    write_scalar_field,
-};
-
 use super::*;
-use std::fmt;
 
 /// # Examples
 ///
@@ -98,25 +92,6 @@ impl VariableDeclarationBuilder {
             name: self.name,
             is_mutable: self.is_mutable,
             initial_value: self.initial_value,
-        }
-    }
-}
-
-impl PrettyPrint for VariableDeclaration {
-    fn fmt_with_indent(
-        &self,
-        f: &mut fmt::Formatter<'_>,
-        indent: usize,
-    ) -> fmt::Result {
-        write_node_label(f, indent, "VariableDeclaration")?;
-        write_field_label(f, indent, "name")?;
-        self.name.fmt_with_indent(f, indent + 2)?;
-        write_scalar_field(f, indent, "is_mutable", self.is_mutable)?;
-        write_field_label(f, indent, "initial_value")?;
-
-        match &self.initial_value {
-            Some(initial_value) => initial_value.fmt_with_indent(f, indent + 2),
-            None => write_none(f, indent),
         }
     }
 }
