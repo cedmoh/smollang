@@ -170,8 +170,9 @@ assignment_left_hand_side  = { identifier }
 assignment_right_hand_side = { expression }
 
 // Member
-member    =  { (member_xp ~ newlines ~ "." ~ newlines)+ ~ member_xp }
-member_xp = _{
+member         = { (member_segment ~ newlines ~ "." ~ newlines)+ ~ member_segment }
+member_segment = {
+    // every expression except member and operation
   
   | call
   | identifier
@@ -271,7 +272,7 @@ number_literal = _{
 }
 // the negation in the end is to protect against cases like `1..3` and `1.abs`
 integer_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ }
-decimal_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ ~ ("." ~ (ASCII_DIGIT | "_")*)? ~ !("." | ASCII_ALPHA) }
+decimal_literal     = { "-"? ~ (ASCII_DIGIT | "_")+ ~ "." ~ (ASCII_DIGIT | "_")* ~ !("." | ASCII_ALPHA) }
 hexadecimal_literal = { "#" ~ ('a'..'f' | 'A'..'F' | ASCII_DIGIT | "_")+ }
 binary_literal      = { "b" ~ ('0'..'1' | "_")+ }
 octal_literal       = { "o" ~ ('0'..'7' | "_")+ }

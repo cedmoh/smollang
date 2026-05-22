@@ -1,11 +1,13 @@
 mod build_boolean_literal;
 mod build_decimal_literal;
+mod build_integer_literal;
 mod build_nil_literal;
 mod build_octal_literal;
 mod build_string_literal;
 
 pub use build_boolean_literal::build_boolean_literal;
 pub use build_decimal_literal::build_decimal_literal;
+pub use build_integer_literal::build_integer_literal;
 pub use build_nil_literal::build_nil_literal;
 pub use build_octal_literal::build_octal_literal;
 pub use build_string_literal::build_string_literal;
@@ -66,6 +68,8 @@ pub fn build_literal_expression(
             .map_err(|e| BuildLiteralVariantError(e.to_string()))
             .map(|s| s.into()),
         decimal_literal => build_decimal_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string())),
+        integer_literal => build_integer_literal(inner_literal)
             .map_err(|e| BuildLiteralVariantError(e.to_string())),
         array_literal => Err(Unimplemented(inner_literal.as_rule())),
         object_literal => Err(Unimplemented(inner_literal.as_rule())),

@@ -1,0 +1,5 @@
+x var 1
+y var 2
+
+[x, y] = [y, x]
+
