@@ -1,12 +1,13 @@
 use std::fmt;
 
 use ast::{
-    Assignment, BinaryLiteral, Block, BooleanLiteral, DecimalLiteral, Dyadic,
-    DyadicOperator, Expression, Expressions, FunctionBody, FunctionCall,
-    FunctionCallArguments, FunctionDeclaration, FunctionParameter,
-    FunctionParameters, HexadecimalLiteral, Identifier, IntegerLiteral,
-    Literal, Match, MatchArm, Member, OctalLiteral, Pattern, Pipe, PipeArm,
-    PipeArms, Program, Return, StringLiteral, Then, VariableDeclaration,
+    Assignment, BinaryLiteral, Block, BooleanLiteral, DecimalLiteral,
+    Directive, Directives, Dyadic, DyadicOperator, Expression, Expressions,
+    FunctionBody, FunctionCall, FunctionCallArguments, FunctionDeclaration,
+    FunctionParameter, FunctionParameters, HexadecimalLiteral, Identifier,
+    IntegerLiteral, Literal, Match, MatchArm, Member, OctalLiteral, Pattern,
+    Pipe, PipeArm, PipeArms, Program, Return, StringLiteral, Then, Use,
+    VariableDeclaration,
 };
 
 use crate::pretty_print::{
@@ -299,6 +300,9 @@ impl PrettyPrint for Program {
     ///
     /// ```pest
     /// Program
+    /// directives:
+    ///   Directive > ...
+    ///   Directive > ...
     /// body:
     ///   Expression > ...
     ///   Expression > ...
@@ -310,6 +314,10 @@ impl PrettyPrint for Program {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Program")?;
+
+        write_field_label(f, indent, "directives")?;
+        self.directives.fmt_with_indent(f, indent + 2)?;
+
         write_field_label(f, indent, "body")?;
         self.body.fmt_with_indent(f, indent + 2)
     }
@@ -531,5 +539,50 @@ impl PrettyPrint for OctalLiteral {
     ) -> fmt::Result {
         write_node_label(f, indent, "OctalLiteral")?;
         write_scalar_field(f, indent, "value", self.value)
+    }
+}
+
+impl PrettyPrint for Use {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "Use")?;
+        write_field_label(f, indent, "path")?;
+        write_scalar_field(f, indent + 2, "value", &self.path)?;
+        write_field_label(f, indent, "imports")?;
+        for import in &self.imports {
+            import.fmt_with_indent(f, indent + 2)?;
+        }
+        Ok(())
+    }
+}
+
+impl PrettyPrint for Directive {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        match self {
+            Directive::Use(use_directive) => {
+                use_directive.fmt_with_indent(f, indent)
+            }
+        }
+    }
+}
+
+impl PrettyPrint for Directives {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        for directive in &self.items {
+            directive.fmt_with_indent(f, indent)?;
+        }
+
+        Ok(())
     }
 }

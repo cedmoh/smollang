@@ -1,5 +1,6 @@
 mod assignment;
 mod block;
+mod directives;
 mod dyadic;
 mod expression;
 mod function_call;
@@ -12,10 +13,12 @@ mod pattern;
 mod pipe;
 mod program;
 mod then;
+mod r#use;
 mod variable_declaration;
 
 pub use assignment::*;
 pub use block::*;
+pub use directives::*;
 pub use dyadic::*;
 pub use expression::*;
 pub use function_call::*;
@@ -28,4 +31,5 @@ pub use pattern::*;
 pub use pipe::*;
 pub use program::*;
 pub use then::*;
+pub use r#use::*;
 pub use variable_declaration::*;

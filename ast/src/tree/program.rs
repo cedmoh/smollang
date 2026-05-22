@@ -1,17 +1,18 @@
-use crate::{Expression, Expressions};
+use crate::{Directive, Directives, Expression, Expressions};
 
 /// A program represents a File. It consists of a sequence of expressions that
 /// will be executed in order.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Program {
+    pub directives: Directives,
     /// The body of the program, which consists of a sequence of expressions
     /// that will be executed in order.
     pub body: Expressions,
 }
 
 impl Program {
-    pub fn new(body: Expressions) -> Self {
-        Self { body }
+    pub fn new(directives: Directives, body: Expressions) -> Self {
+        Self { directives, body }
     }
 
     pub fn builder() -> ProgramBuilder {
@@ -21,6 +22,7 @@ impl Program {
 
 #[derive(Debug, Default)]
 pub struct ProgramBuilder {
+    directives: Directives,
     body: Expressions,
 }
 
@@ -30,7 +32,15 @@ impl ProgramBuilder {
         self
     }
 
+    pub fn add_directive(&mut self, directive: Directive) -> &mut Self {
+        self.directives.items.push(directive);
+        self
+    }
+
     pub fn build(self) -> Program {
-        Program { body: self.body }
+        Program {
+            directives: self.directives,
+            body: self.body,
+        }
     }
 }

@@ -1,7 +1,10 @@
 program =  { SOI ~ body ~ EOI }
-body    = _{ expressions? }
+body    = _{ (newlines ~ (directive | expression) ~ newlines)* }
 
 // Keywords
+// directives
+use  = _{ "use" }
+from = _{ "from" }
 // declarations
 var = @{ "var" }
 val = @{ "val" }
@@ -40,6 +43,8 @@ to      = { "to" }
 til     = { "til" }
 keyword = {
   
+  | use
+  | from
   | var
   | val
   | fn
@@ -118,8 +123,16 @@ operator               = _{
   | range
 }
 
+// Directives
+directive = { use_directive }
+
+// Use
+use_directive = { use ~ use_imports ~ from ~ use_path }
+use_imports   = { (identifier ~ ",")* ~ identifier }
+// TODO: figure import paths out
+use_path = { identifier | string_literal }
+
 // Expressions
-expressions            = _{ (newlines ~ expression ~ newlines)+ }
 expression             =  {
   
   | then_expression
@@ -174,7 +187,7 @@ member                  = { member_segment ~ newlines ~ (member_infix_operator ~
 member_segment          = { block | literal | identifier }
 member_infix_operator   = { member_dot | member_call }
 member_dot              = { "." }
-member_call             = { call_arguments ~ member_dot }
+member_call             = { call_arguments ~ "." }
 member_postfix_operator = { member_call_postfix }
 member_call_postfix     = { call_arguments }
 
