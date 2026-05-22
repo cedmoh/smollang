@@ -89,6 +89,7 @@ impl PrettyPrint for DyadicOperator {
             DyadicOperator::GreaterThanOrEqual => "GreaterThanOrEqual",
             DyadicOperator::And => "And",
             DyadicOperator::Or => "Or",
+            DyadicOperator::Dot => "Dot",
             DyadicOperator::RangeInclusive => "RangeInclusive",
             DyadicOperator::Range => "Range",
         };
@@ -393,8 +394,10 @@ impl PrettyPrint for Member {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Member")?;
-        write_field_label(f, indent + 2, "chain")?;
-        self.chain.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "object")?;
+        self.object.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "property")?;
+        self.property.fmt_with_indent(f, indent + 2)
     }
 }
 

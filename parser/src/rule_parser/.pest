@@ -128,8 +128,8 @@ expression             =  {
   | assignment_expression
   | declaration
   | match_expression
-  | call
   | member
+  | call
   | identifier
   | literal
   | returned_expression
@@ -149,8 +149,8 @@ operand   = {
   | assignment_expression
   | declaration
   | match_expression
-  | call
   | member
+  | call
   | identifier
   | literal
   | dynamic_key_expression
@@ -170,10 +170,31 @@ assignment_left_hand_side  = { identifier }
 assignment_right_hand_side = { expression }
 
 // Member
-member         = { (member_segment ~ newlines ~ "." ~ newlines)+ ~ member_segment }
-member_segment = {
-    // every expression except member and operation
+member                  = { member_segment ~ newlines ~ (member_infix_operator ~ newlines ~ member_segment)+ ~ member_postfix_operator? }
+member_segment          = { block | literal | identifier }
+member_infix_operator   = { member_dot | member_call }
+member_dot              = { "." }
+member_call             = { call_arguments ~ member_dot }
+member_postfix_operator = { member_call_postfix }
+member_call_postfix     = { call_arguments }
+
+// Call
+call                          =  { callee ~ call_generics? ~ call_arguments }
+call_generics                 =  { "<" ~ call_generic_parameter+ ~ ">" }
+call_generic_parameter        =  { identifier }
+callee                        =  { block | identifier }
+call_arguments                =  { call_arguments_empty | call_arguments_in_parenthesis | call_arguments_naked }
+call_arguments_empty          = _{ "(" ~ newlines ~ ")" }
+call_arguments_in_parenthesis = _{ "(" ~ newlines ~ expression ~ newlines ~ (newlines ~ "," ~ newlines ~ expression)* ~ newlines ~ ")" }
+call_arguments_naked          = _{ expression_in_call ~ (newlines ~ "," ~ newlines ~ expression_in_call)* }
+expression_in_call            = _{
   
+  | assignment_expression
+  | declaration
+  | loop_flow
+  | while_flow
+  | for_flow
+  | match_expression
   | call
   | identifier
   | literal
@@ -189,8 +210,8 @@ pipe_shared_allowed_expressions = _{
   | assignment_expression
   | declaration
   | match_expression
-  | call
   | member
+  | call
   | identifier
   | literal
   | returned_expression
@@ -200,31 +221,6 @@ pipe_shared_allowed_expressions = _{
 }
 pipe_first_arm                  =  { pipe_shared_allowed_expressions }
 pipe_arm                        =  { operation | pipe_shared_allowed_expressions }
-
-// Call
-call                          =  { callee ~ call_generics? ~ call_arguments }
-call_generics                 =  { "<" ~ call_generic_parameter+ ~ ">" }
-call_generic_parameter        =  { identifier }
-callee                        =  { identifier }
-call_arguments                =  { call_arguments_empty | call_arguments_in_parenthesis | call_arguments_naked }
-call_arguments_empty          = _{ "(" ~ newlines ~ ")" }
-call_arguments_in_parenthesis = _{ "(" ~ newlines ~ expression ~ newlines ~ (newlines ~ "," ~ newlines ~ expression)* ~ newlines ~ ")" }
-call_arguments_naked          = _{ expression_in_call ~ (newlines ~ "," ~ newlines ~ expression_in_call)* }
-expression_in_call            = _{
-  
-  | assignment_expression
-  | declaration
-  | loop_flow
-  | while_flow
-  | for_flow
-  | if_chain
-  | match_expression
-  | call
-  | member
-  | identifier
-  | literal
-  | dynamic_key_expression
-}
 
 // Declaration
 declaration = _{ variable_declaration | function_declaration }
@@ -297,8 +293,8 @@ then_first_expression = {
   | assignment_expression
   | declaration
   | match_expression
-  | call
   | member
+  | call
   | identifier
   | literal
   | returned_expression
@@ -306,17 +302,6 @@ then_first_expression = {
   | continue_expression
   | block
 }
-
-// If
-if_chain        = { if_segment ~ newlines ~ (elsif_segment ~ newlines)* ~ else_segment? }
-if_condition    = { "("? ~ expression ~ ")"? }
-if_segment      = { if ~ if_condition ~ newlines ~ do? ~ newlines ~ if_body }
-if_body         = { expression }
-elsif_segment   = { elsif ~ if_condition ~ newlines ~ do? ~ newlines ~ elsif_body }
-elsif_condition = { "("? ~ expression ~ ")"? }
-elsif_body      = { expression }
-else_segment    = { else ~ newlines ~ else_body }
-else_body       = { expression }
 
 // Pattern
 pattern               = {
@@ -342,8 +327,8 @@ match_term       =  {
   
   | assignment_expression
   | declaration
-  | call
   | member
+  | call
   | identifier
   | literal
   | returned_expression

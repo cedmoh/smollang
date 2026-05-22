@@ -7,6 +7,7 @@ pub enum Value {
     Boolean(bool),
     String(String),
     Nil,
+    Function,
 }
 
 /// The result of evaluating an operation on two values.

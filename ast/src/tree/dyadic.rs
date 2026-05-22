@@ -3,9 +3,10 @@ use super::*;
 /// A dyadic operator, which is an operator that takes two operands and performs
 /// a specific operation on them. The following operators are supported:
 /// - Arithmetic operators: `+`, `-`, `*`, `/`, `%`, `^`
-/// - Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `
+/// - Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`
 /// - Logical operators: `and`, `or`
-/// - Range operators: `..`, `...`
+/// - Range operators: `..`, `..=`
+/// - Member access operator: `.`
 #[derive(Debug, Clone, PartialEq)]
 pub enum DyadicOperator {
     Add,
@@ -22,6 +23,7 @@ pub enum DyadicOperator {
     GreaterThanOrEqual,
     And,
     Or,
+    Dot,
     RangeInclusive,
     Range,
 }

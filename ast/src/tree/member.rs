@@ -12,6 +12,15 @@ use super::*;
 /// member of the `math` module.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Member {
-    ///
-    pub chain: Expressions,
+    pub object: Box<Expression>,
+    pub property: Box<Expression>,
+}
+
+impl Member {
+    pub fn new(object: Expression, property: Expression) -> Self {
+        Self {
+            object: Box::new(object),
+            property: Box::new(property),
+        }
+    }
 }

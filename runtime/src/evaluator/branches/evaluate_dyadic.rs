@@ -58,6 +58,9 @@ pub fn evaluate_dyadic(
         }
         DyadicOperator::And => left_value.and(right_value),
         DyadicOperator::Or => left_value.or(right_value),
+        DyadicOperator::Dot => todo!(
+            "Implement member access operator when structs are implemented"
+        ),
         // TODO: Implement range operators when arrays are implemented.
         DyadicOperator::RangeInclusive => todo!("When arrays are implemented"),
         DyadicOperator::Range => todo!("When arrays are implemented"),

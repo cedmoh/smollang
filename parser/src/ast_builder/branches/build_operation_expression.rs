@@ -1,6 +1,6 @@
 use crate::{
     ast_builder::match_rule_to_expression_builder,
-    rule_parser::{PRATT_PARSER, Rule},
+    rule_parser::{OPERATION_PRATT_PARSER, Rule},
 };
 use ast::{Dyadic, DyadicOperator, Expression};
 use pest::iterators::Pair;
@@ -32,7 +32,7 @@ pub fn build_operation_expression(
     // Flatten `operator` wrappers into concrete operator tokens so Pratt can
     // apply precedence by rule.
 
-    let expression = PRATT_PARSER
+    let expression = OPERATION_PRATT_PARSER
         .map_primary(|primary| match primary.as_rule() {
             operand => {
                 let inner_operand =
@@ -41,7 +41,7 @@ pub fn build_operation_expression(
                 match_rule_to_expression_builder(inner_operand)
                     .map_err(|e| BuildOperandExpressionError(e.to_string()))
             }
-            rule => Err(UnexpectedRuleInsteadOfOperand(rule)),
+            unknown_rule => Err(UnexpectedRuleInsteadOfOperand(unknown_rule)),
         })
         .map_infix(|lhs, op, rhs| {
             let lhs = lhs?;
