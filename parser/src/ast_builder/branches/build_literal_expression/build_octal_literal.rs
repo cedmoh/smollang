@@ -11,7 +11,9 @@ use thiserror::Error;
 /// ```pest
 /// octal_literal: "o77"
 /// ```
-pub fn build_octal_literal(pair: Pair<Rule>) -> Result<OctalLiteral, BuildOctalLiteralError> {
+pub fn build_octal_literal(
+    pair: Pair<Rule>,
+) -> Result<OctalLiteral, BuildOctalLiteralError> {
     use BuildOctalLiteralError::*;
     use Rule::octal_literal;
 
@@ -24,11 +26,12 @@ pub fn build_octal_literal(pair: Pair<Rule>) -> Result<OctalLiteral, BuildOctalL
     let text = pair.as_str();
     let digits = text
         .strip_prefix('o')
-        .expect("Expected octal_literal to start with 'o' based on the grammar rule")
+        .ok_or_else(|| ExpectedOctalPrefix(text.to_string()))?
+        .trim()
         .replace('_', "");
 
-    let value =
-        i64::from_str_radix(&digits, 8).map_err(|_| ParseFailed(text.to_string()))?;
+    let value = i64::from_str_radix(&digits, 8)
+        .map_err(|_| ParseFailed(text.to_string()))?;
 
     Ok(OctalLiteral::new(value))
 }
@@ -37,6 +40,11 @@ pub fn build_octal_literal(pair: Pair<Rule>) -> Result<OctalLiteral, BuildOctalL
 pub enum BuildOctalLiteralError {
     #[error("Expected an octal_literal, but found {0:?}")]
     UnexpectedRule(Rule),
+
+    #[error(
+        "Expected octal_literal to start with 'o', but it was missing in '{0}'"
+    )]
+    ExpectedOctalPrefix(String),
 
     #[error("Failed to parse '{0}' as an octal number")]
     ParseFailed(String),

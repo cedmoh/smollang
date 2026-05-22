@@ -20,7 +20,7 @@ pub fn build_integer_literal(
         return Err(UnexpectedRule(rule));
     }
 
-    let text = pair.as_str().replace('_', "");
+    let text = pair.as_str().trim().replace('_', "");
 
     let value: i64 =
         text.parse().map_err(|_| ParseIntegerFailed(text.clone()))?;

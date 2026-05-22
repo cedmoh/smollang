@@ -76,6 +76,7 @@ pub fn build_literal_expression(
         octal_literal => build_octal_literal(inner_literal)
             .map_err(|e| BuildLiteralVariantError(e.to_string()))
             .map(|o| o.into()),
+        binary_literal => Err(Unimplemented(inner_literal.as_rule())),
         //
         _ => Err(UnexpectedInnerLiteral(inner_literal.as_rule())),
     }

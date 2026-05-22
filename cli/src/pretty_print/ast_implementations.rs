@@ -268,11 +268,11 @@ impl PrettyPrint for Return {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Return")?;
-        write_field_label(f, indent + 2, "expression")?;
+        write_field_label(f, indent, "expression")?;
 
         match &self.expression {
-            Some(expression) => expression.fmt_with_indent(f, indent + 4),
-            None => write_none(f, indent + 4),
+            Some(expression) => expression.fmt_with_indent(f, indent + 2),
+            None => write_none(f, indent + 2),
         }
     }
 }
@@ -322,15 +322,15 @@ impl PrettyPrint for Then {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Then")?;
-        write_field_label(f, indent + 2, "condition")?;
-        self.condition.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "then_body")?;
-        self.then_body.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "else_body")?;
+        write_field_label(f, indent, "condition")?;
+        self.condition.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "then_body")?;
+        self.then_body.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "else_body")?;
 
         match &self.else_body {
-            Some(else_body) => else_body.fmt_with_indent(f, indent + 4),
-            None => write_none(f, indent + 4),
+            Some(else_body) => else_body.fmt_with_indent(f, indent + 2),
+            None => write_none(f, indent + 2),
         }
     }
 }
@@ -378,12 +378,7 @@ impl PrettyPrint for Pattern {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Pattern")?;
-        write_scalar_field(
-            f,
-            indent + 2,
-            "content",
-            format!("'{}'", self.content),
-        )
+        write_scalar_field(f, indent, "content", format!("'{}'", self.content))
     }
 }
 
@@ -408,10 +403,10 @@ impl PrettyPrint for Match {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "Match")?;
-        write_field_label(f, indent + 2, "expression")?;
-        self.expression.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "branches")?;
-        self.branches.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "expression")?;
+        self.expression.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "branches")?;
+        self.branches.fmt_with_indent(f, indent + 2)
     }
 }
 
@@ -422,10 +417,10 @@ impl PrettyPrint for MatchArm {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "MatchArm")?;
-        write_field_label(f, indent + 2, "pattern")?;
-        self.pattern.fmt_with_indent(f, indent + 4)?;
-        write_field_label(f, indent + 2, "body")?;
-        self.body.fmt_with_indent(f, indent + 4)
+        write_field_label(f, indent, "pattern")?;
+        self.pattern.fmt_with_indent(f, indent + 2)?;
+        write_field_label(f, indent, "body")?;
+        self.body.fmt_with_indent(f, indent + 2)
     }
 }
 
@@ -469,7 +464,7 @@ impl PrettyPrint for BooleanLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "BooleanLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }
 
@@ -480,7 +475,7 @@ impl PrettyPrint for StringLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "StringLiteral")?;
-        write_scalar_field(f, indent + 2, "value", format!("'{}'", self.value))
+        write_scalar_field(f, indent, "value", format!("'{}'", self.value))
     }
 }
 
@@ -491,7 +486,7 @@ impl PrettyPrint for IntegerLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "IntegerLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }
 
@@ -502,7 +497,7 @@ impl PrettyPrint for DecimalLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "DecimalLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }
 
@@ -513,7 +508,7 @@ impl PrettyPrint for HexadecimalLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "HexadecimalLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }
 
@@ -524,7 +519,7 @@ impl PrettyPrint for BinaryLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "BinaryLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }
 
@@ -535,6 +530,6 @@ impl PrettyPrint for OctalLiteral {
         indent: usize,
     ) -> fmt::Result {
         write_node_label(f, indent, "OctalLiteral")?;
-        write_scalar_field(f, indent + 2, "value", self.value)
+        write_scalar_field(f, indent, "value", self.value)
     }
 }

@@ -34,8 +34,8 @@ pub fn build_member_expression(
 ) -> Result<Member, BuildMemberExpressionError> {
     use BuildMemberExpressionError::*;
     use Rule::{
-        member, member_call, member_dot, member_infix_operator,
-        member_postfix_operator, member_segment,
+        member, member_call, member_call_postfix, member_dot,
+        member_infix_operator, member_postfix_operator, member_segment,
     };
 
     let rule = pair.as_rule();
@@ -98,8 +98,16 @@ pub fn build_member_expression(
         .map_postfix(|lhs, op| {
             let lhs = lhs?;
 
+            let member_postfix_operator = op.as_rule() else {
+                return Err(UnexpectedMemberPostfixOperator(op.as_rule()));
+            };
+
+            let Some(op) = op.into_inner().next() else {
+                return Err(EmptyPostfixOperator);
+            };
+
             match op.as_rule() {
-                member_call => {
+                member_call_postfix => {
                     let mut function_call_builder = FunctionCall::builder(lhs);
 
                     // the inner rule inside member_call is call_arguments, so
