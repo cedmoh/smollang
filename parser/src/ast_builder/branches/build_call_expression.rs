@@ -22,6 +22,14 @@ use thiserror::Error;
 ///   - call_arguments: "()"
 /// ```
 ///
+/// Call with literal argument:
+///
+/// ```pest
+/// call
+/// - callee > identifier: "print"
+/// - call_arguments > literal > string_literal > string_text: "Hello small world!"
+/// ```
+///
 /// Call with arguments:
 ///
 /// ```pest

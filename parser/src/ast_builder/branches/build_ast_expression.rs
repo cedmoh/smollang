@@ -5,6 +5,9 @@ use thiserror::Error;
 
 /// Converts a sequence of expression rules into an abstract syntax tree (AST)
 /// representation of an expression.
+///
+/// If the provided rule is an `expression`, it extracts the inner expression
+/// and matches it to the appropriate expression builder function.
 pub fn build_ast_expression(
     pair: Pair<Rule>,
 ) -> Result<Expression, BuildAstExpressionError> {
@@ -13,17 +16,19 @@ pub fn build_ast_expression(
 
     let rule = pair.as_rule();
 
-    if rule != expression {
-        return Err(RuleIsNotAnExpression(rule));
-    };
+    match rule {
+        // The rule is an expression, so we need to extract the inner expression
+        expression => {
+            let inner = pair.into_inner();
 
-    let inner = pair.into_inner();
+            let Some(inner_expression) = inner.into_iter().next() else {
+                return Err(EmptyExpression);
+            };
 
-    let Some(inner_expression) = inner.into_iter().next() else {
-        return Err(EmptyExpression);
-    };
-
-    match_rule_to_expression_builder(inner_expression)
+            match_rule_to_expression_builder(inner_expression)
+        }
+        _ => match_rule_to_expression_builder(pair),
+    }
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -33,15 +38,11 @@ pub enum BuildAstExpressionError {
     /// The expression is empty.
     EmptyExpression,
 
-    #[error("Expected an expression, but found rule > {0:?}")]
-    /// The provided rule is not an expression.
-    RuleIsNotAnExpression(Rule),
-
-    #[error("Unrecognized expression. Found rule > {0:?}")]
+    #[error("Unrecognized expression. Found rule : {0:?}")]
     /// The expression is unrecognized.
     UnrecognizedExpression(Rule),
 
-    #[error("An error occurred while building an expression variant > {0}")]
+    #[error("An error occurred while building an expression variant : {0}")]
     /// An error occurred while building an expression variant.
     BuildExpressionVariantError(String),
 

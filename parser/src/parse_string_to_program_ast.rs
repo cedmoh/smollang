@@ -25,11 +25,11 @@ pub fn parse_string_to_program_ast(
 pub enum ParseProgramError {
     /// An error occurred while parsing the input string into pest rules.
     #[error(
-        "An error occurred while parsing the input string into rules > {0}"
+        "An error occurred while parsing the input string into rules : {0}"
     )]
     StringToRulesError(String),
 
     /// An error occurred while converting the pest rules into an AST.
-    #[error("An error occurred while converting rules into an AST > {0}")]
+    #[error("An error occurred while converting rules into an AST : {0}")]
     RulesToAstError(RulesToAstError),
 }

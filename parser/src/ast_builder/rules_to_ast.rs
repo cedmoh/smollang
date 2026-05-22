@@ -17,6 +17,6 @@ pub fn rules_to_ast(rules: Pairs<Rule>) -> Result<Program, RulesToAstError> {
 #[non_exhaustive]
 pub enum RulesToAstError {
     /// An error occurred while building an expression within the block.
-    #[error("An error occurred while building the program AST > {0}")]
+    #[error("An error occurred while building the program AST : {0}")]
     ProgramRuleToAstError(BuildAstProgramError),
 }

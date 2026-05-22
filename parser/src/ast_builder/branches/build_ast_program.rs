@@ -64,7 +64,7 @@ pub enum BuildAstProgramError {
     FirstRuleIsNotProgram(Rule),
 
     /// An error occurred while building an expression.
-    #[error("An error occurred while building an inner expression > {0}")]
+    #[error("An error occurred while building an inner expression : {0}")]
     BuildInnerExpressionError(BuildAstExpressionError),
 }
 

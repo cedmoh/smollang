@@ -60,6 +60,18 @@ pub struct StringLiteral {
     pub value: String,
 }
 
+impl From<StringLiteral> for Literal {
+    fn from(string_literal: StringLiteral) -> Self {
+        Literal::String(string_literal)
+    }
+}
+
+impl StringLiteral {
+    pub fn new(value: String) -> Self {
+        Self { value }
+    }
+}
+
 /// An integer literal, which represents an integer value.
 ///     
 /// # Examples
@@ -78,6 +90,12 @@ impl IntegerLiteral {
     }
 }
 
+impl From<IntegerLiteral> for Literal {
+    fn from(integer_literal: IntegerLiteral) -> Self {
+        Literal::Integer(integer_literal)
+    }
+}
+
 /// A decimal literal, which represents a decimal value.
 ///     
 /// # Examples
@@ -88,6 +106,12 @@ impl IntegerLiteral {
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct DecimalLiteral {
     pub value: f64,
+}
+
+impl From<DecimalLiteral> for Literal {
+    fn from(decimal_literal: DecimalLiteral) -> Self {
+        Literal::Decimal(decimal_literal)
+    }
 }
 
 impl DecimalLiteral {
@@ -108,6 +132,18 @@ pub struct HexadecimalLiteral {
     pub value: i64,
 }
 
+impl From<HexadecimalLiteral> for Literal {
+    fn from(hexadecimal_literal: HexadecimalLiteral) -> Self {
+        Literal::Hexadecimal(hexadecimal_literal)
+    }
+}
+
+impl HexadecimalLiteral {
+    pub fn new(value: i64) -> Self {
+        Self { value }
+    }
+}
+
 /// A binary literal, which represents a binary value.
 ///   
 /// # Examples
@@ -120,6 +156,18 @@ pub struct BinaryLiteral {
     pub value: i64,
 }
 
+impl From<BinaryLiteral> for Literal {
+    fn from(binary_literal: BinaryLiteral) -> Self {
+        Literal::Binary(binary_literal)
+    }
+}
+
+impl BinaryLiteral {
+    pub fn new(value: i64) -> Self {
+        Self { value }
+    }
+}
+
 /// An octal literal, which represents an octal value.
 ///     
 /// # Examples
@@ -130,4 +178,16 @@ pub struct BinaryLiteral {
 #[derive(Debug, Clone, PartialEq)]
 pub struct OctalLiteral {
     pub value: i64,
+}
+
+impl From<OctalLiteral> for Literal {
+    fn from(octal_literal: OctalLiteral) -> Self {
+        Literal::Octal(octal_literal)
+    }
+}
+
+impl OctalLiteral {
+    pub fn new(value: i64) -> Self {
+        Self { value }
+    }
 }

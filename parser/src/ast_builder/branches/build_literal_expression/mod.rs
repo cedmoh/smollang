@@ -1,3 +1,15 @@
+mod build_boolean_literal;
+mod build_decimal_literal;
+mod build_nil_literal;
+mod build_octal_literal;
+mod build_string_literal;
+
+pub use build_boolean_literal::build_boolean_literal;
+pub use build_decimal_literal::build_decimal_literal;
+pub use build_nil_literal::build_nil_literal;
+pub use build_octal_literal::build_octal_literal;
+pub use build_string_literal::build_string_literal;
+
 use crate::rule_parser::Rule;
 use ast::Literal;
 use pest::iterators::Pair;
@@ -45,13 +57,21 @@ pub fn build_literal_expression(
     };
 
     match inner_literal.as_rule() {
-        nil_literal => Err(Unimplemented(inner_literal.as_rule())),
-        boolean_literal => Err(Unimplemented(inner_literal.as_rule())),
-        string_literal => Err(Unimplemented(inner_literal.as_rule())),
-        decimal_literal => Err(Unimplemented(inner_literal.as_rule())),
+        nil_literal => build_nil_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string())),
+        boolean_literal => build_boolean_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string()))
+            .map(Literal::Boolean),
+        string_literal => build_string_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string()))
+            .map(|s| s.into()),
+        decimal_literal => build_decimal_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string())),
         array_literal => Err(Unimplemented(inner_literal.as_rule())),
         object_literal => Err(Unimplemented(inner_literal.as_rule())),
-        octal_literal => Err(Unimplemented(inner_literal.as_rule())),
+        octal_literal => build_octal_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string()))
+            .map(|o| o.into()),
         //
         _ => Err(UnexpectedInnerLiteral(inner_literal.as_rule())),
     }
@@ -67,6 +87,9 @@ pub enum BuildLiteralExpressionError {
     /// No inner literal was found in the literal expression.
     #[error("No inner literal found in the literal expression.")]
     NoInnerLiteral,
+
+    #[error("Failed to build a literal variant: {0}")]
+    BuildLiteralVariantError(String),
 
     /// An unexpected inner literal was found in the literal expression.
     #[error("Unexpected inner literal found in the literal expression: {0:?}")]
