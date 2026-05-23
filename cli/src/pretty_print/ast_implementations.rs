@@ -51,7 +51,7 @@ impl PrettyPrint for Assignment {
 impl PrettyPrint for Block {
     /// # Examples
     ///
-    /// ```text
+    /// ```pest
     /// Block
     /// body:
     ///   Expression > ...
@@ -281,7 +281,7 @@ impl PrettyPrint for Return {
 impl PrettyPrint for Identifier {
     /// # Examples
     ///
-    /// ```text
+    /// ```pest
     /// Identifier
     /// id: 'message'
     /// ```

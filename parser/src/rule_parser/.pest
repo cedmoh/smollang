@@ -355,7 +355,7 @@ match_term       =  {
   | continue_expression
   | block
 }
-match_arms       = _{ (match_arm ~ match_separator_symbol?)+ }
+match_arms       = _{ (NLS ~ match_arm ~ match_separator_symbol?)+ }
 match_arm        =  { pattern ~ match_arm_symbol ~ expression }
 
 // Loop

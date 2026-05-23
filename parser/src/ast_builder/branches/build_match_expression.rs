@@ -9,12 +9,20 @@ use thiserror::Error;
 /// # Examples
 ///
 /// ```pest
-/// - match_expression
-///   - expression > match_term
-///   - match_arms
+/// match_expression
+///     - match_term > identifier: "operator"
 ///     - match_arm
-///       - pattern
-///       - block > body
+///       - pattern > variable_pattern > pattern_term > literal > string_literal > string_text: "+"
+///       - expression > operation
+///         - operand > identifier: "leftHandSide"
+///         - addition: "+"
+///         - operand > identifier: "rightHandSide"
+///     - match_arm
+///       - pattern > variable_pattern > pattern_term > literal > string_literal > string_text: "-"
+///       - expression > block > expression > operation
+///         - operand > identifier: "leftHandSide"
+///         - subtraction: "-"
+///         - operand > identifier: "rightHandSide"
 /// ```
 pub fn build_match_expression(
     pair: Pair<Rule>,
@@ -25,8 +33,7 @@ pub fn build_match_expression(
         return Err(BuildMatchExpressionError::RuleIsNotAMatch(rule));
     };
 
-    // TODO: Implement the actual parsing logic
-    Err(BuildMatchExpressionError::Unimplemented)
+    todo!("Implement build_match_expression");
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -35,10 +42,4 @@ pub enum BuildMatchExpressionError {
     /// The first rule is not a match expression.
     #[error("Expected a match expression, but found rule: {0:?}")]
     RuleIsNotAMatch(Rule),
-
-    /// The match expression cannot be built yet, as it is unimplemented.
-    #[error(
-        "The match expression cannot be built yet, as it is unimplemented."
-    )]
-    Unimplemented,
 }
