@@ -16,9 +16,6 @@ fn  = _{ "fn" }
 do    = _{ "do" }
 end   = _{ "end" }
 ret   = _{ "ret" }
-for   = _{ "for" }
-in    = _{ "in" }
-while = _{ "while" }
 loop  = _{ "loop" }
 br    = _{ "br" }
 cont  = _{ "cont" }
@@ -54,9 +51,6 @@ keyword = _{
   | do
   | end
   | ret
-  | for
-  | in
-  | while
   | loop
   | br
   | cont
@@ -141,20 +135,20 @@ use_path = { identifier | string_literal }
 // expression_tail = { assignment_tail | pipe_tail | operation_tail | then_tail }
 expression = {
   
-  | then_expression
-  | pipe_expression
-  | operation
-  | assignment_expression
   | declaration
-  | match_expression
-  | member
-  | call
-  | identifier
-  | literal
   | returned_expression
   | broken_expression
   | continue_expression
+  | then_expression
+  | pipe_expression
+  | assignment_expression
+  | operation
+  | match_expression
+  | member
+  | call
+  | literal
   | block
+  | identifier
 }
 
 dynamic_key_expression = _{ "(" ~ expression ~ ")" }
@@ -162,12 +156,9 @@ dynamic_key_expression = _{ "(" ~ expression ~ ")" }
 // Operation
 operation = { operand ~ (operator ~ operand)+ }
 operand   = {
-    // every expression except operation
+    // every expression except operation, then_expression, pipe_expression, and declaration
   
-  | then_expression
-  | pipe_expression
   | assignment_expression
-  | declaration
   | match_expression
   | member
   | call
@@ -209,14 +200,14 @@ call_arguments_in_parenthesis = _{ "(" ~ expression ~ ("," ~ expression)* ~ ")" 
 call_arguments_naked          = _{ expression_in_call ~ ("," ~ expression_in_call)* }
 expression_in_call            = _{
   
-  | assignment_expression
   | declaration
+  | assignment_expression
   | loop_flow
   | match_expression
   | call
-  | identifier
   | literal
   | dynamic_key_expression
+  | identifier
 }
 
 // Pipe
@@ -224,18 +215,18 @@ pipe_expression                 =  { pipe_first_arm ~ (NLS ~ pipe_to_symbol ~ pi
 pipe_shared_allowed_expressions = _{
     // every expression except pipe_expression and operation
   
-  | then_expression
-  | assignment_expression
   | declaration
-  | match_expression
-  | member
-  | call
-  | identifier
-  | literal
   | returned_expression
   | broken_expression
   | continue_expression
+  | then_expression
+  | assignment_expression
+  | match_expression
+  | member
+  | call
+  | literal
   | block
+  | identifier
 }
 pipe_first_arm                  =  { pipe_shared_allowed_expressions }
 pipe_arm                        =  { operation | pipe_shared_allowed_expressions }
@@ -247,8 +238,7 @@ declaration = _{ variable_declaration | function_declaration }
 identifier = @{ !(number_literal | (keyword ~ !ASCII_ALPHANUMERIC)) ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
 // Blocks
-block         =  { "(" ~ block_content ~ ")" }
-block_content = _{ (expression)* }
+block = { "(" ~ NLS ~ (expression ~ NLS)* ~ ")" }
 
 function_declaration = { function_name? ~ function_arguments ~ function_body? }
 function_name        = { identifier }
@@ -285,18 +275,19 @@ number_literal = _{
   | octal_literal
   | hexadecimal_literal
 }
+
 // the negation in the end is to protect against cases like `1..3` and `1.abs`
 integer_literal     = @{ "-"? ~ (ASCII_DIGIT | "_")+ }
 decimal_literal     = @{ "-"? ~ (ASCII_DIGIT | "_")+ ~ "." ~ (ASCII_DIGIT | "_")* ~ !("." | ASCII_ALPHA) }
 hexadecimal_literal = @{ "#" ~ (ASCII_HEX_DIGIT | "_")+ }
-binary_literal      = @{ "b" ~ ('0'..'1' | "_")+ }
-octal_literal       = @{ "o" ~ ('0'..'7' | "_")+ }
+binary_literal      = @{ "b" ~ (ASCII_BIN_DIGIT | "_")+ }
+octal_literal       = @{ "o" ~ (ASCII_OCT_DIGIT | "_")+ }
 boolean_literal     = @{ true | false }
 array_literal       =  { "[" ~ NLS ~ array_entries ~ NLS ~ "]" }
 array_entries       =  { array_entry? ~ ("," ~ NLS ~ array_entry)* ~ ","? }
 array_entry         =  { expression }
-object_literal      =  { "{" ~ object_entries ~ "}" }
-object_entries      =  { object_entry? ~ ("," ~ object_entry)* ~ ","? }
+object_literal      =  { "{" ~ NLS ~ object_entries ~ NLS ~ "}" }
+object_entries      =  { object_entry? ~ ("," ~ NLS ~ object_entry)* ~ ","? }
 object_entry        =  { object_key ~ object_value }
 object_key          =  { identifier | literal | dynamic_key_expression }
 object_value        =  { expression }
@@ -307,19 +298,20 @@ then_condition        = { then_first_expression }
 then_body             = { expression }
 then_else_body        = { expression }
 then_first_expression = {
-    // everything except then_expression and operation
+    // everything except then_expression
   
-  | assignment_expression
   | declaration
-  | match_expression
-  | member
-  | call
-  | identifier
-  | literal
   | returned_expression
   | broken_expression
   | continue_expression
+  | assignment_expression
+  | operation
+  | match_expression
+  | member
+  | call
+  | literal
   | block
+  | identifier
 }
 
 // Pattern
@@ -344,16 +336,16 @@ match_expression =  { match_term ~ match_check_symbol ~ match_arms }
 match_term       =  {
     // everything except match_expression, then_expression and operation
   
-  | assignment_expression
   | declaration
-  | member
-  | call
-  | identifier
-  | literal
   | returned_expression
   | broken_expression
   | continue_expression
+  | assignment_expression
+  | member
+  | call
+  | literal
   | block
+  | identifier
 }
 match_arms       = _{ (NLS ~ match_arm ~ match_separator_symbol?)+ }
 match_arm        =  { pattern ~ match_arm_symbol ~ expression }

@@ -1,14 +1,15 @@
 use std::fmt;
 
 use ast::{
-    ArrayPatternElement, Assignment, BinaryLiteral, Block, BooleanLiteral,
-    DecimalLiteral, DestructuringPatternElement, Directive, Directives, Dyadic,
-    DyadicOperator, Expression, Expressions, FunctionBody, FunctionCall,
-    FunctionCallArguments, FunctionDeclaration, FunctionParameter,
-    FunctionParameters, HexadecimalLiteral, Identifier, IdentifierPattern,
-    IntegerLiteral, Literal, LiteralPattern, Match, MatchArm, Member,
-    OctalLiteral, Pattern, Pipe, PipeArm, PipeArms, Program, Return,
-    StringLiteral, Then, Use, VariableDeclaration,
+    ArrayLiteral, ArrayPatternElement, Assignment, BinaryLiteral, Block,
+    BooleanLiteral, DecimalLiteral, DestructuringPatternElement, Directive,
+    Directives, Dyadic, DyadicOperator, Expression, Expressions, FunctionBody,
+    FunctionCall, FunctionCallArguments, FunctionDeclaration,
+    FunctionParameter, FunctionParameters, HexadecimalLiteral, Identifier,
+    IdentifierPattern, IntegerLiteral, Literal, LiteralPattern, Match,
+    MatchArm, Member, ObjectLiteral, ObjectProperty, OctalLiteral, Pattern,
+    Pipe, PipeArm, PipeArms, Program, Return, StringLiteral, Then, Use,
+    VariableDeclaration,
 };
 
 use crate::pretty_print::{
@@ -559,6 +560,81 @@ impl PrettyPrint for Literal {
             }
             Literal::Octal(octal_literal) => {
                 octal_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Array(array_literal) => {
+                array_literal.fmt_with_indent(f, indent)
+            }
+            Literal::Object(object_literal) => {
+                object_literal.fmt_with_indent(f, indent)
+            }
+        }
+    }
+}
+
+impl PrettyPrint for ArrayLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "ArrayLiteral")?;
+        write_field_label(f, indent, "elements")?;
+
+        if self.elements.items.is_empty() {
+            return write_empty(f, indent + PUSH);
+        }
+
+        for element in &self.elements.items {
+            element.fmt_with_indent(f, indent + PUSH)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl PrettyPrint for ObjectLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "ObjectLiteral")?;
+        write_field_label(f, indent, "properties")?;
+
+        if self.properties.properties.is_empty() {
+            return write_empty(f, indent + PUSH);
+        }
+
+        for property in &self.properties.properties {
+            property.fmt_with_indent(f, indent + PUSH)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl PrettyPrint for ObjectProperty {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+    ) -> fmt::Result {
+        write_node_label(f, indent, "Property")?;
+
+        match self {
+            ObjectProperty::Shorthand(shorthand) => {
+                write_scalar_field(f, indent, "key", format!("'{}'", shorthand))
+            }
+            ObjectProperty::KeyValue(key, expression) => {
+                write_field_label(f, indent, "key")?;
+                write_scalar_field(
+                    f,
+                    indent + PUSH,
+                    "value",
+                    format!("'{}'", key),
+                )?;
+                write_field_label(f, indent, "value")?;
+                expression.fmt_with_indent(f, indent + PUSH)
             }
         }
     }

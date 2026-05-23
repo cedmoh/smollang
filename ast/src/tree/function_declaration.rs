@@ -136,3 +136,11 @@ impl FunctionDeclarationBuilder {
 pub struct Return {
     pub expression: Option<Box<Expression>>,
 }
+
+impl Return {
+    pub fn new(expression: Option<Expression>) -> Self {
+        Self {
+            expression: expression.map(Box::new),
+        }
+    }
+}

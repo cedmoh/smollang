@@ -16,6 +16,8 @@ pub fn evaluate_literal(literal: Literal) -> EvaluationResult {
         }
         Binary(binary_literal) => Value::Number(binary_literal.value as f64),
         Octal(octal_literal) => Value::Number(octal_literal.value as f64),
+        Literal::Array(_array_literal) => todo!(),
+        Literal::Object(_object_literal) => todo!(),
     };
 
     EvaluationResult::Value(value)

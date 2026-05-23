@@ -1,0 +1,8 @@
+isLeapYear |year| (
+  (year % 4 != 0) then ret false 
+  (year % 100 != 0) then ret true
+  (year % 400 != 0) then ret false
+  ret true
+)
+
+isLeapYear 2026
