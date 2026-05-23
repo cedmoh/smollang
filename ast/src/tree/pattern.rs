@@ -81,7 +81,7 @@ pub enum LiteralPattern {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct IdentifierPattern(Identifier);
+pub struct IdentifierPattern(pub Identifier);
 
 impl IdentifierPattern {
     pub fn new(name: Identifier) -> Self {

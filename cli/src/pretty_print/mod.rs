@@ -5,6 +5,8 @@ pub use helpers::*;
 
 use std::fmt::{self, Display, Formatter};
 
+static INDENT_SIZE: usize = 2;
+
 /// Formats AST nodes using a YAML-like indentation-aware representation.
 pub trait PrettyPrint {
     /// Formats this value with the provided indentation level.

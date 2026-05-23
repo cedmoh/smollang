@@ -333,7 +333,7 @@ pattern               = {
 wildcard              = { "_" }
 rest                  = { ".." }
 rest_term             = { rest ~ identifier? }
-pattern_term          = { identifier | literal | wildcard | rest_term }
+pattern_term          = { wildcard | identifier | literal | rest_term }
 variable_pattern      = { pattern_term }
 tuple_pattern         = { (pattern_term) ~ ("," ~ pattern_term)+ }
 array_pattern         = { "[" ~ (pattern_term | rest_term)? ~ ("," ~ (pattern_term | rest_term))* ~ "]" }
@@ -363,13 +363,13 @@ loop_flow = { loop ~ loop_body }
 loop_body = { expression }
 
 // Comments
-COMMENT                = { !hexadecimal_literal ~ (multiline_comment | inline_comment | single_comment) }
-single_comment_body    = { (!NEWLINE ~ ANY)* }
-single_comment         = { "#" ~ single_comment_body? }
-multiline_comment_body = { (!"###" ~ ANY)* }
-multiline_comment      = { "###" ~ multiline_comment_body ~ "###" }
-inline_comment_body    = { (!"##" ~ ANY)* }
-inline_comment         = { "##" ~ inline_comment_body? ~ "##" }
+COMMENT                = _{ !hexadecimal_literal ~ (multiline_comment | inline_comment | single_comment) }
+single_comment_body    =  { (!NEWLINE ~ ANY)* }
+single_comment         =  { "#" ~ single_comment_body? }
+multiline_comment_body =  { (!"###" ~ ANY)* }
+multiline_comment      =  { "###" ~ multiline_comment_body ~ "###" }
+inline_comment_body    =  { (!"##" ~ ANY)* }
+inline_comment         =  { "##" ~ inline_comment_body? ~ "##" }
 
 WHITESPACE = _{ " " }
 
