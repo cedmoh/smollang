@@ -1,5 +1,8 @@
 use crate::{
-    ast_builder::{BuildAstExpressionError, build_ast_expression},
+    ast_builder::{
+        BuildAstExpressionError, build_ast_expression,
+        match_rule_to_expression_builder,
+    },
     rule_parser::Rule,
 };
 use ast::Then;
@@ -13,7 +16,7 @@ use thiserror::Error;
 ///
 /// ```pest
 /// - then_expression
-///   - then_condition > then_first_expression > literal > ...
+///   - then_condition > literal > ...
 ///   - then_body > expression > ...
 ///   - then_else_body (optional) > expression > ...
 /// ```
@@ -41,13 +44,20 @@ pub fn build_then_expression(
         return Err(InvalidConditionRule(condition_pair.as_rule()));
     }
 
-    // The then_condition rule contains a then_first_expression, so we need to
-    // extract it
-    let condition_expression_pair =
+    let rule = condition_pair.as_rule();
+
+    if rule != then_condition {
+        return Err(InvalidConditionExpressionRule(rule));
+    }
+
+    // Extract the inner expression type from then_condition
+    let inner_expression =
         condition_pair.into_inner().next().ok_or(EmptyCondition)?;
 
+    // Match on the inner expression type and build it using the same logic
+    // as build_ast_expression, but adapted for then_condition types
     let condition_expression =
-        build_ast_expression_from_first_expression(condition_expression_pair)?;
+        match_rule_to_expression_builder(inner_expression)?;
 
     // Skip the then_check_symbol
     let next_pair = inner.next().ok_or(MissingThenBody)?;
@@ -104,33 +114,6 @@ pub fn build_then_expression(
     }
 
     Ok(then_builder.build())
-}
-
-/// Helper function to build an AST expression from a then_first_expression.
-/// Since then_first_expression is a subset of expression containing the same
-/// expression types, we extract the inner expression type and build it using
-/// the same logic as build_ast_expression.
-fn build_ast_expression_from_first_expression(
-    pair: Pair<Rule>,
-) -> Result<ast::Expression, BuildThenExpressionError> {
-    use crate::ast_builder::*;
-    use BuildThenExpressionError::*;
-    use Rule::then_first_expression;
-
-    let rule = pair.as_rule();
-
-    if rule != then_first_expression {
-        return Err(InvalidConditionExpressionRule(rule));
-    }
-
-    // Extract the inner expression type from then_first_expression
-    let inner_expression = pair.into_inner().next().ok_or(EmptyCondition)?;
-
-    // Match on the inner expression type and build it using the same logic
-    // as build_ast_expression, but adapted for then_first_expression types
-    let result = match_rule_to_expression_builder(inner_expression);
-
-    result.map_err(Into::into)
 }
 
 #[derive(Debug, PartialEq, Error)]

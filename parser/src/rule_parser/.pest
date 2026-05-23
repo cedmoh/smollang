@@ -293,13 +293,11 @@ object_key          =  { identifier | literal | dynamic_key_expression }
 object_value        =  { expression }
 
 // Then
-then_expression       = { then_condition ~ then_check_symbol ~ then_body ~ (then_else_symbol ~ then_else_body)? }
-then_condition        = { then_first_expression }
-then_body             = { expression }
-then_else_body        = { expression }
-then_first_expression = {
+then_expression = { then_condition ~ then_check_symbol ~ then_body ~ (then_else_symbol ~ then_else_body)? }
+then_condition  = {
     // everything except then_expression
   
+  | operation
   | declaration
   | returned_expression
   | broken_expression
@@ -313,6 +311,8 @@ then_first_expression = {
   | block
   | identifier
 }
+then_body       = { expression }
+then_else_body  = { expression }
 
 // Pattern
 pattern               = {
