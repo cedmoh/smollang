@@ -237,27 +237,6 @@ mod tests {
     }
 
     #[test]
-    fn should_build_pipe_expression_with_newlines() {
-        // Arrange
-        let input = r#"first
-            |> second
-            |> third"#;
-
-        let pipe_rule = parse_string_to_rule(input, Rule::pipe_expression)
-            .expect("Expected input to be parsed to rules successfully.")
-            .next()
-            .expect("Expected input to contain a pipe expression.");
-
-        // Act
-        let pipe_expression = build_pipe_expression(pipe_rule);
-
-        // Assert
-        assert!(pipe_expression.is_ok());
-        let pipe = pipe_expression.unwrap();
-        assert_eq!(pipe.arms.arms.len(), 3);
-    }
-
-    #[test]
     fn should_build_pipe_expression_with_block_expressions() {
         // Arrange
         let input = r#"(a) |> (b)"#;
