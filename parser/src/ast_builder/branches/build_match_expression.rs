@@ -226,6 +226,12 @@ fn literal_to_literal_pattern(literal: Literal) -> LiteralPattern {
         Literal::Hexadecimal(h) => LiteralPattern::Hexadecimal(h),
         Literal::Binary(b) => LiteralPattern::Binary(b),
         Literal::Octal(o) => LiteralPattern::Octal(o),
+        Literal::Array(_) => {
+            todo!("Array literal patterns are not supported yet")
+        }
+        Literal::Object(_) => {
+            todo!("Object literal patterns are not supported yet")
+        }
     }
 }
 

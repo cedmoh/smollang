@@ -220,7 +220,7 @@ expression_in_call            = _{
 }
 
 // Pipe
-pipe_expression                 =  { pipe_first_arm ~ (pipe_to_symbol ~ pipe_arm)+ }
+pipe_expression                 =  { pipe_first_arm ~ (NLS ~ pipe_to_symbol ~ pipe_arm)+ }
 pipe_shared_allowed_expressions = _{
     // every expression except pipe_expression and operation
   
@@ -292,8 +292,8 @@ hexadecimal_literal = @{ "#" ~ (ASCII_HEX_DIGIT | "_")+ }
 binary_literal      = @{ "b" ~ ('0'..'1' | "_")+ }
 octal_literal       = @{ "o" ~ ('0'..'7' | "_")+ }
 boolean_literal     = @{ true | false }
-array_literal       =  { "[" ~ array_entries ~ "]" }
-array_entries       =  { array_entry? ~ ("," ~ array_entry)* ~ ","? }
+array_literal       =  { "[" ~ NLS ~ array_entries ~ NLS ~ "]" }
+array_entries       =  { array_entry? ~ ("," ~ NLS ~ array_entry)* ~ ","? }
 array_entry         =  { expression }
 object_literal      =  { "{" ~ object_entries ~ "}" }
 object_entries      =  { object_entry? ~ ("," ~ object_entry)* ~ ","? }

@@ -1,3 +1,5 @@
+use crate::{Expression, Expressions};
+
 /// A literal value, which is a piece of code that represents a constant value.
 /// Literals include numbers, strings, booleans, and nil.
 ///
@@ -34,6 +36,8 @@ pub enum Literal {
     Hexadecimal(HexadecimalLiteral),
     Binary(BinaryLiteral),
     Octal(OctalLiteral),
+    Array(ArrayLiteral),
+    Object(ObjectLiteral),
 }
 
 /// A boolean literal, which represents a boolean value (true or false).
@@ -190,4 +194,133 @@ impl OctalLiteral {
     pub fn new(value: i64) -> Self {
         Self { value }
     }
+}
+
+/// An array literal, which represents an array value.
+///
+/// # Examples
+///     
+/// ```smollang
+/// [1, 2, 3]
+/// ```
+///
+/// ```smollang
+/// []  
+/// ```
+#[derive(Debug, Clone, PartialEq)]
+pub struct ArrayLiteral {
+    pub elements: Expressions,
+}
+
+impl ArrayLiteral {
+    pub fn new(elements: Expressions) -> Self {
+        Self { elements }
+    }
+
+    pub fn builder() -> ArrayLiteralBuilder {
+        ArrayLiteralBuilder::new()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ArrayLiteralBuilder {
+    elements: Vec<Expression>,
+}
+
+impl ArrayLiteralBuilder {
+    pub fn new() -> Self {
+        Self {
+            elements: Vec::new(),
+        }
+    }
+
+    pub fn add_element(&mut self, element: Expression) -> &mut Self {
+        self.elements.push(element);
+        self
+    }
+
+    pub fn with_element(mut self, element: Expression) -> Self {
+        self.add_element(element);
+        self
+    }
+
+    pub fn build(self) -> ArrayLiteral {
+        ArrayLiteral::new(Expressions::new(self.elements))
+    }
+}
+
+/// An object literal, which represents an object value.
+///     
+/// # Examples
+///
+/// ```smollang
+/// {
+///   name 'Alice',
+///   age 30,
+///   isStudent false,
+///   salary getSalary(),
+///   study || print 'Studying...',
+/// }
+/// ```
+///
+/// ```smollang
+/// {}
+/// ```
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct ObjectLiteral {
+    pub properties: ObjectProperties,
+}
+
+impl ObjectLiteral {
+    pub fn new(properties: ObjectProperties) -> Self {
+        Self { properties }
+    }
+
+    pub fn builder() -> ObjectLiteralBuilder {
+        ObjectLiteralBuilder::new()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ObjectLiteralBuilder {
+    properties: Vec<ObjectProperty>,
+}
+
+impl ObjectLiteralBuilder {
+    pub fn new() -> Self {
+        Self {
+            properties: Vec::new(),
+        }
+    }
+
+    pub fn add_property(&mut self, property: ObjectProperty) -> &mut Self {
+        self.properties.push(property);
+        self
+    }
+
+    pub fn with_property(mut self, property: ObjectProperty) -> Self {
+        self.add_property(property);
+        self
+    }
+
+    pub fn build(self) -> ObjectLiteral {
+        ObjectLiteral::new(ObjectProperties::new(self.properties))
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct ObjectProperties {
+    pub properties: Vec<ObjectProperty>,
+}
+
+impl ObjectProperties {
+    pub fn new(properties: Vec<ObjectProperty>) -> Self {
+        Self { properties }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ObjectProperty {
+    Shorthand(String),
+    KeyValue(String, Expression),
 }

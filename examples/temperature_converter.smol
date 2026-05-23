@@ -1,0 +1,10 @@
+temperature val readLine 'Enter temperature: '
+
+unit val readLine 'Enter unit (C/F): '
+
+result val unit match
+     'C' -> (temperature * 9 / 5) + 32
+     'F' -> (temperature - 32) * 5 / 9
+     _ -> 'Invalid unit'
+
+print 'Result: ' + result
