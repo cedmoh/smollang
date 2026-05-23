@@ -1,0 +1,5 @@
+use absolute from math
+
+countNumberDigits |num| absolute(num).toString().length 
+
+countNumberDigits -123
