@@ -1,0 +1,10 @@
+leftHandSide val readLine 'Enter first number: '
+operator val readLine 'Enter operator (+, -, *, /): '
+rightHandSide val readLine 'Enter second number: '
+
+print operator match 
+    '+' -> leftHandSide + rightHandSide
+    '-' -> leftHandSide - rightHandSide
+    '*' -> leftHandSide * rightHandSide
+    '/' -> leftHandSide / rightHandSide
+    _ -> 'Invalid operator'

@@ -1,0 +1,3 @@
+use max from math
+
+max 1, 2, 3
