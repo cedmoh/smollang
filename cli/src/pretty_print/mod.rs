@@ -14,14 +14,18 @@ pub trait PrettyPrint {
         &self,
         f: &mut Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result;
 
     /// Returns a wrapper that renders this value using [`Display`].
-    fn pretty(&self) -> PrettyPrinter<'_, Self>
+    fn pretty(&self, colors_enabled: bool) -> PrettyPrinter<'_, Self>
     where
         Self: Sized,
     {
-        PrettyPrinter { value: self }
+        PrettyPrinter {
+            value: self,
+            colors_enabled,
+        }
     }
 }
 
@@ -29,11 +33,13 @@ pub trait PrettyPrint {
 pub struct PrettyPrinter<'a, T: ?Sized> {
     /// The value being wrapped.
     value: &'a T,
+    /// Whether ANSI colors are enabled.
+    colors_enabled: bool,
 }
 
 impl<'a, T: PrettyPrint + ?Sized> Display for PrettyPrinter<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.value.fmt_with_indent(f, 0)
+        self.value.fmt_with_indent(f, 0, self.colors_enabled)
     }
 }
 
@@ -42,9 +48,10 @@ impl<T: PrettyPrint> PrettyPrint for Vec<T> {
         &self,
         f: &mut Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         for item in self {
-            item.fmt_with_indent(f, indent)?;
+            item.fmt_with_indent(f, indent, colors_enabled)?;
         }
 
         Ok(())

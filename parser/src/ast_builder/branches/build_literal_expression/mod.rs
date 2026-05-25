@@ -6,6 +6,7 @@ mod build_nil_literal;
 mod build_object_literal;
 mod build_octal_literal;
 mod build_string_literal;
+mod build_template_literal;
 
 pub use build_array_literal::build_array_literal;
 pub use build_boolean_literal::build_boolean_literal;
@@ -15,6 +16,7 @@ pub use build_nil_literal::build_nil_literal;
 pub use build_object_literal::build_object_literal;
 pub use build_octal_literal::build_octal_literal;
 pub use build_string_literal::build_string_literal;
+pub use build_template_literal::build_template_literal;
 
 use crate::rule_parser::Rule;
 use ast::Literal;
@@ -69,6 +71,9 @@ pub fn build_literal_expression(
             .map_err(|e| BuildLiteralVariantError(e.to_string()))
             .map(Literal::Boolean),
         string_literal => build_string_literal(inner_literal)
+            .map_err(|e| BuildLiteralVariantError(e.to_string()))
+            .map(|s| s.into()),
+        template_literal => build_template_literal(inner_literal)
             .map_err(|e| BuildLiteralVariantError(e.to_string()))
             .map(|s| s.into()),
         decimal_literal => build_decimal_literal(inner_literal)

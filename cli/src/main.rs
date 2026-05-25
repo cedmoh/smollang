@@ -36,7 +36,12 @@ fn main() -> anyhow::Result<()> {
                         .short('d')
                         .action(clap::ArgAction::SetTrue)
                 )
-                ,
+                .arg(
+                    Arg::new("no-color")
+                        .help("Disable colored pretty-printed AST output.")
+                        .long("no-color")
+                        .action(clap::ArgAction::SetTrue),
+                ),
         )
         .subcommand(
             Command::new("fmt")
@@ -70,8 +75,10 @@ fn main() -> anyhow::Result<()> {
             let file: &PathBuf = sub_m.get_one("file").unwrap();
             let is_debug: bool =
                 sub_m.get_one("debug").copied().unwrap_or(false);
+            let no_color: bool =
+                sub_m.get_one("no-color").copied().unwrap_or(false);
 
-            parse_file(file, is_debug)
+            parse_file(file, is_debug, no_color)
         }
         _ => {
             unreachable!(
@@ -81,7 +88,11 @@ fn main() -> anyhow::Result<()> {
     }
 }
 
-fn parse_file(path: &PathBuf, is_debug: bool) -> anyhow::Result<()> {
+fn parse_file(
+    path: &PathBuf,
+    is_debug: bool,
+    no_color: bool,
+) -> anyhow::Result<()> {
     let input = std::fs::read_to_string(path)?;
 
     let ast = parser::parse_string_to_program_ast(&input)?;
@@ -89,7 +100,7 @@ fn parse_file(path: &PathBuf, is_debug: bool) -> anyhow::Result<()> {
     if is_debug {
         println!("{:#?}", ast);
     } else {
-        println!("{}", ast.pretty());
+        println!("{}", ast.pretty(!no_color));
     }
 
     Ok(())

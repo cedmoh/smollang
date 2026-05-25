@@ -11,18 +11,19 @@ use thiserror::Error;
 pub fn build_string_literal(
     pair: Pair<Rule>,
 ) -> Result<StringLiteral, BuildStringLiteralError> {
+    use BuildStringLiteralError::*;
     use Rule::string_literal;
 
     let rule = pair.as_rule();
 
     if rule != string_literal {
-        return Err(BuildStringLiteralError::UnexpectedInnerLiteral(rule));
+        return Err(UnexpectedInnerLiteral(rule));
     };
 
     let string_text_pair = pair
         .into_inner()
         .find(|p| p.as_rule() == Rule::string_text)
-        .expect("Expected string_literal to contain a string_text");
+        .ok_or(EmptyStringLiteral)?;
 
     Ok(StringLiteral::new(string_text_pair.as_str().to_string()))
 }
@@ -31,6 +32,9 @@ pub fn build_string_literal(
 pub enum BuildStringLiteralError {
     #[error("Expected a string_literal, but found {0:?}")]
     UnexpectedInnerLiteral(Rule),
+
+    #[error("The string literal is empty.")]
+    EmptyStringLiteral,
 }
 
 #[cfg(test)]

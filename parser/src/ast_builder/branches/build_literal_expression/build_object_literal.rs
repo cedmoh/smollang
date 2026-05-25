@@ -129,6 +129,7 @@ fn literal_to_object_key(
         Literal::Nil => Ok("nil".to_string()),
         Literal::Boolean(value) => Ok(value.value.to_string()),
         Literal::String(value) => Ok(value.value),
+        Literal::Template(template) => Ok(template.value),
         Literal::Integer(value) => Ok(value.value.to_string()),
         Literal::Decimal(value) => Ok(value.value.to_string()),
         Literal::Hexadecimal(value) => Ok(value.value.to_string()),

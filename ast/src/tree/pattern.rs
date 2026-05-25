@@ -1,6 +1,6 @@
 use crate::{
     BinaryLiteral, BooleanLiteral, DecimalLiteral, HexadecimalLiteral,
-    Identifier, IntegerLiteral, OctalLiteral, StringLiteral,
+    Identifier, IntegerLiteral, OctalLiteral, StringLiteral, TemplateLiteral,
 };
 
 /// A pattern, which is used in match expressions to specify the structure of
@@ -73,6 +73,7 @@ pub enum LiteralPattern {
     Nil,
     Boolean(BooleanLiteral),
     String(StringLiteral),
+    Template(TemplateLiteral),
     Integer(IntegerLiteral),
     Decimal(DecimalLiteral),
     Hexadecimal(HexadecimalLiteral),

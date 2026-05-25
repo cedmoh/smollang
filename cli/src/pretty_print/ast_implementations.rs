@@ -8,8 +8,8 @@ use ast::{
     FunctionParameter, FunctionParameters, HexadecimalLiteral, Identifier,
     IdentifierPattern, IntegerLiteral, Literal, LiteralPattern, Match,
     MatchArm, Member, ObjectLiteral, ObjectProperty, OctalLiteral, Pattern,
-    Pipe, PipeArm, PipeArms, Program, Return, StringLiteral, Then, Use,
-    VariableDeclaration,
+    Pipe, PipeArm, PipeArms, Program, Return, StringLiteral, TemplateLiteral,
+    Then, Use, VariableDeclaration,
 };
 
 use crate::pretty_print::{
@@ -22,18 +22,26 @@ impl PrettyPrint for VariableDeclaration {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "VariableDeclaration")?;
-        write_field_label(f, indent, "name")?;
-        self.name.fmt_with_indent(f, indent + PUSH)?;
-        write_scalar_field(f, indent, "is_mutable", self.is_mutable)?;
-        write_field_label(f, indent, "initial_value")?;
+        write_node_label(f, indent, colors_enabled, "VariableDeclaration")?;
+        write_field_label(f, indent, colors_enabled, "name")?;
+        self.name
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "is_mutable",
+            self.is_mutable,
+        )?;
+        write_field_label(f, indent, colors_enabled, "initial_value")?;
 
         match &self.initial_value {
             Some(initial_value) => {
-                initial_value.fmt_with_indent(f, indent + PUSH)
+                initial_value.fmt_with_indent(f, indent + PUSH, colors_enabled)
             }
-            None => write_none(f, indent + PUSH),
+            None => write_none(f, indent + PUSH, colors_enabled),
         }
     }
 }
@@ -43,12 +51,14 @@ impl PrettyPrint for Assignment {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
-        write_node_label(f, indent, "Assignment")?;
-        write_field_label(f, indent, "left")?;
-        self.left.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "right")?;
-        self.right.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Assignment")?;
+        write_field_label(f, indent, colors_enabled, "left")?;
+        self.left
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "right")?;
+        self.right.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -66,10 +76,11 @@ impl PrettyPrint for Block {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
-        write_node_label(f, indent, "Block")?;
-        write_field_label(f, indent, "body")?;
-        self.body.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Block")?;
+        write_field_label(f, indent, colors_enabled, "body")?;
+        self.body.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -78,6 +89,7 @@ impl PrettyPrint for DyadicOperator {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
         let label = match self {
             DyadicOperator::Add => "Add",
@@ -99,7 +111,7 @@ impl PrettyPrint for DyadicOperator {
             DyadicOperator::Range => "Range",
         };
 
-        write_node_label(f, indent, label)
+        write_node_label(f, indent, colors_enabled, label)
     }
 }
 
@@ -108,14 +120,17 @@ impl PrettyPrint for Dyadic {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
-        write_node_label(f, indent, "Dyadic")?;
-        write_field_label(f, indent, "operator")?;
-        self.operator.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "left")?;
-        self.left.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "right")?;
-        self.right.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Dyadic")?;
+        write_field_label(f, indent, colors_enabled, "operator")?;
+        self.operator
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "left")?;
+        self.left
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "right")?;
+        self.right.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -124,36 +139,47 @@ impl PrettyPrint for Expression {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
         match self {
             Expression::Assignment(assignment) => {
-                assignment.fmt_with_indent(f, indent)
+                assignment.fmt_with_indent(f, indent, colors_enabled)
             }
-            Expression::Block(block) => block.fmt_with_indent(f, indent),
-            Expression::Dyadic(dyadic) => dyadic.fmt_with_indent(f, indent),
+            Expression::Block(block) => {
+                block.fmt_with_indent(f, indent, colors_enabled)
+            }
+            Expression::Dyadic(dyadic) => {
+                dyadic.fmt_with_indent(f, indent, colors_enabled)
+            }
             Expression::FunctionCall(function_call) => {
-                function_call.fmt_with_indent(f, indent)
+                function_call.fmt_with_indent(f, indent, colors_enabled)
             }
             Expression::FunctionDeclaration(function_declaration) => {
-                function_declaration.fmt_with_indent(f, indent)
+                function_declaration.fmt_with_indent(f, indent, colors_enabled)
             }
             Expression::Then(then_expression) => {
-                then_expression.fmt_with_indent(f, indent)
+                then_expression.fmt_with_indent(f, indent, colors_enabled)
             }
-            Expression::Pipe(pipe) => pipe.fmt_with_indent(f, indent),
+            Expression::Pipe(pipe) => {
+                pipe.fmt_with_indent(f, indent, colors_enabled)
+            }
             Expression::Identifier(identifier) => {
-                identifier.fmt_with_indent(f, indent)
+                identifier.fmt_with_indent(f, indent, colors_enabled)
             }
-            Expression::Literal(literal) => literal.fmt_with_indent(f, indent),
+            Expression::Literal(literal) => {
+                literal.fmt_with_indent(f, indent, colors_enabled)
+            }
             Expression::Match(match_expression) => {
-                match_expression.fmt_with_indent(f, indent)
+                match_expression.fmt_with_indent(f, indent, colors_enabled)
             }
-            Expression::Member(member) => member.fmt_with_indent(f, indent),
+            Expression::Member(member) => {
+                member.fmt_with_indent(f, indent, colors_enabled)
+            }
             Expression::Return(return_expression) => {
-                return_expression.fmt_with_indent(f, indent)
+                return_expression.fmt_with_indent(f, indent, colors_enabled)
             }
             Expression::VariableDeclaration(variable_declaration) => {
-                variable_declaration.fmt_with_indent(f, indent)
+                variable_declaration.fmt_with_indent(f, indent, colors_enabled)
             }
         }
     }
@@ -164,10 +190,16 @@ impl PrettyPrint for Expressions {
         &self,
         f: &mut std::fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> std::fmt::Result {
-        for expr in &self.items {
-            expr.fmt_with_indent(f, indent)?;
+        if self.items.is_empty() {
+            return write_empty(f, indent, colors_enabled);
         }
+
+        for expr in &self.items {
+            expr.fmt_with_indent(f, indent, colors_enabled)?;
+        }
+
         Ok(())
     }
 }
@@ -177,12 +209,15 @@ impl PrettyPrint for FunctionCall {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "FunctionCall")?;
-        write_field_label(f, indent, "callee")?;
-        self.callee.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "arguments")?;
-        self.arguments.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "FunctionCall")?;
+        write_field_label(f, indent, colors_enabled, "callee")?;
+        self.callee
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "arguments")?;
+        self.arguments
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -191,8 +226,9 @@ impl PrettyPrint for FunctionCallArguments {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        self.expressions.fmt_with_indent(f, indent)
+        self.expressions.fmt_with_indent(f, indent, colors_enabled)
     }
 }
 
@@ -201,24 +237,30 @@ impl PrettyPrint for FunctionDeclaration {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "FunctionDeclaration")?;
+        write_node_label(f, indent, colors_enabled, "FunctionDeclaration")?;
 
-        write_field_label(f, indent, "name")?;
+        write_field_label(f, indent, colors_enabled, "name")?;
         match &self.name {
-            Some(name) => name.fmt_with_indent(f, indent + PUSH)?,
+            Some(name) => {
+                name.fmt_with_indent(f, indent + PUSH, colors_enabled)?
+            }
             None => {
-                write_none(f, indent + PUSH)?;
+                write_none(f, indent + PUSH, colors_enabled)?;
             }
         }
 
-        write_field_label(f, indent, "params")?;
-        self.params.fmt_with_indent(f, indent + PUSH)?;
+        write_field_label(f, indent, colors_enabled, "params")?;
+        self.params
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
 
-        write_field_label(f, indent, "body")?;
+        write_field_label(f, indent, colors_enabled, "body")?;
         match &self.body {
-            Some(body) => body.fmt_with_indent(f, indent + PUSH),
-            None => write_none(f, indent + PUSH),
+            Some(body) => {
+                body.fmt_with_indent(f, indent + PUSH, colors_enabled)
+            }
+            None => write_none(f, indent + PUSH, colors_enabled),
         }
     }
 }
@@ -228,10 +270,11 @@ impl PrettyPrint for FunctionParameter {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "FunctionParameter")?;
-        write_field_label(f, indent, "name")?;
-        self.name.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "FunctionParameter")?;
+        write_field_label(f, indent, colors_enabled, "name")?;
+        self.name.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -240,13 +283,14 @@ impl PrettyPrint for FunctionParameters {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         if self.items.is_empty() {
-            return write_empty(f, indent);
+            return write_empty(f, indent, colors_enabled);
         }
 
         for parameter in &self.items {
-            parameter.fmt_with_indent(f, indent)?;
+            parameter.fmt_with_indent(f, indent, colors_enabled)?;
         }
 
         Ok(())
@@ -258,10 +302,11 @@ impl PrettyPrint for FunctionBody {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match &self.body {
-            Some(body) => body.fmt_with_indent(f, indent),
-            None => write_none(f, indent),
+            Some(body) => body.fmt_with_indent(f, indent, colors_enabled),
+            None => write_none(f, indent, colors_enabled),
         }
     }
 }
@@ -271,13 +316,16 @@ impl PrettyPrint for Return {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Return")?;
-        write_field_label(f, indent, "expression")?;
+        write_node_label(f, indent, colors_enabled, "Return")?;
+        write_field_label(f, indent, colors_enabled, "expression")?;
 
         match &self.expression {
-            Some(expression) => expression.fmt_with_indent(f, indent + PUSH),
-            None => write_none(f, indent + PUSH),
+            Some(expression) => {
+                expression.fmt_with_indent(f, indent + PUSH, colors_enabled)
+            }
+            None => write_none(f, indent + PUSH, colors_enabled),
         }
     }
 }
@@ -293,9 +341,16 @@ impl PrettyPrint for Identifier {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Identifier")?;
-        write_scalar_field(f, indent, "id", format!("'{}'", self.id))
+        write_node_label(f, indent, colors_enabled, "Identifier")?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "id",
+            format!("'{}'", self.id),
+        )
     }
 }
 
@@ -316,14 +371,16 @@ impl PrettyPrint for Program {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Program")?;
+        write_node_label(f, indent, colors_enabled, "Program")?;
 
-        write_field_label(f, indent, "directives")?;
-        self.directives.fmt_with_indent(f, indent + PUSH)?;
+        write_field_label(f, indent, colors_enabled, "directives")?;
+        self.directives
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
 
-        write_field_label(f, indent, "body")?;
-        self.body.fmt_with_indent(f, indent + PUSH)
+        write_field_label(f, indent, colors_enabled, "body")?;
+        self.body.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -332,17 +389,22 @@ impl PrettyPrint for Then {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Then")?;
-        write_field_label(f, indent, "condition")?;
-        self.condition.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "then_body")?;
-        self.then_body.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "else_body")?;
+        write_node_label(f, indent, colors_enabled, "Then")?;
+        write_field_label(f, indent, colors_enabled, "condition")?;
+        self.condition
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "then_body")?;
+        self.then_body
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "else_body")?;
 
         match &self.else_body {
-            Some(else_body) => else_body.fmt_with_indent(f, indent + PUSH),
-            None => write_none(f, indent + PUSH),
+            Some(else_body) => {
+                else_body.fmt_with_indent(f, indent + PUSH, colors_enabled)
+            }
+            None => write_none(f, indent + PUSH, colors_enabled),
         }
     }
 }
@@ -352,10 +414,11 @@ impl PrettyPrint for Pipe {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Pipe")?;
-        write_field_label(f, indent, "arms")?;
-        self.arms.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Pipe")?;
+        write_field_label(f, indent, colors_enabled, "arms")?;
+        self.arms.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -364,8 +427,9 @@ impl PrettyPrint for PipeArm {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        self.expression.fmt_with_indent(f, indent)
+        self.expression.fmt_with_indent(f, indent, colors_enabled)
     }
 }
 
@@ -374,9 +438,10 @@ impl PrettyPrint for PipeArms {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         for arm in &self.arms {
-            arm.fmt_with_indent(f, indent)?;
+            arm.fmt_with_indent(f, indent, colors_enabled)?;
         }
 
         Ok(())
@@ -388,27 +453,45 @@ impl PrettyPrint for Pattern {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match self {
             Pattern::Identifier(identifier) => {
-                identifier.fmt_with_indent(f, indent)
+                identifier.fmt_with_indent(f, indent, colors_enabled)
             }
-            Pattern::Literal(literal) => literal.fmt_with_indent(f, indent),
+            Pattern::Literal(literal) => {
+                literal.fmt_with_indent(f, indent, colors_enabled)
+            }
             Pattern::Array(array_pattern_elements) => {
-                write_node_label(f, indent, "ArrayPattern")?;
+                write_node_label(f, indent, colors_enabled, "ArrayPattern")?;
                 for element in array_pattern_elements {
-                    element.fmt_with_indent(f, indent + PUSH)?;
+                    element.fmt_with_indent(
+                        f,
+                        indent + PUSH,
+                        colors_enabled,
+                    )?;
                 }
                 Ok(())
             }
             Pattern::Destructuring(destructuring_pattern_elements) => {
-                write_node_label(f, indent, "DestructuringPattern")?;
+                write_node_label(
+                    f,
+                    indent,
+                    colors_enabled,
+                    "DestructuringPattern",
+                )?;
                 for element in destructuring_pattern_elements {
-                    element.fmt_with_indent(f, indent + PUSH)?;
+                    element.fmt_with_indent(
+                        f,
+                        indent + PUSH,
+                        colors_enabled,
+                    )?;
                 }
                 Ok(())
             }
-            Pattern::Wildcard => write_node_label(f, indent, "Wildcard"),
+            Pattern::Wildcard => {
+                write_node_label(f, indent, colors_enabled, "Wildcard")
+            }
         }
     }
 }
@@ -418,12 +501,15 @@ impl PrettyPrint for ArrayPatternElement {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match self {
             ArrayPatternElement::Pattern(pattern) => {
-                pattern.fmt_with_indent(f, indent)
+                pattern.fmt_with_indent(f, indent, colors_enabled)
             }
-            ArrayPatternElement::Rest => write_node_label(f, indent, "Rest"),
+            ArrayPatternElement::Rest => {
+                write_node_label(f, indent, colors_enabled, "Rest")
+            }
         }
     }
 }
@@ -433,15 +519,22 @@ impl PrettyPrint for DestructuringPatternElement {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "DestructuringPatternElement")?;
-        write_field_label(f, indent, "name")?;
-        self.name.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "pattern")?;
+        write_node_label(
+            f,
+            indent,
+            colors_enabled,
+            "DestructuringPatternElement",
+        )?;
+        write_field_label(f, indent, colors_enabled, "name")?;
+        self.name
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "pattern")?;
         if let Some(pattern) = &self.pattern {
-            pattern.fmt_with_indent(f, indent + PUSH)
+            pattern.fmt_with_indent(f, indent + PUSH, colors_enabled)
         } else {
-            write_none(f, indent + PUSH)
+            write_none(f, indent + PUSH, colors_enabled)
         }
     }
 }
@@ -451,9 +544,16 @@ impl PrettyPrint for IdentifierPattern {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "IdentifierPattern")?;
-        write_scalar_field(f, indent, "name", format!("'{}'", self.0.id))
+        write_node_label(f, indent, colors_enabled, "IdentifierPattern")?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "name",
+            format!("'{}'", self.0.id),
+        )
     }
 }
 
@@ -462,29 +562,35 @@ impl PrettyPrint for LiteralPattern {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match self {
-            LiteralPattern::Nil => write_node_label(f, indent, "Nil"),
+            LiteralPattern::Nil => {
+                write_node_label(f, indent, colors_enabled, "Nil")
+            }
             LiteralPattern::Boolean(boolean_literal) => {
-                boolean_literal.fmt_with_indent(f, indent)
+                boolean_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::String(string_literal) => {
-                string_literal.fmt_with_indent(f, indent)
+                string_literal.fmt_with_indent(f, indent, colors_enabled)
+            }
+            LiteralPattern::Template(template_literal) => {
+                template_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::Integer(integer_literal) => {
-                integer_literal.fmt_with_indent(f, indent)
+                integer_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::Decimal(decimal_literal) => {
-                decimal_literal.fmt_with_indent(f, indent)
+                decimal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::Hexadecimal(hexadecimal_literal) => {
-                hexadecimal_literal.fmt_with_indent(f, indent)
+                hexadecimal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::Binary(binary_literal) => {
-                binary_literal.fmt_with_indent(f, indent)
+                binary_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             LiteralPattern::Octal(octal_literal) => {
-                octal_literal.fmt_with_indent(f, indent)
+                octal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
         }
     }
@@ -495,12 +601,15 @@ impl PrettyPrint for Member {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Member")?;
-        write_field_label(f, indent, "object")?;
-        self.object.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "property")?;
-        self.property.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Member")?;
+        write_field_label(f, indent, colors_enabled, "object")?;
+        self.object
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "property")?;
+        self.property
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -509,12 +618,15 @@ impl PrettyPrint for Match {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Match")?;
-        write_field_label(f, indent, "expression")?;
-        self.expression.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "branches")?;
-        self.branches.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "Match")?;
+        write_field_label(f, indent, colors_enabled, "expression")?;
+        self.expression
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "branches")?;
+        self.branches
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -523,12 +635,14 @@ impl PrettyPrint for MatchArm {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "MatchArm")?;
-        write_field_label(f, indent, "pattern")?;
-        self.pattern.fmt_with_indent(f, indent + PUSH)?;
-        write_field_label(f, indent, "body")?;
-        self.body.fmt_with_indent(f, indent + PUSH)
+        write_node_label(f, indent, colors_enabled, "MatchArm")?;
+        write_field_label(f, indent, colors_enabled, "pattern")?;
+        self.pattern
+            .fmt_with_indent(f, indent + PUSH, colors_enabled)?;
+        write_field_label(f, indent, colors_enabled, "body")?;
+        self.body.fmt_with_indent(f, indent + PUSH, colors_enabled)
     }
 }
 
@@ -537,35 +651,39 @@ impl PrettyPrint for Literal {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match self {
-            Literal::Nil => write_node_label(f, indent, "nil"),
+            Literal::Nil => write_node_label(f, indent, colors_enabled, "nil"),
             Literal::Boolean(boolean_literal) => {
-                boolean_literal.fmt_with_indent(f, indent)
+                boolean_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::String(string_literal) => {
-                string_literal.fmt_with_indent(f, indent)
+                string_literal.fmt_with_indent(f, indent, colors_enabled)
+            }
+            Literal::Template(template_literal) => {
+                template_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Integer(integer_literal) => {
-                integer_literal.fmt_with_indent(f, indent)
+                integer_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Decimal(decimal_literal) => {
-                decimal_literal.fmt_with_indent(f, indent)
+                decimal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Hexadecimal(hexadecimal_literal) => {
-                hexadecimal_literal.fmt_with_indent(f, indent)
+                hexadecimal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Binary(binary_literal) => {
-                binary_literal.fmt_with_indent(f, indent)
+                binary_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Octal(octal_literal) => {
-                octal_literal.fmt_with_indent(f, indent)
+                octal_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Array(array_literal) => {
-                array_literal.fmt_with_indent(f, indent)
+                array_literal.fmt_with_indent(f, indent, colors_enabled)
             }
             Literal::Object(object_literal) => {
-                object_literal.fmt_with_indent(f, indent)
+                object_literal.fmt_with_indent(f, indent, colors_enabled)
             }
         }
     }
@@ -576,16 +694,17 @@ impl PrettyPrint for ArrayLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "ArrayLiteral")?;
-        write_field_label(f, indent, "elements")?;
+        write_node_label(f, indent, colors_enabled, "ArrayLiteral")?;
+        write_field_label(f, indent, colors_enabled, "elements")?;
 
         if self.elements.items.is_empty() {
-            return write_empty(f, indent + PUSH);
+            return write_empty(f, indent + PUSH, colors_enabled);
         }
 
         for element in &self.elements.items {
-            element.fmt_with_indent(f, indent + PUSH)?;
+            element.fmt_with_indent(f, indent + PUSH, colors_enabled)?;
         }
 
         Ok(())
@@ -597,16 +716,17 @@ impl PrettyPrint for ObjectLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "ObjectLiteral")?;
-        write_field_label(f, indent, "properties")?;
+        write_node_label(f, indent, colors_enabled, "ObjectLiteral")?;
+        write_field_label(f, indent, colors_enabled, "properties")?;
 
         if self.properties.properties.is_empty() {
-            return write_empty(f, indent + PUSH);
+            return write_empty(f, indent + PUSH, colors_enabled);
         }
 
         for property in &self.properties.properties {
-            property.fmt_with_indent(f, indent + PUSH)?;
+            property.fmt_with_indent(f, indent + PUSH, colors_enabled)?;
         }
 
         Ok(())
@@ -618,23 +738,29 @@ impl PrettyPrint for ObjectProperty {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Property")?;
+        write_node_label(f, indent, colors_enabled, "Property")?;
 
         match self {
-            ObjectProperty::Shorthand(shorthand) => {
-                write_scalar_field(f, indent, "key", format!("'{}'", shorthand))
-            }
+            ObjectProperty::Shorthand(shorthand) => write_scalar_field(
+                f,
+                indent,
+                colors_enabled,
+                "key",
+                format!("'{}'", shorthand),
+            ),
             ObjectProperty::KeyValue(key, expression) => {
-                write_field_label(f, indent, "key")?;
+                write_field_label(f, indent, colors_enabled, "key")?;
                 write_scalar_field(
                     f,
                     indent + PUSH,
+                    colors_enabled,
                     "value",
                     format!("'{}'", key),
                 )?;
-                write_field_label(f, indent, "value")?;
-                expression.fmt_with_indent(f, indent + PUSH)
+                write_field_label(f, indent, colors_enabled, "value")?;
+                expression.fmt_with_indent(f, indent + PUSH, colors_enabled)
             }
         }
     }
@@ -645,9 +771,10 @@ impl PrettyPrint for BooleanLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "BooleanLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "BooleanLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -656,9 +783,34 @@ impl PrettyPrint for StringLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "StringLiteral")?;
-        write_scalar_field(f, indent, "value", format!("'{}'", self.value))
+        write_node_label(f, indent, colors_enabled, "StringLiteral")?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "value",
+            format!("'{}'", self.value),
+        )
+    }
+}
+
+impl PrettyPrint for TemplateLiteral {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        indent: usize,
+        colors_enabled: bool,
+    ) -> fmt::Result {
+        write_node_label(f, indent, colors_enabled, "TemplateLiteral")?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "value",
+            format!("'{}'", self.value),
+        )
     }
 }
 
@@ -667,9 +819,10 @@ impl PrettyPrint for IntegerLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "IntegerLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "IntegerLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -678,9 +831,10 @@ impl PrettyPrint for DecimalLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "DecimalLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "DecimalLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -689,9 +843,10 @@ impl PrettyPrint for HexadecimalLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "HexadecimalLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "HexadecimalLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -700,9 +855,10 @@ impl PrettyPrint for BinaryLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "BinaryLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "BinaryLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -711,9 +867,10 @@ impl PrettyPrint for OctalLiteral {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "OctalLiteral")?;
-        write_scalar_field(f, indent, "value", self.value)
+        write_node_label(f, indent, colors_enabled, "OctalLiteral")?;
+        write_scalar_field(f, indent, colors_enabled, "value", self.value)
     }
 }
 
@@ -722,13 +879,20 @@ impl PrettyPrint for Use {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
-        write_node_label(f, indent, "Use")?;
-        write_field_label(f, indent, "path")?;
-        write_scalar_field(f, indent + PUSH, "value", &self.path)?;
-        write_field_label(f, indent, "imports")?;
+        write_node_label(f, indent, colors_enabled, "Use")?;
+        write_scalar_field(
+            f,
+            indent,
+            colors_enabled,
+            "path",
+            self.path.to_string(),
+        )?;
+
+        write_field_label(f, indent, colors_enabled, "imports")?;
         for import in &self.imports {
-            import.fmt_with_indent(f, indent + PUSH)?;
+            import.fmt_with_indent(f, indent + PUSH, colors_enabled)?;
         }
         Ok(())
     }
@@ -739,10 +903,11 @@ impl PrettyPrint for Directive {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         match self {
             Directive::Use(use_directive) => {
-                use_directive.fmt_with_indent(f, indent)
+                use_directive.fmt_with_indent(f, indent, colors_enabled)
             }
         }
     }
@@ -753,13 +918,14 @@ impl PrettyPrint for Directives {
         &self,
         f: &mut fmt::Formatter<'_>,
         indent: usize,
+        colors_enabled: bool,
     ) -> fmt::Result {
         if self.items.is_empty() {
-            return write_empty(f, indent);
+            return write_empty(f, indent, colors_enabled);
         }
 
         for directive in &self.items {
-            directive.fmt_with_indent(f, indent)?;
+            directive.fmt_with_indent(f, indent, colors_enabled)?;
         }
 
         Ok(())

@@ -156,9 +156,8 @@ fn build_pattern_term(
 
     match inner.as_rule() {
         identifier => {
-            let id = build_identifier_expression(inner).map_err(|e| {
-                InvalidIdentifierInPattern(e.to_string())
-            })?;
+            let id = build_identifier_expression(inner)
+                .map_err(|e| InvalidIdentifierInPattern(e.to_string()))?;
 
             Ok(Pattern::Identifier(IdentifierPattern::new(id)))
         }
@@ -189,11 +188,8 @@ fn build_array_pattern(
                 // pattern_term may wrap a rest_term (`..`) when the grammar
                 // chose the pattern_term branch over the direct rest_term
                 // branch. Detect that case and emit a Rest element instead.
-                let inner = element
-                    .clone()
-                    .into_inner()
-                    .next()
-                    .ok_or(EmptyPattern)?;
+                let inner =
+                    element.clone().into_inner().next().ok_or(EmptyPattern)?;
 
                 if inner.as_rule() == rest_term {
                     builder = builder.with_rest();
@@ -221,6 +217,7 @@ fn literal_to_literal_pattern(literal: Literal) -> LiteralPattern {
         Literal::Nil => LiteralPattern::Nil,
         Literal::Boolean(b) => LiteralPattern::Boolean(b),
         Literal::String(s) => LiteralPattern::String(s),
+        Literal::Template(t) => LiteralPattern::Template(t),
         Literal::Integer(i) => LiteralPattern::Integer(i),
         Literal::Decimal(d) => LiteralPattern::Decimal(d),
         Literal::Hexadecimal(h) => LiteralPattern::Hexadecimal(h),
@@ -357,14 +354,14 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected = Match::builder(
-            Identifier::new("n".to_string()).into(),
-        )
-        .with_branch(MatchArm::new(
-            Pattern::Literal(LiteralPattern::Integer(IntegerLiteral::new(1))),
-            Identifier::new("a".to_string()).into(),
-        ))
-        .build();
+        let expected = Match::builder(Identifier::new("n".to_string()).into())
+            .with_branch(MatchArm::new(
+                Pattern::Literal(LiteralPattern::Integer(IntegerLiteral::new(
+                    1,
+                ))),
+                Identifier::new("a".to_string()).into(),
+            ))
+            .build();
 
         assert_eq!(result, Ok(expected));
     }

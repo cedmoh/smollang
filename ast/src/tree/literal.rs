@@ -31,6 +31,7 @@ pub enum Literal {
     Nil,
     Boolean(BooleanLiteral),
     String(StringLiteral),
+    Template(TemplateLiteral),
     Integer(IntegerLiteral),
     Decimal(DecimalLiteral),
     Hexadecimal(HexadecimalLiteral),
@@ -57,11 +58,36 @@ pub struct BooleanLiteral {
 /// # Examples
 ///
 /// ```smollang
-/// "Hello, world!"
+/// 'Hello, world!'
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct StringLiteral {
     pub value: String,
+}
+
+/// A template literal, which represents a string value that can contain
+/// embedded expressions.
+///
+/// # Examples
+///     
+/// ```smollang
+/// $'Hello, {name}!'
+/// ```
+#[derive(Debug, Clone, PartialEq)]
+pub struct TemplateLiteral {
+    pub value: String,
+}
+
+impl TemplateLiteral {
+    pub fn new(value: String) -> Self {
+        Self { value }
+    }
+}
+
+impl From<TemplateLiteral> for Literal {
+    fn from(template_literal: TemplateLiteral) -> Self {
+        Literal::Template(template_literal)
+    }
 }
 
 impl From<StringLiteral> for Literal {

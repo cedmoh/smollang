@@ -253,19 +253,21 @@ variable_initialization = { expression }
 variable_name = @{ identifier }
 
 // Literals
-literal        =  {
+literal          =  {
   
   | nil_literal
   | array_literal
   | object_literal
   | boolean_literal
   | string_literal
+  | template_literal
   | number_literal
   | hexadecimal_literal
 }
-nil_literal    =  { nil }
-string_literal = @{ "'" ~ string_text ~ "'" }
-string_text    = ${ ('\u{00}'..'\u{26}' | '\u{28}'..'\u{10FFFF}')* }
+nil_literal      =  { nil }
+string_literal   = @{ "'" ~ string_text ~ "'" }
+string_text      = ${ ('\u{00}'..'\u{26}' | '\u{28}'..'\u{10FFFF}')* }
+template_literal = @{ "$" ~ "'" ~ string_text ~ "'" }
 // any ascii character except for ' (single quote)
 number_literal = _{
   

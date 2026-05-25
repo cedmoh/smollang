@@ -1,0 +1,5 @@
+multiplication_table |n| (
+  (1..10).each |i| (
+    print $'{n} x {i} = {n * i}'
+  ) 
+)

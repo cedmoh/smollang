@@ -1,14 +1,15 @@
 use crate::{EvaluationResult, Value};
-use ast::Literal::{
-    self, Binary, Boolean, Decimal, Hexadecimal, Integer, Nil, Octal, String,
-};
+use ast::Literal;
 
 /// Evaluate a literal expression by converting the literal to a value.
 pub fn evaluate_literal(literal: Literal) -> EvaluationResult {
+    use ast::Literal::*;
+
     let value = match literal {
         Nil => Value::Nil,
         Boolean(boolean) => Value::Boolean(boolean.value),
         String(string) => Value::String(string.value),
+        Template(template) => Value::String(template.value),
         Integer(int) => Value::Number(int.value as f64),
         Decimal(decimal_literal) => Value::Number(decimal_literal.value),
         Hexadecimal(hexadecimal_literal) => {
@@ -16,8 +17,8 @@ pub fn evaluate_literal(literal: Literal) -> EvaluationResult {
         }
         Binary(binary_literal) => Value::Number(binary_literal.value as f64),
         Octal(octal_literal) => Value::Number(octal_literal.value as f64),
-        Literal::Array(_array_literal) => todo!(),
-        Literal::Object(_object_literal) => todo!(),
+        Array(_array_literal) => todo!(),
+        Object(_object_literal) => todo!(),
     };
 
     EvaluationResult::Value(value)
