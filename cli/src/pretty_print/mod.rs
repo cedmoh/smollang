@@ -5,15 +5,16 @@ pub use helpers::*;
 
 use std::fmt::{self, Display, Formatter};
 
-static INDENT_SIZE: usize = 2;
+/// The default indentation string used when nesting child nodes.
+pub(crate) static INDENT: &str = "  ";
 
-/// Formats AST nodes using a YAML-like indentation-aware representation.
+/// Formats AST nodes using a tree representation with box-drawing symbols.
 pub trait PrettyPrint {
-    /// Formats this value with the provided indentation level.
+    /// Formats this value, prepending `prefix` to every output line.
     fn fmt_with_indent(
         &self,
         f: &mut Formatter<'_>,
-        indent: usize,
+        prefix: &str,
         colors_enabled: bool,
     ) -> fmt::Result;
 
@@ -39,7 +40,7 @@ pub struct PrettyPrinter<'a, T: ?Sized> {
 
 impl<'a, T: PrettyPrint + ?Sized> Display for PrettyPrinter<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.value.fmt_with_indent(f, 0, self.colors_enabled)
+        self.value.fmt_with_indent(f, "", self.colors_enabled)
     }
 }
 
@@ -47,11 +48,11 @@ impl<T: PrettyPrint> PrettyPrint for Vec<T> {
     fn fmt_with_indent(
         &self,
         f: &mut Formatter<'_>,
-        indent: usize,
+        prefix: &str,
         colors_enabled: bool,
     ) -> fmt::Result {
         for item in self {
-            item.fmt_with_indent(f, indent, colors_enabled)?;
+            item.fmt_with_indent(f, prefix, colors_enabled)?;
         }
 
         Ok(())
