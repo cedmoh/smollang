@@ -1,6 +1,6 @@
 use crate::{
     Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier,
-    Literal, Match, Member, Pipe, Return, Then, VariableDeclaration,
+    Literal, Loop, Match, Member, Pipe, Return, Then, VariableDeclaration,
 };
 
 /// An expression, which is a piece of code that can be evaluated to produce a
@@ -19,6 +19,7 @@ pub enum Expression {
     Match(Match),
     Member(Member),
     Return(Return),
+    Loop(Loop),
     VariableDeclaration(VariableDeclaration),
 }
 
@@ -91,6 +92,12 @@ impl From<Return> for Expression {
 impl From<VariableDeclaration> for Expression {
     fn from(variable_declaration: VariableDeclaration) -> Self {
         Expression::VariableDeclaration(variable_declaration)
+    }
+}
+
+impl From<Loop> for Expression {
+    fn from(loop_expression: Loop) -> Self {
+        Expression::Loop(loop_expression)
     }
 }
 

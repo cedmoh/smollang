@@ -1,0 +1,8 @@
+numberToCheck val 153
+
+numberToCheck.toString().map Number.parse
+  |> (
+    power val it.length
+    it.fold 0, |acc, d| acc + d ^ power
+  )
+  |> it == numberToCheck

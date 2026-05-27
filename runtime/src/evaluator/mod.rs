@@ -70,6 +70,7 @@ impl Evaluator {
             }
             Expression::Then(_then) => todo!(),
             Expression::Pipe(_pipe) => todo!(),
+            Expression::Loop(_) => todo!(),
         }
     }
 }

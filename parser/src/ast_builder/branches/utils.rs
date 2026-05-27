@@ -8,7 +8,7 @@ use crate::{
         build_call_expression, build_continue_expression,
         build_dynamic_key_expression, build_function_declaration_expression,
         build_identifier_expression, build_literal_expression,
-        build_match_expression, build_member_expression,
+        build_loop_expression, build_match_expression, build_member_expression,
         build_operation_expression, build_pipe_expression,
         build_returned_expression, build_then_expression,
         build_variable_declaration_expression,
@@ -33,6 +33,9 @@ pub fn match_rule_to_expression_builder(
         // ---
         block => build_block_expression(inner_expression)
             .map(|b| Block(b))
+            .map_err(|error| BuildExpressionVariantError(error.to_string())),
+        loop_expression => build_loop_expression(inner_expression)
+            .map(|l| Loop(l))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
         then_expression => build_then_expression(inner_expression)

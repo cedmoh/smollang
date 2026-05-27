@@ -136,6 +136,7 @@ use_path = { identifier | string_literal }
 expression = {
   
   | declaration
+  | loop_expression
   | returned_expression
   | broken_expression
   | continue_expression
@@ -202,7 +203,7 @@ expression_in_call            = _{
   
   | declaration
   | assignment_expression
-  | loop_flow
+  | loop_expression
   | match_expression
   | call
   | literal
@@ -353,8 +354,8 @@ match_arms       = _{ (NLS ~ match_arm ~ match_separator_symbol?)+ }
 match_arm        =  { pattern ~ match_arm_symbol ~ expression }
 
 // Loop
-loop_flow = { loop ~ loop_body }
-loop_body = { expression }
+loop_expression = { loop ~ loop_body }
+loop_body       = { expression }
 
 // Comments
 COMMENT                = _{ !hexadecimal_literal ~ (multiline_comment | inline_comment | single_comment) }
