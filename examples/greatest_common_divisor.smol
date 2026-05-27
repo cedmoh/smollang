@@ -1,8 +1,6 @@
-greatestCommonDivisor |a, b| (
-  
-)
-  while b != 0
-    a, b = b, a % b
-  end
-  a
-end
+# TODO: Implement pattern matching in assignments
+
+greatestCommonDivisor |a, b| loop (
+  b == 0 then br a
+  [a, b] = [b, a % b]
+) 

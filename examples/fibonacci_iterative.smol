@@ -1,6 +1,8 @@
+# TODO: Support pattern matching in assignments
+
 fibonacci |n| (
-  var a 0
-  var b 1 
+  a var 0
+  b var 1 
 
   (0..n).each || [a, b] = [b, a + b]
   

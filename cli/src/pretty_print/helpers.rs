@@ -154,3 +154,57 @@ pub fn write_tree_scalar_field<T: Display>(
         writeln!(f, "{prefix}{connector}{name}: {value}")
     }
 }
+
+/// Writes a boolean scalar leaf field, coloring the value purple when colors
+/// are enabled.
+pub fn write_tree_bool_scalar_field(
+    f: &mut Formatter<'_>,
+    prefix: &str,
+    colors_enabled: bool,
+    name: &str,
+    value: bool,
+    is_last: bool,
+) -> fmt::Result {
+    let connector = if is_last { "└── " } else { "├── " };
+
+    if colors_enabled {
+        let level = display_len(prefix) / 4;
+        writeln!(
+            f,
+            "{}{}{}: {}",
+            prefix,
+            color_for_level(connector, level),
+            name.red(),
+            value.to_string().magenta()
+        )
+    } else {
+        writeln!(f, "{prefix}{connector}{name}: {value}")
+    }
+}
+
+/// Writes a numeric scalar leaf field, coloring the value light blue when
+/// colors are enabled.
+pub fn write_tree_number_scalar_field<T: Display>(
+    f: &mut Formatter<'_>,
+    prefix: &str,
+    colors_enabled: bool,
+    name: &str,
+    value: T,
+    is_last: bool,
+) -> fmt::Result {
+    let connector = if is_last { "└── " } else { "├── " };
+
+    if colors_enabled {
+        let level = display_len(prefix) / 4;
+        writeln!(
+            f,
+            "{}{}{}: {}",
+            prefix,
+            color_for_level(connector, level),
+            name.red(),
+            value.to_string().bright_blue()
+        )
+    } else {
+        writeln!(f, "{prefix}{connector}{name}: {value}")
+    }
+}

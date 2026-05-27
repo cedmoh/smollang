@@ -14,7 +14,8 @@ use ast::{
 
 use crate::pretty_print::{
     INDENT, PrettyPrint, tree_child_prefix, write_empty, write_node_label,
-    write_none, write_tree_field_label, write_tree_scalar_field,
+    write_none, write_tree_bool_scalar_field, write_tree_field_label,
+    write_tree_number_scalar_field, write_tree_scalar_field,
 };
 
 impl PrettyPrint for VariableDeclaration {
@@ -31,7 +32,7 @@ impl PrettyPrint for VariableDeclaration {
             &tree_child_prefix(prefix, false, colors_enabled),
             colors_enabled,
         )?;
-        write_tree_scalar_field(
+        write_tree_bool_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -53,9 +54,11 @@ impl PrettyPrint for VariableDeclaration {
                 &tree_child_prefix(prefix, true, colors_enabled),
                 colors_enabled,
             ),
-            None => {
-                write_none(f, &tree_child_prefix(prefix, true, colors_enabled), colors_enabled)
-            }
+            None => write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
         }
     }
 }
@@ -315,9 +318,11 @@ impl PrettyPrint for FunctionDeclaration {
                 &tree_child_prefix(prefix, true, colors_enabled),
                 colors_enabled,
             ),
-            None => {
-                write_none(f, &tree_child_prefix(prefix, true, colors_enabled), colors_enabled)
-            }
+            None => write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
         }
     }
 }
@@ -388,9 +393,11 @@ impl PrettyPrint for Return {
                 &tree_child_prefix(prefix, true, colors_enabled),
                 colors_enabled,
             ),
-            None => {
-                write_none(f, &tree_child_prefix(prefix, true, colors_enabled), colors_enabled)
-            }
+            None => write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
         }
     }
 }
@@ -482,9 +489,11 @@ impl PrettyPrint for Then {
                 &tree_child_prefix(prefix, true, colors_enabled),
                 colors_enabled,
             ),
-            None => {
-                write_none(f, &tree_child_prefix(prefix, true, colors_enabled), colors_enabled)
-            }
+            None => write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
         }
     }
 }
@@ -625,7 +634,11 @@ impl PrettyPrint for DestructuringPatternElement {
                 colors_enabled,
             )
         } else {
-            write_none(f, &tree_child_prefix(prefix, true, colors_enabled), colors_enabled)
+            write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            )
         }
     }
 }
@@ -900,7 +913,7 @@ impl PrettyPrint for BooleanLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "BooleanLiteral")?;
-        write_tree_scalar_field(
+        write_tree_bool_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -957,7 +970,7 @@ impl PrettyPrint for IntegerLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "IntegerLiteral")?;
-        write_tree_scalar_field(
+        write_tree_number_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -976,7 +989,7 @@ impl PrettyPrint for DecimalLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "DecimalLiteral")?;
-        write_tree_scalar_field(
+        write_tree_number_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -995,7 +1008,7 @@ impl PrettyPrint for HexadecimalLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "HexadecimalLiteral")?;
-        write_tree_scalar_field(
+        write_tree_number_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -1014,7 +1027,7 @@ impl PrettyPrint for BinaryLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "BinaryLiteral")?;
-        write_tree_scalar_field(
+        write_tree_number_scalar_field(
             f,
             prefix,
             colors_enabled,
@@ -1033,7 +1046,7 @@ impl PrettyPrint for OctalLiteral {
         colors_enabled: bool,
     ) -> fmt::Result {
         write_node_label(f, prefix, colors_enabled, "OctalLiteral")?;
-        write_tree_scalar_field(
+        write_tree_number_scalar_field(
             f,
             prefix,
             colors_enabled,
