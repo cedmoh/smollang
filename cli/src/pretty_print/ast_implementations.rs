@@ -2,14 +2,14 @@ use std::fmt;
 
 use ast::{
     ArrayLiteral, ArrayPatternElement, Assignment, BinaryLiteral, Block,
-    BooleanLiteral, DecimalLiteral, DestructuringPatternElement, Directive,
-    Directives, Dyadic, DyadicOperator, Expression, Expressions, FunctionBody,
-    FunctionCall, FunctionCallArguments, FunctionDeclaration,
-    FunctionParameter, FunctionParameters, HexadecimalLiteral, Identifier,
-    IdentifierPattern, IntegerLiteral, Literal, LiteralPattern, Loop, Match,
-    MatchArm, Member, ObjectLiteral, ObjectProperty, OctalLiteral, Pattern,
-    Pipe, PipeArm, PipeArms, Program, Return, StringLiteral, TemplateLiteral,
-    Then, Use, VariableDeclaration,
+    BooleanLiteral, Break, Continue, DecimalLiteral,
+    DestructuringPatternElement, Directive, Directives, Dyadic, DyadicOperator,
+    Expression, Expressions, FunctionBody, FunctionCall, FunctionCallArguments,
+    FunctionDeclaration, FunctionParameter, FunctionParameters,
+    HexadecimalLiteral, Identifier, IdentifierPattern, IntegerLiteral, Literal,
+    LiteralPattern, Loop, Match, MatchArm, Member, ObjectLiteral,
+    ObjectProperty, OctalLiteral, Pattern, Pipe, PipeArm, PipeArms, Program,
+    Return, StringLiteral, TemplateLiteral, Then, Use, VariableDeclaration,
 };
 
 use crate::pretty_print::{
@@ -222,6 +222,12 @@ impl PrettyPrint for Expression {
             Expression::Loop(loop_expression) => {
                 loop_expression.fmt_with_indent(f, prefix, colors_enabled)
             }
+            Expression::Break(break_expression) => {
+                break_expression.fmt_with_indent(f, prefix, colors_enabled)
+            }
+            Expression::Continue(continue_expression) => {
+                continue_expression.fmt_with_indent(f, prefix, colors_enabled)
+            }
         }
     }
 }
@@ -399,6 +405,42 @@ impl PrettyPrint for Return {
                 colors_enabled,
             ),
         }
+    }
+}
+
+impl PrettyPrint for Break {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        prefix: &str,
+        colors_enabled: bool,
+    ) -> fmt::Result {
+        write_node_label(f, prefix, colors_enabled, "Break")?;
+        write_tree_field_label(f, prefix, colors_enabled, "expression", true)?;
+
+        match &self.expression {
+            Some(expression) => expression.fmt_with_indent(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
+            None => write_none(
+                f,
+                &tree_child_prefix(prefix, true, colors_enabled),
+                colors_enabled,
+            ),
+        }
+    }
+}
+
+impl PrettyPrint for Continue {
+    fn fmt_with_indent(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        prefix: &str,
+        colors_enabled: bool,
+    ) -> fmt::Result {
+        write_node_label(f, prefix, colors_enabled, "Continue")
     }
 }
 

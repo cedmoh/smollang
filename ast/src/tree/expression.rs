@@ -1,6 +1,7 @@
 use crate::{
-    Assignment, Block, Dyadic, FunctionCall, FunctionDeclaration, Identifier,
-    Literal, Loop, Match, Member, Pipe, Return, Then, VariableDeclaration,
+    Assignment, Block, Break, Continue, Dyadic, FunctionCall,
+    FunctionDeclaration, Identifier, Literal, Loop, Match, Member, Pipe,
+    Return, Then, VariableDeclaration,
 };
 
 /// An expression, which is a piece of code that can be evaluated to produce a
@@ -19,6 +20,8 @@ pub enum Expression {
     Match(Match),
     Member(Member),
     Return(Return),
+    Break(Break),
+    Continue(Continue),
     Loop(Loop),
     VariableDeclaration(VariableDeclaration),
 }

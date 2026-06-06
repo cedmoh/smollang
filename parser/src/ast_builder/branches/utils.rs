@@ -4,13 +4,13 @@ use pest::iterators::Pair;
 use crate::{
     ast_builder::{
         BuildAstExpressionError, build_assignment_expression,
-        build_ast_expression, build_block_expression, build_broken_expression,
+        build_ast_expression, build_block_expression, build_break_expression,
         build_call_expression, build_continue_expression,
         build_dynamic_key_expression, build_function_declaration_expression,
         build_identifier_expression, build_literal_expression,
         build_loop_expression, build_match_expression, build_member_expression,
         build_operation_expression, build_pipe_expression,
-        build_returned_expression, build_then_expression,
+        build_return_expression, build_then_expression,
         build_variable_declaration_expression,
     },
     rule_parser::Rule,
@@ -54,13 +54,17 @@ pub fn match_rule_to_expression_builder(
             .map(|a| Assignment(a))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
-        variable_declaration => build_variable_declaration_expression(inner_expression)
-            .map(|v| VariableDeclaration(v))
-            .map_err(|error| BuildExpressionVariantError(error.to_string())),
+        variable_declaration => {
+            build_variable_declaration_expression(inner_expression)
+                .map(|v| VariableDeclaration(v))
+                .map_err(|error| BuildExpressionVariantError(error.to_string()))
+        }
         // ---
-        function_declaration => build_function_declaration_expression(inner_expression)
-            .map(|v| FunctionDeclaration(v))
-            .map_err(|error| BuildExpressionVariantError(error.to_string())),
+        function_declaration => {
+            build_function_declaration_expression(inner_expression)
+                .map(|v| FunctionDeclaration(v))
+                .map_err(|error| BuildExpressionVariantError(error.to_string()))
+        }
         // ---
         match_expression => build_match_expression(inner_expression)
             .map(|m| Match(m))
@@ -82,23 +86,21 @@ pub fn match_rule_to_expression_builder(
             .map(|l| Literal(l))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
-        dynamic_key_expression => build_dynamic_key_expression(inner_expression)
-            .map_err(|error| BuildExpressionVariantError(error.to_string())),
+        dynamic_key_expression => {
+            build_dynamic_key_expression(inner_expression)
+                .map_err(|error| BuildExpressionVariantError(error.to_string()))
+        }
         // ---
-        returned_expression => build_returned_expression(inner_expression)
+        returned_expression => build_return_expression(inner_expression)
             .map(|r| Return(r))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
-        broken_expression => build_broken_expression(inner_expression)
-            .map(|_| {
-                todo!("Break expression is not yet supported in Expression enum")
-            })
+        broken_expression => build_break_expression(inner_expression)
+            .map(|b| Break(b))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
         continue_expression => build_continue_expression(inner_expression)
-            .map(|_| {
-                todo!("Continue expression is not yet supported in Expression enum")
-            })
+            .map(|c| Continue(c))
             .map_err(|error| BuildExpressionVariantError(error.to_string())),
         // ---
         x => Err(UnrecognizedExpression(x)),

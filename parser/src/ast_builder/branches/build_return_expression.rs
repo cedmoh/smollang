@@ -18,10 +18,10 @@ use thiserror::Error;
 /// ```pest
 /// returned_expression > "ret"
 /// ```
-pub fn build_returned_expression(
+pub fn build_return_expression(
     pair: Pair<Rule>,
-) -> Result<Return, BuildReturnedExpressionError> {
-    use BuildReturnedExpressionError::*;
+) -> Result<Return, BuildReturnExpressionError> {
+    use BuildReturnExpressionError::*;
     use Rule::*;
 
     let rule = pair.as_rule();
@@ -48,7 +48,7 @@ pub fn build_returned_expression(
 
 #[derive(Debug, PartialEq, Error)]
 #[non_exhaustive]
-pub enum BuildReturnedExpressionError {
+pub enum BuildReturnExpressionError {
     /// The first rule is not a return expression.
     #[error("Expected a return expression, but found rule: {0:?}")]
     RuleIsNotAReturn(Rule),
