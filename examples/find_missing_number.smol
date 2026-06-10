@@ -1,0 +1,5 @@
+[0, 1, 2, 4, 5]
+  |> it.windows 2
+  # TODO: allow functions to accept patterns so we can do |[a, b]| instead of |pair|
+  |> it.find |pair| pair[0] + 1 != pair[1]
+  |> it[0] + 1

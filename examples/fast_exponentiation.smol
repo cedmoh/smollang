@@ -1,0 +1,12 @@
+base var 2
+exp var 10
+result var 1
+
+loop (
+  exp == 0 then br
+  exp % 2 == 1 then result *= base
+  base *= base
+  exp /= 2
+)
+
+result

@@ -298,8 +298,8 @@ Match expressions are a way to pattern match on a value and execute different ex
 
 ```
 myValue match
-  0 do 'Zero',
-  1 do 'One',
+  0 do 'Zero'
+  1 do 'One'
   _ do 'Other'
 ```
 

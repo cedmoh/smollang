@@ -1,0 +1,3 @@
+modularExponentiation |base, exponent, modulus| (base ^ exponent) % modulus
+
+modularExponentiation 2, 10, 1000

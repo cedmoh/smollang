@@ -1,0 +1,6 @@
+use sqrt from math
+
+isPrime |n| (
+  n < 2 then ret false
+  (2..sqrt n).every |i| n % i != 0
+)

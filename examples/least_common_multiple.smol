@@ -1,0 +1,10 @@
+use abs from math
+
+gcd |a, b| (
+  b == 0 then ret a
+  gcd(b, a % b)
+)
+
+lcm |a, b| (
+  abs(a * b) / gcd(a, b)
+)

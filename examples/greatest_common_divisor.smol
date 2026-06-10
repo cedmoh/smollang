@@ -1,6 +1,15 @@
-# TODO: Implement pattern matching in assignments
+a var 48
+b var 18
 
-greatestCommonDivisor |a, b| loop (
+loop (
   b == 0 then br a
-  [a, b] = [b, a % b]
-) 
+
+  # TODO: Implement pattern matching in assignments
+  # [a, b] = [b, a % b]
+
+  temp var b
+  b = a % b
+  a = temp
+)
+ 
+a

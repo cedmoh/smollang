@@ -1,0 +1,9 @@
+factorial |n| (1..n).fold(1, |acc, x| acc * x)
+
+nCr |n, r| (
+  r == 0 then ret 1
+  r == n then ret 1
+  factorial(n) / (factorial(r) * factorial(n - r))
+)
+
+nCr 5, 2

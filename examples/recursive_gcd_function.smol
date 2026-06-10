@@ -1,0 +1,9 @@
+recursiveGcd |a, b| (
+  a == 0 then ret b
+  b == 0 then ret a
+  a == b then ret a
+  a > b then ret recursiveGcd(a - b, b)
+  recursiveGcd(a, b - a)
+)
+
+recursiveGcd 48, 18

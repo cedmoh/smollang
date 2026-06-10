@@ -77,34 +77,44 @@ keyword = _{
 }
 
 // Operators
-addition               = @{ "+" }
-subtraction            = @{ "-" }
-multiplication         = @{ "*" }
-division               = @{ "/" }
-exponent               = @{ "^" }
-modulo                 = @{ "%" }
-greater_than_or_equals = @{ ">=" | gte }
-greater_than           = @{ ">" | gt }
-less_than_or_equals    = @{ "<=" | lte }
-less_than              = @{ "<" | lt }
-equals                 = @{ "==" | eq }
-not_equals             = @{ "!=" | neq }
-logic_and              = @{ "&&" | and }
-logic_or               = @{ "||" | or }
-range_inclusive        = @{ "..=" }
-range                  = @{ ".." }
-assignment_set_symbol  = _{ "=" | set }
-pipe_to_symbol         = _{ "|>" | to }
-then_check_symbol      = _{ "?" | then }
-then_else_symbol       = _{ ":" | else }
-match_check_symbol     = _{ "~=" | match }
-match_arm_symbol       = _{ "->" | do }
-match_separator_symbol = _{ "," }
-operator               = _{
+addition                  = @{ "+" }
+addition_assignment       = @{ "+=" }
+subtraction               = @{ "-" }
+subtraction_assignment    = @{ "-=" }
+multiplication            = @{ "*" }
+multiplication_assignment = @{ "*=" }
+division                  = @{ "/" }
+division_assignment       = @{ "/=" }
+exponent                  = @{ "^" }
+exponent_assignment       = @{ "^=" }
+modulo                    = @{ "%" }
+modulo_assignment         = @{ "%=" }
+greater_than_or_equals    = @{ ">=" | gte }
+greater_than              = @{ ">" | gt }
+less_than_or_equals       = @{ "<=" | lte }
+less_than                 = @{ "<" | lt }
+equals                    = @{ "==" | eq }
+not_equals                = @{ "!=" | neq }
+logic_and                 = @{ "&&" | and }
+logic_and_assignment      = @{ "&&=" }
+logic_or                  = @{ "||" | or }
+logic_or_assignment       = @{ "||=" }
+range_inclusive           = @{ "..=" }
+range                     = @{ ".." }
+assignment_set_symbol     = _{ "=" | set }
+pipe_to_symbol            = _{ "|>" | to }
+then_check_symbol         = _{ "?" | then }
+then_else_symbol          = _{ ":" | else }
+match_check_symbol        = _{ "~=" | match }
+match_arm_symbol          = _{ "->" | do }
+match_separator_symbol    = _{ "," }
+operator                  = _{
   
   | range_inclusive
   | range
+  | logic_and_assignment
   | logic_and
+  | logic_or_assignment
   | logic_or
   | equals
   | not_equals
@@ -112,6 +122,12 @@ operator               = _{
   | greater_than
   | less_than_or_equals
   | less_than
+  | addition_assignment
+  | subtraction_assignment
+  | multiplication_assignment
+  | division_assignment
+  | exponent_assignment
+  | modulo_assignment
   | addition
   | subtraction
   | multiplication

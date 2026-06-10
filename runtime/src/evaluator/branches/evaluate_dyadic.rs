@@ -64,6 +64,14 @@ pub fn evaluate_dyadic(
         // TODO: Implement range operators when arrays are implemented.
         DyadicOperator::RangeInclusive => todo!("When arrays are implemented"),
         DyadicOperator::Range => todo!("When arrays are implemented"),
+        DyadicOperator::AddAssign => todo!(),
+        DyadicOperator::SubtractAssign => todo!(),
+        DyadicOperator::MultiplyAssign => todo!(),
+        DyadicOperator::DivideAssign => todo!(),
+        DyadicOperator::ModuloAssign => todo!(),
+        DyadicOperator::PowerAssign => todo!(),
+        DyadicOperator::AndAssign => todo!(),
+        DyadicOperator::OrAssign => todo!(),
     };
 
     match operation_result {

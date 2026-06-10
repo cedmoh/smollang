@@ -1,0 +1,6 @@
+sumOfDigits |number| (
+  number.toString().map Number.parse
+    |> it.fold(0, |acc, digit| acc + digit)
+)
+
+sumOfDigits 12345

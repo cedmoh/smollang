@@ -1,0 +1,7 @@
+loop (
+  input val readLine '> ' 
+  input match
+    'exit' do br
+    'help' do print 'Type "exit" to quit.'
+    _ do print input
+)

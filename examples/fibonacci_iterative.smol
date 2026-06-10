@@ -1,10 +1,15 @@
+n val 10
+a var 0
+b var 1 
+
 # TODO: Support pattern matching in assignments
+# so we don't have to use a temp variable.
+# (0..n).each || [a, b] = [b, a + b]
 
-fibonacci |n| (
-  a var 0
-  b var 1 
-
-  (0..n).each || [a, b] = [b, a + b]
-  
-  a
+(0..n).each || (
+  temp var a
+  a = b
+  b = temp + b
 )
+
+a
