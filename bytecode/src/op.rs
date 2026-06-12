@@ -1,9 +1,6 @@
 use std::fmt::Display;
 
-use crate::{
-    call_stack::CallStackAddress, memory::MemoryAddress,
-    program::ProgramOffset, value::Value,
-};
+use crate::{MemoryAddress, ProgramAddress, ProgramOffset, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -61,7 +58,7 @@ pub enum Instruction {
     Store(MemoryAddress),
 
     // Functions
-    Call(CallStackAddress),
+    Call(ProgramAddress),
     Return,
 
     Halt,

@@ -1,10 +1,10 @@
+use bytecode::Value;
+
 use std::{
     fmt::Display,
     ops::{Index, Range, RangeFull},
 };
 use thiserror::Error;
-
-use crate::value::Value;
 
 #[derive(Debug)]
 pub struct ValueStack {

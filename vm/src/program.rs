@@ -1,13 +1,8 @@
-mod program_address;
-mod program_offset;
+use std::{fmt::Display, ops::Index};
 
-pub use program_address::ProgramAddress;
-pub use program_offset::ProgramOffset;
-
-use crate::Instruction::{self, Halt};
-use std::{
-    fmt::Display,
-    ops::{AddAssign, Index},
+use bytecode::{
+    Instruction::{self, Halt},
+    ProgramAddress,
 };
 
 #[derive(Debug)]
@@ -62,11 +57,5 @@ impl Display for Program {
         }
 
         Ok(())
-    }
-}
-
-impl AddAssign<ProgramOffset> for ProgramAddress {
-    fn add_assign(&mut self, rhs: ProgramOffset) {
-        self.add_offset(rhs)
     }
 }

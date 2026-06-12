@@ -1,10 +1,9 @@
 use crate::call_stack::CallStack;
-use crate::instruction::Instruction;
 use crate::io::{Io, StandardIo};
 use crate::memory::{Memory, MemoryError};
-use crate::program::{Program, ProgramAddress};
-use crate::value::Value;
+use crate::program::Program;
 use crate::value_stack::{ValueStack, ValueStackError};
+use bytecode::{Instruction, ProgramAddress, Value};
 use thiserror::Error;
 
 pub struct Vm {
@@ -249,6 +248,7 @@ impl Vm {
                     self.instruction_pointer = address_to_return_to.into();
                 }
                 Halt => break Ok(()),
+                _ => todo!(),
             }
         }
     }

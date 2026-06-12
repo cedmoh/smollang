@@ -1,6 +1,5 @@
+use bytecode::{MemoryAddress, Value};
 use thiserror::Error;
-
-use crate::value::Value;
 
 #[derive(Debug)]
 pub struct Memory {
@@ -15,24 +14,29 @@ impl Memory {
         }
     }
 
-    pub fn load(&self, addr: MemoryAddress) -> Result<Value, MemoryError> {
-        if addr >= self.data.len() {
-            return Err(MemoryError::OutOfBounds(addr));
+    pub fn load(&self, address: MemoryAddress) -> Result<Value, MemoryError> {
+        let address_usize = address.as_usize();
+
+        if address_usize >= self.data.len() {
+            return Err(MemoryError::OutOfBounds(address));
         }
 
-        Ok(self.data[addr].clone())
+        Ok(self.data[address_usize].clone())
     }
 
     pub fn store(
         &mut self,
-        addr: MemoryAddress,
+        address: MemoryAddress,
         value: Value,
     ) -> Result<(), MemoryError> {
-        if addr >= self.data.len() {
-            return Err(MemoryError::OutOfBounds(addr));
+        let address_usize = address.as_usize();
+
+        if address_usize >= self.data.len() {
+            return Err(MemoryError::OutOfBounds(address));
         }
 
-        self.data[addr] = value;
+        self.data[address_usize] = value;
+
         Ok(())
     }
 }
@@ -45,5 +49,3 @@ pub enum MemoryError {
     #[error("Attempted to access uninitialized memory at address: {0}")]
     UninitializedMemoryAccess(MemoryAddress),
 }
-
-pub type MemoryAddress = usize;

@@ -1,20 +1,16 @@
-mod bytecode_macro;
 mod call_stack;
-mod instruction;
 mod io;
 mod memory;
 mod program;
-mod value;
 mod value_stack;
 mod vm;
 
-pub use instruction::Instruction;
-pub use value::Value;
 pub use vm::Vm;
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bytecode::{Value, bytecode};
 
     #[test]
     fn should_push_items_in_the_right_order() {

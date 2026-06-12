@@ -1,6 +1,9 @@
-use std::{fmt::Display, ops::Add};
+use std::{
+    fmt::Display,
+    ops::{Add, AddAssign},
+};
 
-use crate::program::program_offset::ProgramOffset;
+use crate::ProgramOffset;
 
 /// An absolute address of an instruction in the program
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,5 +52,11 @@ impl Add<ProgramOffset> for ProgramAddress {
 
     fn add(self, rhs: ProgramOffset) -> Self::Output {
         Self(self.0 + rhs.as_usize())
+    }
+}
+
+impl AddAssign<ProgramOffset> for ProgramAddress {
+    fn add_assign(&mut self, rhs: ProgramOffset) {
+        self.add_offset(rhs)
     }
 }
