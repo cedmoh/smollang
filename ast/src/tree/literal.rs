@@ -53,6 +53,12 @@ pub struct BooleanLiteral {
     pub value: bool,
 }
 
+impl Into<Expression> for BooleanLiteral {
+    fn into(self) -> Expression {
+        Literal::Boolean(self).into()
+    }
+}
+
 /// A string literal, which represents a string value.
 ///     
 /// # Examples
@@ -102,6 +108,12 @@ impl StringLiteral {
     }
 }
 
+impl Into<Expression> for StringLiteral {
+    fn into(self) -> Expression {
+        Literal::String(self).into()
+    }
+}
+
 /// An integer literal, which represents an integer value.
 ///     
 /// # Examples
@@ -117,6 +129,12 @@ pub struct IntegerLiteral {
 impl IntegerLiteral {
     pub fn new(value: i64) -> Self {
         Self { value }
+    }
+}
+
+impl Into<Expression> for IntegerLiteral {
+    fn into(self) -> Expression {
+        Literal::Integer(self).into()
     }
 }
 
@@ -349,4 +367,46 @@ impl ObjectProperties {
 pub enum ObjectProperty {
     Shorthand(String),
     KeyValue(String, Expression),
+}
+
+impl Into<Expression> for TemplateLiteral {
+    fn into(self) -> Expression {
+        Literal::Template(self).into()
+    }
+}
+
+impl Into<Expression> for DecimalLiteral {
+    fn into(self) -> Expression {
+        Literal::Decimal(self).into()
+    }
+}
+
+impl Into<Expression> for HexadecimalLiteral {
+    fn into(self) -> Expression {
+        Literal::Hexadecimal(self).into()
+    }
+}
+
+impl Into<Expression> for BinaryLiteral {
+    fn into(self) -> Expression {
+        Literal::Binary(self).into()
+    }
+}
+
+impl Into<Expression> for OctalLiteral {
+    fn into(self) -> Expression {
+        Literal::Octal(self).into()
+    }
+}
+
+impl Into<Expression> for ArrayLiteral {
+    fn into(self) -> Expression {
+        Literal::Array(self).into()
+    }
+}
+
+impl Into<Expression> for ObjectLiteral {
+    fn into(self) -> Expression {
+        Literal::Object(self).into()
+    }
 }

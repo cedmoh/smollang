@@ -64,13 +64,13 @@ impl FunctionParameters {
 /// Represents the body of a function declaration.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionBody {
-    pub body: Option<Box<Expression>>,
+    pub body: Box<Expression>,
 }
 
 impl FunctionBody {
     pub fn new(body: Expression) -> Self {
         Self {
-            body: Some(Box::new(body)),
+            body: Box::new(body),
         }
     }
 }

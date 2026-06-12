@@ -386,10 +386,7 @@ impl PrettyPrint for FunctionBody {
         prefix: &str,
         colors_enabled: bool,
     ) -> fmt::Result {
-        match &self.body {
-            Some(body) => body.fmt_with_indent(f, prefix, colors_enabled),
-            None => write_none(f, prefix, colors_enabled),
-        }
+        self.body.fmt_with_indent(f, prefix, colors_enabled)
     }
 }
 

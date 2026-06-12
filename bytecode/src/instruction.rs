@@ -4,7 +4,6 @@ use crate::{MemoryAddress, ProgramAddress, ProgramOffset, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
-#[allow(dead_code)]
 pub enum Instruction {
     // Stack
     /// Push a value onto the stack

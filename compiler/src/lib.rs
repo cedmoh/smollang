@@ -1,23 +1,36 @@
-use std::collections::HashMap;
+mod compiler;
+mod visitors;
 
-use ast::Program;
+use visitors::AstToInstructionVisitor;
 
-pub trait Visitor<T> {
-    fn visit(&mut self, program: &T) -> T;
-}
+pub use compiler::Compiler;
 
-pub struct Compiler {
-    symbol_table: HashMap<String, ()>,
-}
+#[cfg(test)]
+mod tests {
+    use super::Compiler;
+    use ast::Program;
+    use ast::*;
+    use bytecode::bytecode;
 
-impl Compiler {
-    pub fn new() -> Self {
-        Self {
-            symbol_table: HashMap::new(),
-        }
-    }
+    #[test]
+    fn should_compile_integer_literal() {
+        // Arrange
+        let integer = 42;
 
-    pub fn compile(&mut self, program: &Program) -> Vec<()> {
-        todo!()
+        let program = &Program::builder()
+            .add_expression(IntegerLiteral::new(integer).into())
+            .build();
+
+        let mut compiler = Compiler::new();
+
+        // Act
+        let instructions = compiler.compile(program);
+
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH integer
+            )
+        );
     }
 }
