@@ -1,10 +1,15 @@
 mod pretty_print;
+mod standard_io;
 mod styles;
 
 use clap::{Arg, Command, command};
+use compiler::Compiler;
 use pretty_print::PrettyPrint;
 use std::path::PathBuf;
 use styles::CARGO_STYLING;
+use vm::{Program, Vm};
+
+use crate::standard_io::StandardIo;
 
 fn main() -> anyhow::Result<()> {
     let command = command!()
@@ -107,8 +112,20 @@ fn parse_file(
 }
 
 fn execute_file(path: &PathBuf) -> anyhow::Result<()> {
-    println!("Executing file at path: {:?}", path);
-    todo!()
+    let input = std::fs::read_to_string(path)?;
+
+    let ast = parser::parse_string_to_program_ast(&input)?;
+
+    let mut compiler = Compiler::new();
+    let instructions = compiler.compile(ast);
+
+    let io = StandardIo::new();
+
+    Vm::new_with_io(Box::new(io))
+        .load_program(Program::with_instructions(instructions))
+        .run()?;
+
+    Ok(())
 }
 
 fn format_path(path: &PathBuf) -> anyhow::Result<()> {

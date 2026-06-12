@@ -116,7 +116,9 @@ dependencies = [
  "ast",
  "clap",
  "colored",
+ "compiler",
  "parser",
+ "vm",
 ]
 
 [[package]]

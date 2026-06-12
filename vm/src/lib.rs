@@ -5,6 +5,8 @@ mod program;
 mod value_stack;
 mod vm;
 
+pub use io::Io;
+pub use program::Program;
 pub use vm::Vm;
 
 #[cfg(test)]

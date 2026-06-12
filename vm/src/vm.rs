@@ -1,12 +1,12 @@
 use crate::call_stack::CallStack;
-use crate::io::{Io, StandardIo};
+use crate::io::{DummyIo, DummyIoError, Io};
 use crate::memory::{Memory, MemoryError};
 use crate::program::Program;
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{Instruction, ProgramAddress, Value};
 use thiserror::Error;
 
-pub struct Vm {
+pub struct Vm<IoError> {
     /// Points to the current instruction being executed
     pub instruction_pointer: ProgramAddress,
 
@@ -23,10 +23,10 @@ pub struct Vm {
     program: Program,
 
     /// used for standard input and output (e.g. for the `Print` instruction)
-    pub io: Box<dyn Io>,
+    pub io: Box<dyn Io<IoError>>,
 }
 
-impl Vm {
+impl Vm<DummyIoError> {
     pub fn new() -> Self {
         Self {
             instruction_pointer: ProgramAddress::zero(),
@@ -34,13 +34,21 @@ impl Vm {
             call_stack: CallStack::new(),
             memory: Memory::new(),
             program: Program::new(),
-            io: Box::new(StandardIo::new()),
+            io: Box::new(DummyIo::new()),
         }
     }
+}
 
-    pub fn with_io(mut self, io: Box<dyn Io>) -> Self {
-        self.io = io;
-        self
+impl<IoError> Vm<IoError> {
+    pub fn new_with_io(io: Box<dyn Io<IoError>>) -> Self {
+        Self {
+            instruction_pointer: ProgramAddress::zero(),
+            stack: ValueStack::new(),
+            call_stack: CallStack::new(),
+            memory: Memory::new(),
+            program: Program::new(),
+            io,
+        }
     }
 
     pub fn load_program(&mut self, program: impl Into<Program>) -> &mut Self {
