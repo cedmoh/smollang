@@ -53,9 +53,9 @@ pub struct BooleanLiteral {
     pub value: bool,
 }
 
-impl Into<Expression> for BooleanLiteral {
-    fn into(self) -> Expression {
-        Literal::Boolean(self).into()
+impl BooleanLiteral {
+    pub fn new(value: bool) -> Self {
+        Self { value }
     }
 }
 
@@ -108,12 +108,6 @@ impl StringLiteral {
     }
 }
 
-impl Into<Expression> for StringLiteral {
-    fn into(self) -> Expression {
-        Literal::String(self).into()
-    }
-}
-
 /// An integer literal, which represents an integer value.
 ///     
 /// # Examples
@@ -123,18 +117,12 @@ impl Into<Expression> for StringLiteral {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct IntegerLiteral {
-    pub value: i64,
+    pub value: i32,
 }
 
 impl IntegerLiteral {
-    pub fn new(value: i64) -> Self {
+    pub fn new(value: i32) -> Self {
         Self { value }
-    }
-}
-
-impl Into<Expression> for IntegerLiteral {
-    fn into(self) -> Expression {
-        Literal::Integer(self).into()
     }
 }
 
@@ -177,7 +165,7 @@ impl DecimalLiteral {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct HexadecimalLiteral {
-    pub value: i64,
+    pub value: i32,
 }
 
 impl From<HexadecimalLiteral> for Literal {
@@ -187,7 +175,7 @@ impl From<HexadecimalLiteral> for Literal {
 }
 
 impl HexadecimalLiteral {
-    pub fn new(value: i64) -> Self {
+    pub fn new(value: i32) -> Self {
         Self { value }
     }
 }
@@ -201,7 +189,7 @@ impl HexadecimalLiteral {
 /// ```   
 #[derive(Debug, Clone, PartialEq)]
 pub struct BinaryLiteral {
-    pub value: i64,
+    pub value: i32,
 }
 
 impl From<BinaryLiteral> for Literal {
@@ -211,7 +199,7 @@ impl From<BinaryLiteral> for Literal {
 }
 
 impl BinaryLiteral {
-    pub fn new(value: i64) -> Self {
+    pub fn new(value: i32) -> Self {
         Self { value }
     }
 }
@@ -225,7 +213,7 @@ impl BinaryLiteral {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct OctalLiteral {
-    pub value: i64,
+    pub value: i32,
 }
 
 impl From<OctalLiteral> for Literal {
@@ -235,7 +223,7 @@ impl From<OctalLiteral> for Literal {
 }
 
 impl OctalLiteral {
-    pub fn new(value: i64) -> Self {
+    pub fn new(value: i32) -> Self {
         Self { value }
     }
 }
@@ -367,46 +355,4 @@ impl ObjectProperties {
 pub enum ObjectProperty {
     Shorthand(String),
     KeyValue(String, Expression),
-}
-
-impl Into<Expression> for TemplateLiteral {
-    fn into(self) -> Expression {
-        Literal::Template(self).into()
-    }
-}
-
-impl Into<Expression> for DecimalLiteral {
-    fn into(self) -> Expression {
-        Literal::Decimal(self).into()
-    }
-}
-
-impl Into<Expression> for HexadecimalLiteral {
-    fn into(self) -> Expression {
-        Literal::Hexadecimal(self).into()
-    }
-}
-
-impl Into<Expression> for BinaryLiteral {
-    fn into(self) -> Expression {
-        Literal::Binary(self).into()
-    }
-}
-
-impl Into<Expression> for OctalLiteral {
-    fn into(self) -> Expression {
-        Literal::Octal(self).into()
-    }
-}
-
-impl Into<Expression> for ArrayLiteral {
-    fn into(self) -> Expression {
-        Literal::Array(self).into()
-    }
-}
-
-impl Into<Expression> for ObjectLiteral {
-    fn into(self) -> Expression {
-        Literal::Object(self).into()
-    }
 }

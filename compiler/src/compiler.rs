@@ -1,4 +1,4 @@
-use crate::visitors::AstToInstructionVisitor;
+use crate::visitors::{AstToInstructionVisitor, Visitor};
 use ast::Program;
 use bytecode::Instruction;
 use std::collections::HashMap;
@@ -14,10 +14,11 @@ impl Compiler {
         }
     }
 
-    pub fn compile(&mut self, program: &Program) -> Vec<Instruction> {
+    pub fn compile(&mut self, program: Program) -> Vec<Instruction> {
         let mut visitor = AstToInstructionVisitor::new();
-        visitor.visit(program);
 
-        vec![]
+        visitor.visit(&program);
+
+        visitor.instructions
     }
 }

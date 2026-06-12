@@ -27,8 +27,27 @@ pub struct ProgramBuilder {
 }
 
 impl ProgramBuilder {
+    /// Adds an expression to the program body, returning a mutable reference to
+    /// the builder for chaining.
     pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
         self.body.items.push(expression);
+        self
+    }
+
+    /// Adds an expression to the program body, returning a new builder with the
+    /// expression added.
+    pub fn with_expression(
+        mut self,
+        expression: impl Into<Expression>,
+    ) -> Self {
+        self.add_expression(expression.into());
+        self
+    }
+
+    /// Sets the expressions of the program body, replacing any existing
+    /// expressions.
+    pub fn expressions(mut self, expressions: Vec<Expression>) -> Self {
+        self.body.items = expressions;
         self
     }
 

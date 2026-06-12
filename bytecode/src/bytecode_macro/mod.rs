@@ -61,6 +61,10 @@ macro_rules! bytecode {
     };
 
     // --- One-arg instructions ---
+    (@collect $p:ident PUSH nil $($rest:tt)*) => {
+        $p.push($crate::Instruction::Push($crate::Value::Nil));
+        bytecode!(@collect $p $($rest)*);
+    };
     (@collect $p:ident PUSH $x:tt $($rest:tt)*) => {
         $p.push($crate::Instruction::Push($x.into()));
         bytecode!(@collect $p $($rest)*);

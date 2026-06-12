@@ -31,7 +31,6 @@ pub enum DyadicOperator {
     AndAssign,
     Or,
     OrAssign,
-    Dot,
     RangeInclusive,
     Range,
 }
@@ -62,13 +61,13 @@ pub struct Dyadic {
 impl Dyadic {
     pub fn new(
         operator: DyadicOperator,
-        left: Expression,
-        right: Expression,
+        left: impl Into<Expression>,
+        right: impl Into<Expression>,
     ) -> Self {
         Self {
             operator,
-            left: Box::new(left),
-            right: Box::new(right),
+            left: Box::new(left.into()),
+            right: Box::new(right.into()),
         }
     }
 }

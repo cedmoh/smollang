@@ -33,12 +33,21 @@ pub enum Instruction {
     /// Compare the top two values on the stack for equality and push the result
     /// (a boolean) back onto the stack
     Equals,
+    /// Compare the top two values on the stack for inequality and push the
+    /// result (a boolean) back onto the stack
+    NotEquals,
     /// Compare the top two values on the stack for less than and push the
     /// result (a boolean) back onto the stack
     LessThan,
     /// Compare the top two values on the stack for greater than and push the
     /// result (a boolean) back onto the stack
     GreaterThan,
+    /// Compare the top two values on the stack for less than or equal and push
+    /// the result (a boolean) back onto the stack
+    LessThanOrEqual,
+    /// Compare the top two values on the stack for greater than or equal and
+    /// push the result (a boolean) back onto the stack
+    GreaterThanOrEqual,
 
     // Control flow
     /// Unconditionally jump to the instruction at the given address
@@ -76,8 +85,11 @@ impl Display for Instruction {
             Multiply => write!(f, "MUL"),
             Divide => write!(f, "DIV"),
             Equals => write!(f, "EQ"),
+            NotEquals => write!(f, "NEQ"),
             LessThan => write!(f, "LT"),
+            LessThanOrEqual => write!(f, "LEQ"),
             GreaterThan => write!(f, "GT"),
+            GreaterThanOrEqual => write!(f, "GEQ"),
             Jump(program_offset) => {
                 write!(f, "JMP {}", program_offset)
             }

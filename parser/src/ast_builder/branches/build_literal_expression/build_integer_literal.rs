@@ -22,7 +22,7 @@ pub fn build_integer_literal(
 
     let text = pair.as_str().trim().replace('_', "");
 
-    let value: i64 =
+    let value: i32 =
         text.parse().map_err(|_| ParseIntegerFailed(text.clone()))?;
 
     Ok(IntegerLiteral::new(value).into())

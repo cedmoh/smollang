@@ -136,7 +136,6 @@ impl PrettyPrint for DyadicOperator {
             GreaterThanOrEqual => "GreaterThanOrEqual",
             And => "And",
             Or => "Or",
-            Dot => "Dot",
             RangeInclusive => "RangeInclusive",
             Range => "Range",
             AddAssign => "AddAssign",

@@ -23,7 +23,7 @@ pub struct Vm {
     program: Program,
 
     /// used for standard input and output (e.g. for the `Print` instruction)
-    io: Box<dyn Io>,
+    pub io: Box<dyn Io>,
 }
 
 impl Vm {

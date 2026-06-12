@@ -1,18 +1,137 @@
 use ast::{
-    Directive, DyadicOperator, Expression, FunctionCallArguments,
+    Directive, Dyadic, DyadicOperator, Expression, FunctionCallArguments,
     FunctionParameter, FunctionParameters, Identifier, Literal, PipeArm,
     PipeArms, Program,
 };
+use bytecode::{Instruction, Value};
 
 use crate::visitors::visitor::Visitor;
 
-pub struct AstToInstructionVisitor;
+pub struct AstToInstructionVisitor {
+    pub instructions: Vec<Instruction>,
+}
+
+impl AstToInstructionVisitor {
+    pub fn new() -> Self {
+        Self {
+            instructions: Vec::new(),
+        }
+    }
+
+    fn emit(&mut self, instruction: Instruction) {
+        self.instructions.push(instruction);
+    }
+
+    fn _emit_multiple(&mut self, instructions: Vec<Instruction>) {
+        self.instructions.extend(instructions);
+    }
+}
+
+impl Visitor<Program> for AstToInstructionVisitor {
+    fn visit(&mut self, program: &Program) {
+        for directive in &program.directives.items {
+            self.visit(directive);
+        }
+
+        for expression in &program.body.items {
+            self.visit(expression);
+        }
+    }
+}
+
+impl Visitor<Literal> for AstToInstructionVisitor {
+    fn visit(&mut self, literal: &Literal) {
+        use Instruction::*;
+        use Literal::*;
+
+        match literal {
+            Nil => self.emit(Push(Value::Nil)),
+            Boolean(boolean_literal) => {
+                self.emit(Push(boolean_literal.value.into()));
+            }
+            String(_string_literal) => {
+                todo!("String literals are not yet supported");
+            }
+            Template(_template_literal) => {
+                todo!("Template literals are not yet supported");
+            }
+            Integer(integer_literal) => {
+                self.emit(Push(integer_literal.value.into()));
+            }
+            Decimal(_decimal_literal) => {
+                todo!("Decimal literals are not yet supported");
+            }
+            Hexadecimal(hexadecimal_literal) => {
+                self.emit(Push(hexadecimal_literal.value.into()));
+            }
+            Binary(binary_literal) => {
+                self.emit(Push(binary_literal.value.into()));
+            }
+            Octal(octal_literal) => {
+                self.emit(Push(octal_literal.value.into()));
+            }
+            Array(_array_literal) => {
+                todo!("Array literals are not yet supported");
+            }
+            Object(_object_literal) => {
+                todo!("Object literals are not yet supported");
+            }
+        }
+    }
+}
+
+impl Visitor<Dyadic> for AstToInstructionVisitor {
+    fn visit(&mut self, dyadic: &Dyadic) {
+        // Note: The order of visiting the left and right expressions is
+        // important, as it determines the order in which they are evaluated and
+        // how their results are used by the operator.
+        self.visit(&*dyadic.left);
+        self.visit(&*dyadic.right);
+        self.visit(&dyadic.operator);
+    }
+}
+
+impl Visitor<DyadicOperator> for AstToInstructionVisitor {
+    fn visit(&mut self, operator: &DyadicOperator) {
+        use DyadicOperator::*;
+
+        match operator {
+            Add => self.emit(Instruction::Add),
+            Subtract => self.emit(Instruction::Subtract),
+            Multiply => self.emit(Instruction::Multiply),
+            Divide => self.emit(Instruction::Divide),
+            Equal => self.emit(Instruction::Equals),
+            NotEqual => self.emit(Instruction::NotEquals),
+            LessThan => self.emit(Instruction::LessThan),
+            LessThanOrEqual => self.emit(Instruction::LessThanOrEqual),
+            GreaterThan => self.emit(Instruction::GreaterThan),
+            GreaterThanOrEqual => self.emit(Instruction::GreaterThanOrEqual),
+            And => self.emit(Instruction::Equals),
+            Or => self.emit(Instruction::NotEquals),
+            AddAssign => todo!("AddAssign is not yet supported"),
+            SubtractAssign => todo!("SubtractAssign is not yet supported"),
+            MultiplyAssign => todo!("MultiplyAssign is not yet supported"),
+            DivideAssign => todo!("DivideAssign is not yet supported"),
+            Modulo => todo!("Modulo is not yet supported"),
+            ModuloAssign => todo!("ModuloAssign is not yet supported"),
+            Power => todo!("Power is not yet supported"),
+            PowerAssign => todo!("PowerAssign is not yet supported"),
+            AndAssign => todo!("AndAssign is not yet supported"),
+            OrAssign => todo!("OrAssign is not yet supported"),
+            RangeInclusive => todo!("RangeInclusive is not yet supported"),
+            Range => todo!("Range is not yet supported"),
+        }
+    }
+}
 
 impl Visitor<Directive> for AstToInstructionVisitor {
     fn visit(&mut self, directive: &Directive) {
         match directive {
-            Directive::Use(inner) => {
-                println!("Use({:?})({:?})", inner.imports, inner.path)
+            Directive::Use(use_directive) => {
+                println!(
+                    "Use({:?})({:?})",
+                    use_directive.imports, use_directive.path
+                )
             }
         }
     }
@@ -21,12 +140,6 @@ impl Visitor<Directive> for AstToInstructionVisitor {
 impl Visitor<Identifier> for AstToInstructionVisitor {
     fn visit(&mut self, identifier: &Identifier) {
         println!("Identifier({:?})", identifier.id);
-    }
-}
-
-impl Visitor<DyadicOperator> for AstToInstructionVisitor {
-    fn visit(&mut self, operator: &DyadicOperator) {
-        println!("DyadicOperator({:?})", operator);
     }
 }
 
@@ -69,126 +182,72 @@ impl Visitor<PipeArm> for AstToInstructionVisitor {
         self.visit(&pipe_arm.expression);
     }
 }
-
-impl Visitor<Literal> for AstToInstructionVisitor {
-    fn visit(&mut self, literal: &Literal) {
-        match literal {
-            Literal::Nil => println!("Nil"),
-            Literal::Boolean(boolean_literal) => {
-                println!("Boolean({:?})", boolean_literal.value)
-            }
-            Literal::String(string_literal) => {
-                println!("String({:?})", string_literal.value)
-            }
-            Literal::Template(template_literal) => {
-                println!("Template({:?})", template_literal.value)
-            }
-            Literal::Integer(integer_literal) => {
-                println!("Integer({:?})", integer_literal.value)
-            }
-            Literal::Decimal(decimal_literal) => {
-                println!("Decimal({:?})", decimal_literal.value)
-            }
-            Literal::Hexadecimal(hexadecimal_literal) => {
-                println!("Hexadecimal({:?})", hexadecimal_literal.value)
-            }
-            Literal::Binary(binary_literal) => {
-                println!("Binary({:?})", binary_literal.value)
-            }
-            Literal::Octal(octal_literal) => {
-                println!("Octal({:?})", octal_literal.value)
-            }
-            Literal::Array(array_literal) => {
-                println!("Array({:?})", array_literal.elements)
-            }
-            Literal::Object(object_literal) => {
-                println!("Object({:?})", object_literal.properties)
-            }
-        }
-    }
-}
-
 impl Visitor<Expression> for AstToInstructionVisitor {
     fn visit(&mut self, expression: &Expression) {
         match expression {
-            Expression::Assignment(inner) => {
+            Expression::Assignment(assignment) => {
                 println!("Assignment");
-                self.visit(&inner.left);
-                self.visit(&*inner.right);
+                self.visit(&assignment.left);
+                self.visit(&*assignment.right);
             }
-            Expression::Block(inner) => {
+            Expression::Block(block) => {
                 println!("Block");
-                for expression in &inner.body.items {
+                for expression in &block.body.items {
                     self.visit(expression);
                 }
             }
-            Expression::Dyadic(inner) => {
-                println!("Dyadic");
-                self.visit(&*inner.left);
-                self.visit(&inner.operator);
-                self.visit(&*inner.right);
+            Expression::Dyadic(dyadic) => {
+                self.visit(dyadic);
             }
-            Expression::FunctionCall(inner) => {
+            Expression::FunctionCall(function_call) => {
                 println!("FunctionCall");
-                self.visit(&*inner.callee);
-                self.visit(&inner.arguments);
+                self.visit(&*function_call.callee);
+                self.visit(&function_call.arguments);
             }
-            Expression::FunctionDeclaration(inner) => {
-                println!("FunctionDeclaration({:?})", inner.name);
-
-                if let Some(body) = &inner.body {
+            Expression::FunctionDeclaration(function_declaration) => {
+                if let Some(body) = &function_declaration.body {
                     self.visit(&*body.body);
                 }
 
-                self.visit(&inner.params);
+                self.visit(&function_declaration.params);
             }
-            Expression::Then(inner) => {
-                println!("Then");
-                self.visit(&*inner.condition);
-                self.visit(&*inner.then_body);
-                if let Some(else_body) = &inner.else_body {
+            Expression::Then(then_expression) => {
+                self.visit(&*then_expression.condition);
+                self.visit(&*then_expression.then_body);
+                if let Some(else_body) = &then_expression.else_body {
                     self.visit(&**else_body);
                 }
             }
-            Expression::Pipe(inner) => {
-                println!("Pipe");
-                self.visit(&inner.arms);
+            Expression::Pipe(pipe) => {
+                self.visit(&pipe.arms);
             }
-            Expression::Identifier(inner) => {
-                self.visit(inner);
+            Expression::Identifier(identifier) => {
+                self.visit(identifier);
             }
-            Expression::Literal(inner) => {
-                self.visit(inner);
+            Expression::Literal(literal) => {
+                self.visit(literal);
             }
-            Expression::Match(inner) => {
-                todo!()
+            Expression::Match(_match_expression) => {
+                todo!("Visiting match expressions is not yet supported");
             }
-            Expression::Member(inner) => {
-                todo!()
+            Expression::Member(_member) => {
+                todo!("Visiting member expressions is not yet supported");
             }
-            Expression::Return(inner) => {
-                todo!()
+            Expression::Return(_return_expression) => {
+                todo!("Visiting return expressions is not yet supported");
             }
-            Expression::Break(inner) => {
-                todo!()
+            Expression::Break(_break_expression) => {
+                todo!("Visiting break expressions is not yet supported");
             }
-            Expression::Continue(inner) => {
-                todo!()
+            Expression::Continue(_continue_expression) => {
+                todo!("Visiting continue expressions is not yet supported");
             }
-            Expression::Loop(inner) => {
-                todo!()
+            Expression::Loop(_loop_expression) => {
+                todo!("Visiting loop expressions is not yet supported");
             }
-            Expression::VariableDeclaration(inner) => {
-                todo!()
+            Expression::VariableDeclaration(_variable_declaration) => {
+                todo!("Visiting variable declarations is not yet supported");
             }
-        }
-    }
-}
-
-impl Visitor<Program> for AstToInstructionVisitor {
-    fn visit(&mut self, program: &Program) {
-        for directive in &program.directives.items {
-            self.visit(directive);
         }
     }
 }

@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Value {
+    Nil,
     Int(i32),
     Boolean(bool),
 }
@@ -22,7 +23,11 @@ impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Value::Int(i) => write!(f, "{}", i),
-            Value::Boolean(b) => write!(f, "{}", b),
+            Value::Boolean(b) => match b {
+                true => write!(f, "true"),
+                false => write!(f, "false"),
+            },
+            Value::Nil => write!(f, "nil"),
         }
     }
 }
@@ -36,5 +41,6 @@ mod tests {
         assert_eq!(Value::Int(42).to_string(), "42");
         assert_eq!(Value::Boolean(true).to_string(), "true");
         assert_eq!(Value::Boolean(false).to_string(), "false");
+        assert_eq!(Value::Nil.to_string(), "nil");
     }
 }

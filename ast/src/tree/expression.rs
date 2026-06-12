@@ -1,7 +1,9 @@
 use crate::{
-    Assignment, Block, Break, Continue, Dyadic, FunctionCall,
-    FunctionDeclaration, Identifier, Literal, Loop, Match, Member, Pipe,
-    Return, Then, VariableDeclaration,
+    ArrayLiteral, Assignment, BinaryLiteral, Block, BooleanLiteral, Break,
+    Continue, DecimalLiteral, Dyadic, FunctionCall, FunctionDeclaration,
+    HexadecimalLiteral, Identifier, IntegerLiteral, Literal, Loop, Match,
+    Member, ObjectLiteral, OctalLiteral, Pipe, Return, StringLiteral,
+    TemplateLiteral, Then, VariableDeclaration,
 };
 
 /// An expression, which is a piece of code that can be evaluated to produce a
@@ -71,6 +73,66 @@ impl From<Identifier> for Expression {
 impl From<Literal> for Expression {
     fn from(literal: Literal) -> Self {
         Expression::Literal(literal)
+    }
+}
+
+impl From<BooleanLiteral> for Expression {
+    fn from(boolean_literal: BooleanLiteral) -> Expression {
+        Literal::Boolean(boolean_literal).into()
+    }
+}
+
+impl From<IntegerLiteral> for Expression {
+    fn from(integer_literal: IntegerLiteral) -> Expression {
+        Literal::Integer(integer_literal).into()
+    }
+}
+
+impl From<TemplateLiteral> for Expression {
+    fn from(template_literal: TemplateLiteral) -> Expression {
+        Literal::Template(template_literal).into()
+    }
+}
+
+impl From<DecimalLiteral> for Expression {
+    fn from(decimal_literal: DecimalLiteral) -> Expression {
+        Literal::Decimal(decimal_literal).into()
+    }
+}
+
+impl From<HexadecimalLiteral> for Expression {
+    fn from(hexadecimal_literal: HexadecimalLiteral) -> Expression {
+        Literal::Hexadecimal(hexadecimal_literal).into()
+    }
+}
+
+impl From<BinaryLiteral> for Expression {
+    fn from(binary_literal: BinaryLiteral) -> Expression {
+        Literal::Binary(binary_literal).into()
+    }
+}
+
+impl From<OctalLiteral> for Expression {
+    fn from(octal_literal: OctalLiteral) -> Expression {
+        Literal::Octal(octal_literal).into()
+    }
+}
+
+impl From<ArrayLiteral> for Expression {
+    fn from(array_literal: ArrayLiteral) -> Expression {
+        Literal::Array(array_literal).into()
+    }
+}
+
+impl From<ObjectLiteral> for Expression {
+    fn from(object_literal: ObjectLiteral) -> Expression {
+        Literal::Object(object_literal).into()
+    }
+}
+
+impl From<StringLiteral> for Expression {
+    fn from(string_literal: StringLiteral) -> Self {
+        Literal::String(string_literal).into()
     }
 }
 

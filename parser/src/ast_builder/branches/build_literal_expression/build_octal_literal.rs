@@ -30,7 +30,7 @@ pub fn build_octal_literal(
         .trim()
         .replace('_', "");
 
-    let value = i64::from_str_radix(&digits, 8)
+    let value = i32::from_str_radix(&digits, 8)
         .map_err(|_| ParseFailed(text.to_string()))?;
 
     Ok(OctalLiteral::new(value))
