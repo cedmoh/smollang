@@ -19,6 +19,30 @@ impl ValueStack {
         self.values.push(value);
     }
 
+    pub fn duplicate(&mut self) -> Result<(), ()> {
+        let value = self.values.last().ok_or(())?;
+
+        self.values.push(value.clone());
+
+        Ok(())
+    }
+
+    pub fn duplicate_two(&mut self) -> Result<(), ()> {
+        let len = self.values.len();
+        let top = self.values.get(len - 1).ok_or(())?;
+        let bottom = self.values.get(len - 2).ok_or(())?;
+
+        let top_clone = top.clone();
+        let bottom_clone = bottom.clone();
+
+        // Push the bottom value first, then the top value,
+        // to maintain the correct order on the stack.
+        self.values.push(bottom_clone);
+        self.values.push(top_clone);
+
+        Ok(())
+    }
+
     pub fn pop(&mut self) -> Option<Value> {
         self.values.pop()
     }

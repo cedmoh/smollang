@@ -53,6 +53,41 @@ mod tests {
     }
 
     #[test]
+    fn should_duplicate_top_value() {
+        let instructions = bytecode!(
+            PUSH 1
+            DUP
+            HALT
+        );
+
+        let mut vm = Vm::new();
+        vm.load_program(instructions).run().unwrap();
+
+        assert_eq!(vm.stack[0], Value::Int(1));
+        assert_eq!(vm.stack[1], Value::Int(1));
+        assert_eq!(vm.stack.len(), 2);
+    }
+
+    #[test]
+    fn should_duplicate_top_two_values_in_order() {
+        let instructions = bytecode!(
+            PUSH 1
+            PUSH 2
+            DUP2
+            HALT
+        );
+
+        let mut vm = Vm::new();
+        vm.load_program(instructions).run().unwrap();
+
+        assert_eq!(vm.stack[0], Value::Int(1));
+        assert_eq!(vm.stack[1], Value::Int(2));
+        assert_eq!(vm.stack[2], Value::Int(1));
+        assert_eq!(vm.stack[3], Value::Int(2));
+        assert_eq!(vm.stack.len(), 4);
+    }
+
+    #[test]
     fn should_consume_and_add_two_numbers_together_and_push_the_result() {
         let instructions = bytecode!(
             PUSH 2

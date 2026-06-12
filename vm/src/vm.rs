@@ -3,7 +3,7 @@ use thiserror::Error;
 use crate::call_stack::CallStack;
 use crate::instruction::Instruction;
 use crate::io::{Io, StandardIo};
-use crate::memory::Memory;
+use crate::memory::{Memory, MemoryError};
 use crate::program::{Program, ProgramAddress};
 use crate::value::Value;
 use crate::value_stack::ValueStack;
@@ -81,9 +81,11 @@ impl Vm {
                     self.increment_instruction_pointer();
                 }
                 Duplicate => {
-                    let value =
-                        self.stack.last().ok_or(DuplicateOnEmptyStack)?;
-                    self.stack_push(value.clone());
+                    self.stack.duplicate().map_err(|_| StackUnderflow)?;
+                    self.increment_instruction_pointer();
+                }
+                DuplicateTwo => {
+                    self.stack.duplicate_two().map_err(|_| StackUnderflow)?;
                     self.increment_instruction_pointer();
                 }
 
@@ -233,13 +235,13 @@ impl Vm {
 
                 // Memory
                 Load(addr) => {
-                    let value = self.memory.load(addr).unwrap();
+                    let value = self.memory.load(addr)?;
                     self.stack_push(value);
                     self.increment_instruction_pointer();
                 }
                 Store(addr) => {
                     let value = self.try_stack_pop()?;
-                    self.memory.store(addr, value).unwrap();
+                    self.memory.store(addr, value)?;
                     self.increment_instruction_pointer();
                 }
 
@@ -267,11 +269,13 @@ impl Vm {
 
 #[derive(Debug, Error)]
 pub enum VmError {
-    #[error("Attempted to duplicate value on empty stack")]
-    DuplicateOnEmptyStack,
-
+    /// Returned when an instruction that requires popping a value from the stack is executed,
+    /// but the stack does not contain enough values to pop.
     #[error("Attempted to pop value from empty stack")]
     StackUnderflow,
+
+    #[error("Memory error: {0}")]
+    MemoryError(#[from] MemoryError),
 
     #[error("Attempted to pop return address from empty call stack")]
     CallStackUnderflow,

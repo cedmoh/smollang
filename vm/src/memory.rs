@@ -15,8 +15,11 @@ impl Memory {
         }
     }
 
-    pub fn load(&self, addr: MemoryAddress) -> Option<Value> {
-        self.data.get(addr).cloned()
+    pub fn load(&self, addr: MemoryAddress) -> Result<Value, MemoryError> {
+        match self.data.get(addr) {
+            Some(value) => Ok(*value),
+            None => Err(MemoryError::UninitializedMemoryAccess(addr)),
+        }
     }
 
     pub fn store(
@@ -24,19 +27,22 @@ impl Memory {
         addr: MemoryAddress,
         value: Value,
     ) -> Result<(), MemoryError> {
-        if addr < self.data.len() {
-            self.data[addr] = value;
-            Ok(())
-        } else {
-            Err(MemoryError::OutOfBounds(addr))
+        if addr >= self.data.len() {
+            return Err(MemoryError::OutOfBounds(addr));
         }
+
+        self.data[addr] = value;
+        Ok(())
     }
 }
 
 #[derive(Debug, Error)]
 pub enum MemoryError {
-    #[error("Memory access out of bounds: {0}")]
+    #[error("Attempted to access memory out of bounds: {0}")]
     OutOfBounds(MemoryAddress),
+
+    #[error("Attempted to access uninitialized memory at address: {0}")]
+    UninitializedMemoryAccess(MemoryAddress),
 }
 
 pub type MemoryAddress = usize;

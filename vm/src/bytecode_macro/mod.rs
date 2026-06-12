@@ -28,7 +28,7 @@ macro_rules! bytecode {
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident DUP $($rest:tt)*) => {
-        $p.push($crate::Instruction::Dup);
+        $p.push($crate::Instruction::Duplicate);
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident DUP2 $($rest:tt)*) => {
