@@ -1,12 +1,11 @@
-use thiserror::Error;
-
 use crate::call_stack::CallStack;
 use crate::instruction::Instruction;
 use crate::io::{Io, StandardIo};
 use crate::memory::{Memory, MemoryError};
 use crate::program::{Program, ProgramAddress};
 use crate::value::Value;
-use crate::value_stack::ValueStack;
+use crate::value_stack::{ValueStack, ValueStackError};
+use thiserror::Error;
 
 pub struct Vm {
     /// Points to the current instruction being executed
@@ -50,18 +49,6 @@ impl Vm {
         self
     }
 
-    fn increment_instruction_pointer(&mut self) {
-        self.instruction_pointer.increment();
-    }
-
-    fn try_stack_pop(&mut self) -> Result<Value, VmError> {
-        self.stack.pop().ok_or(VmError::StackUnderflow)
-    }
-
-    fn stack_push(&mut self, value: Value) {
-        self.stack.push(value)
-    }
-
     pub fn run(&mut self) -> Result<(), VmError> {
         use Instruction::*;
         use Value::*;
@@ -73,129 +60,129 @@ impl Vm {
             match instr {
                 // Stack
                 Push(value) => {
-                    self.stack_push(value);
-                    self.increment_instruction_pointer();
+                    self.stack.push(value);
+                    self.instruction_pointer.increment();
                 }
                 Pop => {
-                    self.try_stack_pop()?;
-                    self.increment_instruction_pointer();
+                    self.stack.pop()?;
+                    self.instruction_pointer.increment();
                 }
                 Duplicate => {
-                    self.stack.duplicate().map_err(|_| StackUnderflow)?;
-                    self.increment_instruction_pointer();
+                    self.stack.duplicate()?;
+                    self.instruction_pointer.increment();
                 }
                 DuplicateTwo => {
-                    self.stack.duplicate_two().map_err(|_| StackUnderflow)?;
-                    self.increment_instruction_pointer();
+                    self.stack.duplicate_two()?;
+                    self.instruction_pointer.increment();
                 }
 
                 // Arithmetic
                 Add => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Int(lhs + rhs));
+                            self.stack.push(Int(lhs + rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be added.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
                 Subtract => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Int(lhs - rhs));
+                            self.stack.push(Int(lhs - rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be subtracted.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
                 Multiply => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Int(lhs * rhs));
+                            self.stack.push(Int(lhs * rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be multiplied.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
                 Divide => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Int(lhs / rhs));
+                            self.stack.push(Int(lhs / rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be divided.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
 
                 // Comparison
                 Equals => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Boolean(lhs == rhs));
+                            self.stack.push(Boolean(lhs == rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
                 LessThan => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Boolean(lhs < rhs));
+                            self.stack.push(Boolean(lhs < rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
                 GreaterThan => {
-                    let b = self.try_stack_pop()?;
-                    let a = self.try_stack_pop()?;
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack_push(Boolean(lhs > rhs));
+                            self.stack.push(Boolean(lhs > rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
                         _ => unreachable!(),
                     }
 
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
 
                 // Control flow
@@ -203,13 +190,13 @@ impl Vm {
                     self.instruction_pointer += addr;
                 }
                 JumpIfTrue(addr) => {
-                    let cond = self.try_stack_pop()?;
+                    let cond = self.stack.pop()?;
                     match cond {
                         Boolean(true) => {
                             self.instruction_pointer += addr;
                         }
                         Boolean(false) => {
-                            self.increment_instruction_pointer();
+                            self.instruction_pointer.increment();
                         }
                         // The usage of the VM should ensure that only boolean
                         // values are used for
@@ -218,10 +205,10 @@ impl Vm {
                     }
                 }
                 JumpIfFalse(addr) => {
-                    let cond = self.try_stack_pop()?;
+                    let cond = self.stack.pop()?;
                     match cond {
                         Boolean(true) => {
-                            self.increment_instruction_pointer();
+                            self.instruction_pointer.increment();
                         }
                         Boolean(false) => {
                             self.instruction_pointer += addr;
@@ -236,13 +223,13 @@ impl Vm {
                 // Memory
                 Load(addr) => {
                     let value = self.memory.load(addr)?;
-                    self.stack_push(value);
-                    self.increment_instruction_pointer();
+                    self.stack.push(value);
+                    self.instruction_pointer.increment();
                 }
                 Store(addr) => {
-                    let value = self.try_stack_pop()?;
+                    let value = self.stack.pop()?;
                     self.memory.store(addr, value)?;
-                    self.increment_instruction_pointer();
+                    self.instruction_pointer.increment();
                 }
 
                 // Functions
@@ -269,10 +256,8 @@ impl Vm {
 
 #[derive(Debug, Error)]
 pub enum VmError {
-    /// Returned when an instruction that requires popping a value from the stack is executed,
-    /// but the stack does not contain enough values to pop.
-    #[error("Attempted to pop value from empty stack")]
-    StackUnderflow,
+    #[error("Value stack error: {0}")]
+    StackError(#[from] ValueStackError),
 
     #[error("Memory error: {0}")]
     MemoryError(#[from] MemoryError),

@@ -16,10 +16,11 @@ impl Memory {
     }
 
     pub fn load(&self, addr: MemoryAddress) -> Result<Value, MemoryError> {
-        match self.data.get(addr) {
-            Some(value) => Ok(*value),
-            None => Err(MemoryError::UninitializedMemoryAccess(addr)),
+        if addr >= self.data.len() {
+            return Err(MemoryError::OutOfBounds(addr));
         }
+
+        Ok(self.data[addr].clone())
     }
 
     pub fn store(

@@ -2,6 +2,7 @@ use std::{
     fmt::Display,
     ops::{Index, Range, RangeFull},
 };
+use thiserror::Error;
 
 use crate::value::Value;
 
@@ -19,18 +20,25 @@ impl ValueStack {
         self.values.push(value);
     }
 
-    pub fn duplicate(&mut self) -> Result<(), ()> {
-        let value = self.values.last().ok_or(())?;
+    pub fn duplicate(&mut self) -> Result<(), ValueStackError> {
+        let value =
+            self.values.last().ok_or(ValueStackError::StackUnderflow)?;
 
         self.values.push(value.clone());
 
         Ok(())
     }
 
-    pub fn duplicate_two(&mut self) -> Result<(), ()> {
+    pub fn duplicate_two(&mut self) -> Result<(), ValueStackError> {
         let len = self.values.len();
-        let top = self.values.get(len - 1).ok_or(())?;
-        let bottom = self.values.get(len - 2).ok_or(())?;
+        let top = self
+            .values
+            .get(len - 1)
+            .ok_or(ValueStackError::StackUnderflow)?;
+        let bottom = self
+            .values
+            .get(len - 2)
+            .ok_or(ValueStackError::StackUnderflow)?;
 
         let top_clone = top.clone();
         let bottom_clone = bottom.clone();
@@ -43,8 +51,8 @@ impl ValueStack {
         Ok(())
     }
 
-    pub fn pop(&mut self) -> Option<Value> {
-        self.values.pop()
+    pub fn pop(&mut self) -> Result<Value, ValueStackError> {
+        self.values.pop().ok_or(ValueStackError::StackUnderflow)
     }
 
     pub fn last(&self) -> Option<&Value> {
@@ -90,4 +98,12 @@ impl Display for ValueStack {
 
         writeln!(f, "--- End of Stack ---")
     }
+}
+
+#[derive(Debug, Error)]
+pub enum ValueStackError {
+    /// Returned when an instruction that requires popping a value from the stack is executed,
+    /// but the stack does not contain enough values to pop.
+    #[error("Attempted to pop value from empty stack")]
+    StackUnderflow,
 }
