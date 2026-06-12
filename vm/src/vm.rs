@@ -10,10 +10,10 @@ use crate::value_stack::ValueStack;
 
 pub struct Vm {
     /// Points to the current instruction being executed
-    instruction_pointer: ProgramAddress,
+    pub instruction_pointer: ProgramAddress,
 
     /// Used for storing intermediate values during execution
-    stack: ValueStack,
+    pub stack: ValueStack,
 
     /// Used for storing return addresses when calling functions
     call_stack: CallStack,
@@ -35,9 +35,14 @@ impl Vm {
             stack: ValueStack::new(),
             call_stack: CallStack::new(),
             memory: Memory::new(),
-            program: Program::empty(),
+            program: Program::new(),
             io: Box::new(StandardIo::new()),
         }
+    }
+
+    pub fn with_io(mut self, io: Box<dyn Io>) -> Self {
+        self.io = io;
+        self
     }
 
     pub fn load_program(&mut self, program: impl Into<Program>) -> &mut Self {
@@ -45,7 +50,7 @@ impl Vm {
         self
     }
 
-    pub fn increment_instruction_pointer(&mut self) {
+    fn increment_instruction_pointer(&mut self) {
         self.instruction_pointer.increment();
     }
 
@@ -63,7 +68,7 @@ impl Vm {
         use VmError::*;
 
         loop {
-            let instr = self.program.get(self.instruction_pointer);
+            let instr = self.program[self.instruction_pointer];
 
             match instr {
                 // Stack
@@ -75,7 +80,7 @@ impl Vm {
                     self.try_stack_pop()?;
                     self.increment_instruction_pointer();
                 }
-                Dup => {
+                Duplicate => {
                     let value =
                         self.stack.last().ok_or(DuplicateOnEmptyStack)?;
                     self.stack_push(value.clone());
@@ -98,7 +103,7 @@ impl Vm {
 
                     self.increment_instruction_pointer();
                 }
-                Sub => {
+                Subtract => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -113,7 +118,7 @@ impl Vm {
 
                     self.increment_instruction_pointer();
                 }
-                Mul => {
+                Multiply => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -128,7 +133,7 @@ impl Vm {
 
                     self.increment_instruction_pointer();
                 }
-                Div => {
+                Divide => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -145,7 +150,7 @@ impl Vm {
                 }
 
                 // Comparison
-                Eq => {
+                Equals => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -160,7 +165,7 @@ impl Vm {
 
                     self.increment_instruction_pointer();
                 }
-                Lt => {
+                LessThan => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -175,7 +180,7 @@ impl Vm {
 
                     self.increment_instruction_pointer();
                 }
-                Gt => {
+                GreaterThan => {
                     let b = self.try_stack_pop()?;
                     let a = self.try_stack_pop()?;
 
@@ -193,13 +198,13 @@ impl Vm {
 
                 // Control flow
                 Jump(addr) => {
-                    self.instruction_pointer = addr;
+                    self.instruction_pointer += addr;
                 }
                 JumpIfTrue(addr) => {
                     let cond = self.try_stack_pop()?;
                     match cond {
                         Boolean(true) => {
-                            self.instruction_pointer = addr;
+                            self.instruction_pointer += addr;
                         }
                         Boolean(false) => {
                             self.increment_instruction_pointer();
@@ -217,7 +222,7 @@ impl Vm {
                             self.increment_instruction_pointer();
                         }
                         Boolean(false) => {
-                            self.instruction_pointer = addr;
+                            self.instruction_pointer += addr;
                         }
                         // The usage of the VM should ensure that only boolean
                         // values are used for
@@ -248,20 +253,12 @@ impl Vm {
 
                     self.instruction_pointer = addr.into();
                 }
-                Ret => {
+                Return => {
                     let address_to_return_to =
                         self.call_stack.pop().ok_or(CallStackUnderflow)?;
 
                     self.instruction_pointer = address_to_return_to.into();
                 }
-
-                // Debug
-                Print => {
-                    let value = self.try_stack_pop()?;
-                    self.io.write(value.to_string().as_str());
-                    self.increment_instruction_pointer();
-                }
-
                 Halt => break Ok(()),
             }
         }

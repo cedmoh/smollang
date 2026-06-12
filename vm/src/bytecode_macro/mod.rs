@@ -31,6 +31,10 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Dup);
         bytecode!(@collect $p $($rest)*);
     };
+    (@collect $p:ident DUP2 $($rest:tt)*) => {
+        $p.push($crate::Instruction::DuplicateTwo);
+        bytecode!(@collect $p $($rest)*);
+    };
     (@collect $p:ident EQ $($rest:tt)*) => {
         $p.push($crate::Instruction::Eq);
         bytecode!(@collect $p $($rest)*);
@@ -73,12 +77,12 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Jump($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
-    (@collect $p:ident JZ $x:tt $($rest:tt)*) => {
-        $p.push($crate::Instruction::JumpIfFalse($x.into()));
+    (@collect $p:ident JT $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::JumpIfTrue($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
-    (@collect $p:ident JNZ $x:tt $($rest:tt)*) => {
-        $p.push($crate::Instruction::JumpIfTrue($x.into()));
+    (@collect $p:ident JF $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::JumpIfFalse($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident CALL $x:tt $($rest:tt)*) => {

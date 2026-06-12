@@ -17,10 +17,6 @@ impl CallStack {
     pub fn pop(&mut self) -> Option<CallStackAddress> {
         self.return_addresses.pop()
     }
-
-    pub fn last(&self) -> Option<&CallStackAddress> {
-        self.return_addresses.last()
-    }
 }
 
 pub type CallStackAddress = usize;
