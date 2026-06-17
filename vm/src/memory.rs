@@ -1,4 +1,4 @@
-use bytecode::{MemoryAddress, Value};
+use bytecode::{ConstantAddress, Value};
 use thiserror::Error;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ impl Memory {
         }
     }
 
-    pub fn load(&self, address: MemoryAddress) -> Result<Value, MemoryError> {
+    pub fn load(&self, address: ConstantAddress) -> Result<Value, MemoryError> {
         let address_usize = address.as_usize();
 
         if address_usize >= self.data.len() {
@@ -26,7 +26,7 @@ impl Memory {
 
     pub fn store(
         &mut self,
-        address: MemoryAddress,
+        address: ConstantAddress,
         value: Value,
     ) -> Result<(), MemoryError> {
         let address_usize = address.as_usize();
@@ -44,8 +44,8 @@ impl Memory {
 #[derive(Debug, Error)]
 pub enum MemoryError {
     #[error("Attempted to access memory out of bounds: {0}")]
-    OutOfBounds(MemoryAddress),
+    OutOfBounds(ConstantAddress),
 
     #[error("Attempted to access uninitialized memory at address: {0}")]
-    UninitializedMemoryAccess(MemoryAddress),
+    UninitializedMemoryAccess(ConstantAddress),
 }

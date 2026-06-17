@@ -7,7 +7,7 @@ use compiler::Compiler;
 use pretty_print::PrettyPrint;
 use std::path::PathBuf;
 use styles::CARGO_STYLING;
-use vm::{Program, Vm};
+use vm::Vm;
 
 use crate::standard_io::StandardIo;
 
@@ -117,12 +117,12 @@ fn execute_file(path: &PathBuf) -> anyhow::Result<()> {
     let ast = parser::parse_string_to_program_ast(&input)?;
 
     let mut compiler = Compiler::new();
-    let instructions = compiler.compile(ast);
+    let assembly = compiler.compile(ast);
 
     let io = StandardIo::new();
 
     Vm::new_with_io(Box::new(io))
-        .load_program(Program::with_instructions(instructions))
+        .load_assembly(assembly)
         .run()?;
 
     Ok(())

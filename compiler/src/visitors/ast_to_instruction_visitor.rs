@@ -3,31 +3,31 @@ use ast::{
     FunctionParameter, FunctionParameters, Identifier, Literal, PipeArm,
     PipeArms, Program,
 };
-use bytecode::{Instruction, Value};
+use bytecode::{Assembly, AssemblyBuilder, Instruction, Value};
 
 use crate::visitors::visitor::Visitor;
 
-pub struct AstToInstructionVisitor {
-    pub instructions: Vec<Instruction>,
+pub struct AstToAssemblyVisitor {
+    pub assembly_builder: AssemblyBuilder,
 }
 
-impl AstToInstructionVisitor {
+impl AstToAssemblyVisitor {
     pub fn new() -> Self {
         Self {
-            instructions: Vec::new(),
+            assembly_builder: AssemblyBuilder::new(),
         }
     }
 
     fn emit(&mut self, instruction: Instruction) {
-        self.instructions.push(instruction);
+        self.assembly_builder.add_instruction(instruction);
     }
 
     fn _emit_multiple(&mut self, instructions: Vec<Instruction>) {
-        self.instructions.extend(instructions);
+        self.assembly_builder.add_instructions(instructions);
     }
 }
 
-impl Visitor<Program> for AstToInstructionVisitor {
+impl Visitor<Program> for AstToAssemblyVisitor {
     fn visit(&mut self, program: &Program) {
         for directive in &program.directives.items {
             self.visit(directive);
@@ -39,7 +39,7 @@ impl Visitor<Program> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<Literal> for AstToInstructionVisitor {
+impl Visitor<Literal> for AstToAssemblyVisitor {
     fn visit(&mut self, literal: &Literal) {
         use Instruction::*;
         use Literal::*;
@@ -80,7 +80,7 @@ impl Visitor<Literal> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<Dyadic> for AstToInstructionVisitor {
+impl Visitor<Dyadic> for AstToAssemblyVisitor {
     fn visit(&mut self, dyadic: &Dyadic) {
         // Note: The order of visiting the left and right expressions is
         // important, as it determines the order in which they are evaluated and
@@ -91,7 +91,7 @@ impl Visitor<Dyadic> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<DyadicOperator> for AstToInstructionVisitor {
+impl Visitor<DyadicOperator> for AstToAssemblyVisitor {
     fn visit(&mut self, operator: &DyadicOperator) {
         use DyadicOperator::*;
 
@@ -124,7 +124,7 @@ impl Visitor<DyadicOperator> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<Directive> for AstToInstructionVisitor {
+impl Visitor<Directive> for AstToAssemblyVisitor {
     fn visit(&mut self, directive: &Directive) {
         match directive {
             Directive::Use(use_directive) => {
@@ -137,13 +137,13 @@ impl Visitor<Directive> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<Identifier> for AstToInstructionVisitor {
+impl Visitor<Identifier> for AstToAssemblyVisitor {
     fn visit(&mut self, identifier: &Identifier) {
         println!("Identifier({:?})", identifier.id);
     }
 }
 
-impl Visitor<FunctionCallArguments> for AstToInstructionVisitor {
+impl Visitor<FunctionCallArguments> for AstToAssemblyVisitor {
     fn visit(&mut self, arguments: &FunctionCallArguments) {
         println!("FunctionCallArguments");
         for expression in &arguments.expressions.items {
@@ -152,7 +152,7 @@ impl Visitor<FunctionCallArguments> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<FunctionParameters> for AstToInstructionVisitor {
+impl Visitor<FunctionParameters> for AstToAssemblyVisitor {
     fn visit(&mut self, parameters: &FunctionParameters) {
         println!("FunctionParameters");
         for parameter in &parameters.items {
@@ -161,13 +161,13 @@ impl Visitor<FunctionParameters> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<FunctionParameter> for AstToInstructionVisitor {
+impl Visitor<FunctionParameter> for AstToAssemblyVisitor {
     fn visit(&mut self, program: &FunctionParameter) {
         println!("FunctionParameter({:?})", program.name);
     }
 }
 
-impl Visitor<PipeArms> for AstToInstructionVisitor {
+impl Visitor<PipeArms> for AstToAssemblyVisitor {
     fn visit(&mut self, pipe_arms: &PipeArms) {
         println!("PipeArms");
         for arm in &pipe_arms.arms {
@@ -176,13 +176,13 @@ impl Visitor<PipeArms> for AstToInstructionVisitor {
     }
 }
 
-impl Visitor<PipeArm> for AstToInstructionVisitor {
+impl Visitor<PipeArm> for AstToAssemblyVisitor {
     fn visit(&mut self, pipe_arm: &PipeArm) {
         println!("PipeArm");
         self.visit(&pipe_arm.expression);
     }
 }
-impl Visitor<Expression> for AstToInstructionVisitor {
+impl Visitor<Expression> for AstToAssemblyVisitor {
     fn visit(&mut self, expression: &Expression) {
         match expression {
             Expression::Assignment(assignment) => {

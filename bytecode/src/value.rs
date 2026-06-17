@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use crate::Constant;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Value {
     Nil,
@@ -19,10 +21,23 @@ impl From<bool> for Value {
     }
 }
 
+impl From<Constant> for Value {
+    fn from(value: Constant) -> Self {
+        match value {
+            Constant::Nil => Value::Nil,
+            Constant::Int(int) => Value::Int(int),
+            Constant::Boolean(boolean) => Value::Boolean(boolean),
+            Constant::Float(_) | Constant::String(_) => {
+                todo!("Only nil, integer, and boolean constants are supported")
+            }
+        }
+    }
+}
+
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::Int(i) => write!(f, "{}", i),
+            Value::Int(i) => write!(f, "{}i", i),
             Value::Boolean(b) => match b {
                 true => write!(f, "true"),
                 false => write!(f, "false"),
@@ -38,9 +53,19 @@ mod tests {
 
     #[test]
     fn test_value_display() {
-        assert_eq!(Value::Int(42).to_string(), "42");
+        assert_eq!(Value::Int(42).to_string(), "42i");
         assert_eq!(Value::Boolean(true).to_string(), "true");
         assert_eq!(Value::Boolean(false).to_string(), "false");
         assert_eq!(Value::Nil.to_string(), "nil");
+    }
+
+    #[test]
+    fn should_convert_supported_constants_to_values() {
+        assert!(matches!(Value::from(Constant::Nil), Value::Nil));
+        assert!(matches!(Value::from(Constant::Int(42)), Value::Int(42)));
+        assert!(matches!(
+            Value::from(Constant::Boolean(true)),
+            Value::Boolean(true)
+        ));
     }
 }

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{MemoryAddress, ProgramAddress, ProgramOffset, Value};
+use crate::{ConstantAddress, ProgramAddress, ProgramOffset, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -61,13 +61,17 @@ pub enum Instruction {
 
     // Memory
     /// Load a value from memory at the given address and push it onto the stack
-    Load(MemoryAddress),
+    Load(ConstantAddress),
     /// Pop a value from the stack and store it in memory at the given address
-    Store(MemoryAddress),
+    Store(ConstantAddress),
 
     // Functions
     Call(ProgramAddress),
     Return,
+
+    // Constants
+    /// Push a constant value from the constant pool onto the stack
+    Constant(ConstantAddress),
 
     Halt,
 }
@@ -111,6 +115,9 @@ impl Display for Instruction {
             Return => write!(f, "RET"),
             Halt => write!(f, "HALT"),
             DuplicateTwo => write!(f, "DUP2"),
+            Constant(constant_address) => {
+                write!(f, "CONST {}", constant_address)
+            }
         }
     }
 }

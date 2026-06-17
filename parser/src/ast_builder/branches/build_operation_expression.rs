@@ -154,8 +154,8 @@ mod tests {
         // Assert
         let expected = Dyadic::new(
             DyadicOperator::Add,
-            Identifier::new("a".to_string()).into(),
-            Identifier::new("b".to_string()).into(),
+            Identifier::new("a".to_string()),
+            Identifier::new("b".to_string()),
         );
 
         assert_eq!(operation, Ok(expected));
@@ -177,11 +177,11 @@ mod tests {
         // Assert
         let expected = Dyadic::new(
             DyadicOperator::Add,
-            Identifier::new("a".to_string()).into(),
+            Identifier::new("a".to_string()),
             Expression::Dyadic(Dyadic::new(
                 DyadicOperator::Multiply,
-                Identifier::new("b".to_string()).into(),
-                Identifier::new("c".to_string()).into(),
+                Identifier::new("b".to_string()),
+                Identifier::new("c".to_string()),
             )),
         );
 

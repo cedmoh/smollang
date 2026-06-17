@@ -1,9 +1,8 @@
 use crate::call_stack::CallStack;
 use crate::io::{DummyIo, DummyIoError, Io};
 use crate::memory::{Memory, MemoryError};
-use crate::program::Program;
 use crate::value_stack::{ValueStack, ValueStackError};
-use bytecode::{Instruction, ProgramAddress, Value};
+use bytecode::{Assembly, Instruction, ProgramAddress, Value};
 use thiserror::Error;
 
 pub struct Vm<IoError> {
@@ -20,7 +19,7 @@ pub struct Vm<IoError> {
     memory: Memory,
 
     /// The program, which is a list of instructions to be executed
-    program: Program,
+    assembly: Assembly,
 
     /// used for standard input and output (e.g. for the `Print` instruction)
     pub io: Box<dyn Io<IoError>>,
@@ -33,7 +32,7 @@ impl Vm<DummyIoError> {
             stack: ValueStack::new(),
             call_stack: CallStack::new(),
             memory: Memory::new(),
-            program: Program::new(),
+            assembly: Assembly::new(),
             io: Box::new(DummyIo::new()),
         }
     }
@@ -46,13 +45,13 @@ impl<IoError> Vm<IoError> {
             stack: ValueStack::new(),
             call_stack: CallStack::new(),
             memory: Memory::new(),
-            program: Program::new(),
+            assembly: Assembly::new(),
             io,
         }
     }
 
-    pub fn load_program(&mut self, program: impl Into<Program>) -> &mut Self {
-        self.program = program.into();
+    pub fn load_assembly(&mut self, assembly: Assembly) -> &mut Self {
+        self.assembly = assembly;
         self
     }
 
@@ -62,7 +61,7 @@ impl<IoError> Vm<IoError> {
         use VmError::*;
 
         loop {
-            let instr = self.program[self.instruction_pointer];
+            let instr = self.assembly[self.instruction_pointer];
 
             match instr {
                 // Stack
@@ -236,6 +235,14 @@ impl<IoError> Vm<IoError> {
                 Store(addr) => {
                     let value = self.stack.pop()?;
                     self.memory.store(addr, value)?;
+                    self.instruction_pointer.increment();
+                }
+
+                // Constants
+                Constant(addr) => {
+                    let value =
+                        self.assembly.constants[addr.as_usize()].clone().into();
+                    self.stack.push(value);
                     self.instruction_pointer.increment();
                 }
 

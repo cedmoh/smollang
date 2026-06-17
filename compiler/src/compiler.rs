@@ -1,24 +1,24 @@
-use crate::visitors::{AstToInstructionVisitor, Visitor};
+use crate::visitors::{AstToAssemblyVisitor, Visitor};
 use ast::Program;
-use bytecode::Instruction;
+use bytecode::Assembly;
 use std::collections::HashMap;
 
 pub struct Compiler {
-    symbol_table: HashMap<String, ()>,
+    _symbol_table: HashMap<String, ()>,
 }
 
 impl Compiler {
     pub fn new() -> Self {
         Self {
-            symbol_table: HashMap::new(),
+            _symbol_table: HashMap::new(),
         }
     }
 
-    pub fn compile(&mut self, program: Program) -> Vec<Instruction> {
-        let mut visitor = AstToInstructionVisitor::new();
+    pub fn compile(&mut self, program: Program) -> Assembly {
+        let mut visitor = AstToAssemblyVisitor::new();
 
         visitor.visit(&program);
 
-        visitor.instructions
+        visitor.assembly_builder.build()
     }
 }

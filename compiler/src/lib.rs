@@ -22,12 +22,13 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program);
+        let instructions = compiler.compile(program).instructions;
 
         assert_eq!(
             instructions,
             bytecode!(
                 PUSH integer
+                HALT
             )
         );
     }
@@ -44,12 +45,13 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program);
+        let instructions = compiler.compile(program).instructions;
 
         assert_eq!(
             instructions,
             bytecode!(
                 PUSH boolean
+                HALT
             )
         );
     }
@@ -62,12 +64,13 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program);
+        let instructions = compiler.compile(program).instructions;
 
         assert_eq!(
             instructions,
             bytecode!(
                 PUSH nil
+                HALT
             )
         );
     }
@@ -89,7 +92,7 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program);
+        let instructions = compiler.compile(program).instructions;
 
         assert_eq!(
             instructions,
@@ -97,6 +100,7 @@ mod tests {
                 PUSH left
                 PUSH right
                 ADD
+                HALT
             )
         );
     }
