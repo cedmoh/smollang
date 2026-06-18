@@ -1,6 +1,5 @@
+use crate::MemoryAddress;
 use std::fmt::Display;
-
-use crate::Constant;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Value {
@@ -10,24 +9,53 @@ pub enum Value {
     Object(ObjectHandle),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct ObjectHandle(pub usize);
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct ObjectHandle(MemoryAddress);
 
-#[derive(Debug)]
-pub struct Object {
-    marked: bool, // Used for garbage collection
-    data: ObjectData,
+/// A handle to an object in the heap.
+/// This is what gets stored on the stack when an object is created.
+impl ObjectHandle {
+    pub fn new(address: MemoryAddress) -> Self {
+        Self(address)
+    }
+
+    pub fn into_memory_address(&self) -> MemoryAddress {
+        self.0
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub struct Object {
+    // TODO: Use when implementing garbage collection
+    _marked: bool,
+    pub data: ObjectData,
+}
+
+impl Object {
+    pub fn new(data: ObjectData) -> Self {
+        Self {
+            _marked: false,
+            data,
+        }
+    }
+
+    pub fn new_string(chars: String) -> Self {
+        Self::new(ObjectData::String(ObjectString::new(chars)))
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum ObjectData {
     String(ObjectString),
 }
 
-#[derive(Debug)]
-pub struct ObjectString {
-    pub chars: String,
-    pub length: usize,
+#[derive(Debug, Clone)]
+pub struct ObjectString(pub String);
+
+impl ObjectString {
+    pub fn new(chars: String) -> Self {
+        Self(chars)
+    }
 }
 
 impl From<i32> for Value {
@@ -39,19 +67,6 @@ impl From<i32> for Value {
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
         Value::Boolean(value)
-    }
-}
-
-impl From<Constant> for Value {
-    fn from(value: Constant) -> Self {
-        match value {
-            Constant::Nil => Value::Nil,
-            Constant::Int(int) => Value::Int(int),
-            Constant::Boolean(boolean) => Value::Boolean(boolean),
-            Constant::Float(_) | Constant::String(_) => {
-                todo!("Only nil, integer, and boolean constants are supported")
-            }
-        }
     }
 }
 
@@ -79,15 +94,5 @@ mod tests {
         assert_eq!(Value::Boolean(true).to_string(), "true");
         assert_eq!(Value::Boolean(false).to_string(), "false");
         assert_eq!(Value::Nil.to_string(), "nil");
-    }
-
-    #[test]
-    fn should_convert_supported_constants_to_values() {
-        assert!(matches!(Value::from(Constant::Nil), Value::Nil));
-        assert!(matches!(Value::from(Constant::Int(42)), Value::Int(42)));
-        assert!(matches!(
-            Value::from(Constant::Boolean(true)),
-            Value::Boolean(true)
-        ));
     }
 }

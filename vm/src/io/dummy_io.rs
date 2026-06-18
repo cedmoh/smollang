@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use thiserror::Error;
 
 use crate::io::Io;
@@ -7,33 +9,31 @@ use crate::io::Io;
 /// any real I/O operations.
 #[derive(Debug)]
 pub struct DummyIo {
-    stdin: Vec<String>,
-    stdout: Vec<String>,
-    stderr: Vec<String>,
+    pub stdin: VecDeque<String>,
+    pub stdout: VecDeque<String>,
 }
 
 impl DummyIo {
     /// Creates a new `DummyIo` instance with empty input and output buffers.
     pub fn new() -> Self {
         Self {
-            stdin: Vec::new(),
-            stdout: Vec::new(),
-            stderr: Vec::new(),
+            stdin: VecDeque::new(),
+            stdout: VecDeque::new(),
         }
     }
 }
 
 impl Io<DummyIoError> for DummyIo {
     fn read_line(&mut self) -> Result<String, DummyIoError> {
-        self.stdin.pop().ok_or(DummyIoError::NoInput)
+        self.stdin.pop_front().ok_or(DummyIoError::NoInput)
     }
 
     fn write_line(&mut self, line: &str) {
-        self.stdout.push(line.to_string());
+        self.stdout.push_back(line.to_string());
     }
 
-    fn write_error_line(&mut self, line: &str) {
-        self.stderr.push(line.to_string());
+    fn drain_stdout(&mut self) -> Result<String, DummyIoError> {
+        Ok(self.stdout.drain(..).collect::<Vec<String>>().join("\n"))
     }
 }
 

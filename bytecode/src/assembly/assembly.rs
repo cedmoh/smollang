@@ -40,7 +40,6 @@ impl Display for Assembly {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "== Program ==")?;
         writeln!(f, "{}", self.instructions)?;
-        writeln!(f)?;
         writeln!(f, "== Constants ==")?;
         writeln!(f, "{}", self.constants)?;
 

@@ -1,5 +1,4 @@
 use bytecode::Value;
-
 use std::{
     fmt::Display,
     ops::{Index, Range, RangeFull},
@@ -102,8 +101,9 @@ impl Display for ValueStack {
 
 #[derive(Debug, Error)]
 pub enum ValueStackError {
-    /// Returned when an instruction that requires popping a value from the stack is executed,
-    /// but the stack does not contain enough values to pop.
+    /// Returned when an instruction that requires popping a value from the
+    /// stack is executed, but the stack does not contain enough values to
+    /// pop.
     #[error("Attempted to pop value from empty stack")]
     StackUnderflow,
 }

@@ -20,7 +20,7 @@ impl Io<Error> for StandardIo {
         println!("{}", line);
     }
 
-    fn write_error_line(&mut self, line: &str) {
-        eprintln!("{}", line);
+    fn drain_stdout(&mut self) -> Result<String, Error> {
+        todo!("Draining stdout is not supported for StandardIo")
     }
 }

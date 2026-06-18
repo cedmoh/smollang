@@ -47,8 +47,12 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Gt);
         bytecode!(@collect $p $($rest)*);
     };
-    (@collect $p:ident PRINT $($rest:tt)*) => {
-        $p.push($crate::Instruction::Print);
+    (@collect $p:ident IN $($rest:tt)*) => {
+        $p.push($crate::Instruction::In);
+        bytecode!(@collect $p $($rest)*);
+    };
+    (@collect $p:ident OUT $($rest:tt)*) => {
+        $p.push($crate::Instruction::Out);
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident HALT $($rest:tt)*) => {

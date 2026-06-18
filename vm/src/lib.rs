@@ -169,4 +169,32 @@ mod tests {
         assert_eq!(vm.stack[2], Value::Boolean(true));
         assert_eq!(vm.stack.len(), 3);
     }
+
+    #[test]
+    fn should_print_strings() {
+        use Constant::*;
+
+        // Arrange
+        let instructions = bytecode!(
+            CONST 0
+            OUT
+            HALT
+        );
+
+        let string = "Hello, world!".to_string();
+
+        let constants = vec![String(string.clone())];
+        let assembly = Assembly::builder()
+            .instructions(instructions)
+            .constants(constants)
+            .build();
+
+        let mut vm = Vm::new();
+
+        // Act
+        vm.load_assembly(assembly).run().unwrap();
+
+        // Assert
+        assert_eq!(vm.io.drain_stdout().unwrap(), string);
+    }
 }

@@ -26,6 +26,16 @@ fn main() -> anyhow::Result<()> {
                 .index(1),
         )
         .subcommand(
+            Command::new("compile")
+                .about("Compile the file at the given path and print the resulting assembly.")
+                .arg(
+                    Arg::new("file")
+                        .help("Path to file to compile.")
+                        .value_parser(clap::value_parser!(PathBuf))
+                        .required(true),
+                )
+        )
+        .subcommand(
             Command::new("parse")
                 .about("Parse the file at the given path and print the resulting AST.")
                 .arg(
@@ -85,6 +95,11 @@ fn main() -> anyhow::Result<()> {
 
             parse_file(file, is_debug, no_color)
         }
+        // Provided Subcommand is `compile`
+        Some(("compile", sub_m)) => {
+            let file: &PathBuf = sub_m.get_one("file").unwrap();
+            compile_file(file)
+        }
         _ => {
             unreachable!(
                 "Any unhandled argument was assumed to be handled as path to file."
@@ -107,6 +122,19 @@ fn parse_file(
     } else {
         println!("{}", ast.pretty(!no_color));
     }
+
+    Ok(())
+}
+
+fn compile_file(path: &PathBuf) -> anyhow::Result<()> {
+    let input = std::fs::read_to_string(path)?;
+
+    let ast = parser::parse_string_to_program_ast(&input)?;
+
+    let mut compiler = Compiler::new();
+    let assembly = compiler.compile(ast);
+
+    println!("{}", assembly);
 
     Ok(())
 }

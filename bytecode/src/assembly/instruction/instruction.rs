@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::{ConstantAddress, InstructionAddress, InstructionOffset, Value};
+use crate::{
+    ConstantAddress, InstructionAddress, InstructionOffset, MemoryAddress,
+    Value,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -61,13 +64,19 @@ pub enum Instruction {
 
     // Memory
     /// Load a value from memory at the given address and push it onto the stack
-    Load(ConstantAddress),
+    Load(MemoryAddress),
     /// Pop a value from the stack and store it in memory at the given address
-    Store(ConstantAddress),
+    Store(MemoryAddress),
 
     // Functions
     Call(InstructionAddress),
     Return,
+
+    // IO
+    /// Read a character from the standard input and push it onto the stack
+    In,
+    /// Pop a value from the stack and write it to the standard output
+    Out,
 
     // Constants
     /// Push a constant value from the constant pool onto the stack
@@ -80,44 +89,47 @@ impl Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Instruction::*;
 
-        match self {
-            Push(value) => write!(f, "PUSH {}", value),
-            Pop => write!(f, "POP"),
-            Duplicate => write!(f, "DUP"),
-            Add => write!(f, "ADD"),
-            Subtract => write!(f, "SUB"),
-            Multiply => write!(f, "MUL"),
-            Divide => write!(f, "DIV"),
-            Equals => write!(f, "EQ"),
-            NotEquals => write!(f, "NEQ"),
-            LessThan => write!(f, "LT"),
-            LessThanOrEqual => write!(f, "LEQ"),
-            GreaterThan => write!(f, "GT"),
-            GreaterThanOrEqual => write!(f, "GEQ"),
-            Jump(program_offset) => {
-                write!(f, "JMP {}", program_offset)
-            }
+        let (mnemonic, operand) = match self {
+            Push(value) => ("PUSH", Some(value.to_string())),
+            Pop => ("POP", None),
+            Duplicate => ("DUP", None),
+            Add => ("ADD", None),
+            Subtract => ("SUB", None),
+            Multiply => ("MUL", None),
+            Divide => ("DIV", None),
+            Equals => ("EQ", None),
+            NotEquals => ("NEQ", None),
+            LessThan => ("LT", None),
+            LessThanOrEqual => ("LEQ", None),
+            GreaterThan => ("GT", None),
+            GreaterThanOrEqual => ("GEQ", None),
+            Jump(program_offset) => ("JMP", Some(program_offset.to_string())),
             JumpIfTrue(program_offset) => {
-                write!(f, "JT {}", program_offset)
+                ("JT", Some(program_offset.to_string()))
             }
             JumpIfFalse(program_offset) => {
-                write!(f, "JF {}", program_offset)
+                ("JF", Some(program_offset.to_string()))
             }
-            Load(memory_address) => {
-                write!(f, "LOAD {}", memory_address)
-            }
+            Load(memory_address) => ("LOAD", Some(memory_address.to_string())),
             Store(memory_address) => {
-                write!(f, "STORE {}", memory_address)
+                ("STORE", Some(memory_address.to_string()))
             }
             Call(call_stack_address) => {
-                write!(f, "CALL {}", call_stack_address)
+                ("CALL", Some(call_stack_address.to_string()))
             }
-            Return => write!(f, "RET"),
-            Halt => write!(f, "HALT"),
-            DuplicateTwo => write!(f, "DUP2"),
+            Return => ("RET", None),
+            Halt => ("HALT", None),
+            DuplicateTwo => ("DUP2", None),
             Constant(constant_address) => {
-                write!(f, "CONST {}", constant_address)
+                ("CONST", Some(constant_address.to_string()))
             }
+            In => ("IN", None),
+            Out => ("OUT", None),
+        };
+
+        match operand {
+            Some(op) => write!(f, "{:5} {}", mnemonic, op),
+            None => write!(f, "{:5}  ", mnemonic),
         }
     }
 }

@@ -2,7 +2,9 @@ use crate::call_stack::CallStack;
 use crate::io::{DummyIo, DummyIoError, Io};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
-use bytecode::{Assembly, Instruction, InstructionAddress, Value};
+use bytecode::{
+    Assembly, Instruction, InstructionAddress, Object, ObjectData, Value,
+};
 use thiserror::Error;
 
 pub struct Vm<IoError> {
@@ -57,7 +59,6 @@ impl<IoError> Vm<IoError> {
 
     pub fn run(&mut self) -> Result<(), VmError> {
         use Instruction::*;
-        use Value::*;
         use VmError::*;
 
         loop {
@@ -84,6 +85,8 @@ impl<IoError> Vm<IoError> {
 
                 // Arithmetic
                 Add => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -99,6 +102,8 @@ impl<IoError> Vm<IoError> {
                     self.instruction_pointer.increment();
                 }
                 Subtract => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -114,6 +119,8 @@ impl<IoError> Vm<IoError> {
                     self.instruction_pointer.increment();
                 }
                 Multiply => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -129,6 +136,8 @@ impl<IoError> Vm<IoError> {
                     self.instruction_pointer.increment();
                 }
                 Divide => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -146,6 +155,8 @@ impl<IoError> Vm<IoError> {
 
                 // Comparison
                 Equals => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -161,6 +172,8 @@ impl<IoError> Vm<IoError> {
                     self.instruction_pointer.increment();
                 }
                 LessThan => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -176,6 +189,8 @@ impl<IoError> Vm<IoError> {
                     self.instruction_pointer.increment();
                 }
                 GreaterThan => {
+                    use Value::*;
+
                     let b = self.stack.pop()?;
                     let a = self.stack.pop()?;
 
@@ -190,12 +205,17 @@ impl<IoError> Vm<IoError> {
 
                     self.instruction_pointer.increment();
                 }
+                NotEquals => todo!(),
+                LessThanOrEqual => todo!(),
+                GreaterThanOrEqual => todo!(),
 
                 // Control flow
                 Jump(addr) => {
                     self.instruction_pointer += addr;
                 }
                 JumpIfTrue(addr) => {
+                    use Value::*;
+
                     let cond = self.stack.pop()?;
                     match cond {
                         Boolean(true) => {
@@ -211,6 +231,8 @@ impl<IoError> Vm<IoError> {
                     }
                 }
                 JumpIfFalse(addr) => {
+                    use Value::*;
+
                     let cond = self.stack.pop()?;
                     match cond {
                         Boolean(true) => {
@@ -228,19 +250,43 @@ impl<IoError> Vm<IoError> {
 
                 // Memory
                 Load(addr) => {
-                    let value = self.memory.load(addr)?;
-                    self.stack.push(value);
+                    self.stack.push(Value::Object(
+                        // Cast the memory address to an object handle
+                        // The memory address should always be a valid object
+                        // handle
+                        addr.cast_to_object_handle(),
+                    ));
+
                     self.instruction_pointer.increment();
                 }
-                Store(addr) => {
-                    let value = self.stack.pop()?;
-                    self.memory.store(addr, value)?;
-                    self.instruction_pointer.increment();
+                Store(_addr) => {
+                    todo!("The STORE instruction is not yet implemented");
                 }
 
                 // Constants
                 Constant(addr) => {
-                    let value = self.assembly.constants[addr].clone().into();
+                    use bytecode::Constant;
+
+                    // Clone the constant from the assembly's constant pool and
+                    // convert it into a value that can be
+                    // pushed onto the stack.
+                    let value = match self.assembly.constants[addr].clone() {
+                        Constant::Nil => Value::Nil,
+                        Constant::Int(i) => Value::Int(i),
+                        Constant::Boolean(b) => Value::Boolean(b),
+                        Constant::Float(_) => {
+                            todo!("Float constants are not yet supported")
+                        }
+                        Constant::String(s) => Value::Object(
+                            // Cast the memory address to an object handle
+                            // because we know that the memory address returned
+                            // by `store` will always be a valid object handle.
+                            self.memory
+                                .store(Object::new_string(s))?
+                                .cast_to_object_handle(),
+                        ),
+                    };
+
                     self.stack.push(value);
                     self.instruction_pointer.increment();
                 }
@@ -261,6 +307,33 @@ impl<IoError> Vm<IoError> {
 
                     self.instruction_pointer = address_to_return_to.into();
                 }
+
+                // IO
+                In => {
+                    todo!("The IN instruction is not yet implemented");
+                }
+                Out => {
+                    let value = self.stack.pop()?;
+
+                    match value {
+                        Value::Object(object_handle) => {
+                            let object =
+                                self.memory.load(object_handle.into())?;
+
+                            match object.data {
+                                ObjectData::String(s) => {
+                                    self.io.write_line(&s.0);
+                                }
+                            }
+                        }
+                        x => {
+                            self.io.write_line(&x.to_string());
+                        }
+                    }
+
+                    self.instruction_pointer.increment();
+                }
+
                 Halt => break Ok(()),
                 _ => todo!(),
             }
