@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{ConstantAddress, ProgramAddress, ProgramOffset, Value};
+use crate::{ConstantAddress, InstructionAddress, InstructionOffset, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -51,13 +51,13 @@ pub enum Instruction {
 
     // Control flow
     /// Unconditionally jump to the instruction at the given address
-    Jump(ProgramOffset),
+    Jump(InstructionOffset),
     /// Jump to the instruction at the given address if the top value on the
     /// stack is true (non-zero for integers)
-    JumpIfTrue(ProgramOffset),
+    JumpIfTrue(InstructionOffset),
     /// Jump to the instruction at the given address if the top value on the
     /// stack is false (zero for integers)
-    JumpIfFalse(ProgramOffset),
+    JumpIfFalse(InstructionOffset),
 
     // Memory
     /// Load a value from memory at the given address and push it onto the stack
@@ -66,7 +66,7 @@ pub enum Instruction {
     Store(ConstantAddress),
 
     // Functions
-    Call(ProgramAddress),
+    Call(InstructionAddress),
     Return,
 
     // Constants

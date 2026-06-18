@@ -2,9 +2,9 @@ use std::fmt::Display;
 
 /// A relative offset from a program address, used for jump instructions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ProgramOffset(usize);
+pub struct InstructionOffset(usize);
 
-impl ProgramOffset {
+impl InstructionOffset {
     pub fn new(offset: usize) -> Self {
         Self(offset)
     }
@@ -14,13 +14,13 @@ impl ProgramOffset {
     }
 }
 
-impl From<usize> for ProgramOffset {
+impl From<usize> for InstructionOffset {
     fn from(offset: usize) -> Self {
         Self(offset)
     }
 }
 
-impl Display for ProgramOffset {
+impl Display for InstructionOffset {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let sign = match self.0.cmp(&0) {
             std::cmp::Ordering::Less => "-",

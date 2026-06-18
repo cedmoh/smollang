@@ -7,6 +7,27 @@ pub enum Value {
     Nil,
     Int(i32),
     Boolean(bool),
+    Object(ObjectHandle),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub struct ObjectHandle(pub usize);
+
+#[derive(Debug)]
+pub struct Object {
+    marked: bool, // Used for garbage collection
+    data: ObjectData,
+}
+
+#[derive(Debug)]
+pub enum ObjectData {
+    String(ObjectString),
+}
+
+#[derive(Debug)]
+pub struct ObjectString {
+    pub chars: String,
+    pub length: usize,
 }
 
 impl From<i32> for Value {
@@ -42,6 +63,7 @@ impl Display for Value {
                 true => write!(f, "true"),
                 false => write!(f, "false"),
             },
+            Value::Object(_) => write!(f, "<object>"),
             Value::Nil => write!(f, "nil"),
         }
     }

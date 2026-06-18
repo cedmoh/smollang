@@ -3,13 +3,13 @@ use std::{
     ops::{Add, AddAssign},
 };
 
-use crate::ProgramOffset;
+use crate::InstructionOffset;
 
 /// An absolute address of an instruction in the program
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ProgramAddress(usize);
+pub struct InstructionAddress(usize);
 
-impl ProgramAddress {
+impl InstructionAddress {
     pub fn new(addr: usize) -> Self {
         Self(addr)
     }
@@ -30,33 +30,33 @@ impl ProgramAddress {
         self.0 -= 1;
     }
 
-    pub fn add_offset(&mut self, offset: ProgramOffset) {
+    pub fn add_offset(&mut self, offset: InstructionOffset) {
         self.0 += offset.as_usize();
     }
 }
 
-impl From<usize> for ProgramAddress {
+impl From<usize> for InstructionAddress {
     fn from(addr: usize) -> Self {
         Self(addr)
     }
 }
 
-impl Display for ProgramAddress {
+impl Display for InstructionAddress {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:0>4}", self.0)
     }
 }
 
-impl Add<ProgramOffset> for ProgramAddress {
+impl Add<InstructionOffset> for InstructionAddress {
     type Output = Self;
 
-    fn add(self, rhs: ProgramOffset) -> Self::Output {
+    fn add(self, rhs: InstructionOffset) -> Self::Output {
         Self(self.0 + rhs.as_usize())
     }
 }
 
-impl AddAssign<ProgramOffset> for ProgramAddress {
-    fn add_assign(&mut self, rhs: ProgramOffset) {
+impl AddAssign<InstructionOffset> for InstructionAddress {
+    fn add_assign(&mut self, rhs: InstructionOffset) {
         self.add_offset(rhs)
     }
 }

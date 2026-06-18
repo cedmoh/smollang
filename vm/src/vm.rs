@@ -2,12 +2,12 @@ use crate::call_stack::CallStack;
 use crate::io::{DummyIo, DummyIoError, Io};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
-use bytecode::{Assembly, Instruction, ProgramAddress, Value};
+use bytecode::{Assembly, Instruction, InstructionAddress, Value};
 use thiserror::Error;
 
 pub struct Vm<IoError> {
     /// Points to the current instruction being executed
-    pub instruction_pointer: ProgramAddress,
+    pub instruction_pointer: InstructionAddress,
 
     /// Used for storing intermediate values during execution
     pub stack: ValueStack,
@@ -28,7 +28,7 @@ pub struct Vm<IoError> {
 impl Vm<DummyIoError> {
     pub fn new() -> Self {
         Self {
-            instruction_pointer: ProgramAddress::zero(),
+            instruction_pointer: InstructionAddress::zero(),
             stack: ValueStack::new(),
             call_stack: CallStack::new(),
             memory: Memory::new(),
@@ -41,7 +41,7 @@ impl Vm<DummyIoError> {
 impl<IoError> Vm<IoError> {
     pub fn new_with_io(io: Box<dyn Io<IoError>>) -> Self {
         Self {
-            instruction_pointer: ProgramAddress::zero(),
+            instruction_pointer: InstructionAddress::zero(),
             stack: ValueStack::new(),
             call_stack: CallStack::new(),
             memory: Memory::new(),
@@ -61,7 +61,7 @@ impl<IoError> Vm<IoError> {
         use VmError::*;
 
         loop {
-            let instr = self.assembly[self.instruction_pointer];
+            let instr = self.assembly.instructions[self.instruction_pointer];
 
             match instr {
                 // Stack
@@ -240,8 +240,7 @@ impl<IoError> Vm<IoError> {
 
                 // Constants
                 Constant(addr) => {
-                    let value =
-                        self.assembly.constants[addr.as_usize()].clone().into();
+                    let value = self.assembly.constants[addr].clone().into();
                     self.stack.push(value);
                     self.instruction_pointer.increment();
                 }

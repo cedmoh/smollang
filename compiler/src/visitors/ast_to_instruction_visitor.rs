@@ -3,7 +3,9 @@ use ast::{
     FunctionParameter, FunctionParameters, Identifier, Literal, PipeArm,
     PipeArms, Program,
 };
-use bytecode::{Assembly, AssemblyBuilder, Instruction, Value};
+use bytecode::{
+    AssemblyBuilder, Constant, ConstantAddress, Instruction, Value,
+};
 
 use crate::visitors::visitor::Visitor;
 
@@ -20,6 +22,10 @@ impl AstToAssemblyVisitor {
 
     fn emit(&mut self, instruction: Instruction) {
         self.assembly_builder.add_instruction(instruction);
+    }
+
+    fn emit_constant(&mut self, constant: Constant) -> ConstantAddress {
+        self.assembly_builder.push_constant(constant)
     }
 
     fn _emit_multiple(&mut self, instructions: Vec<Instruction>) {
@@ -49,13 +55,20 @@ impl Visitor<Literal> for AstToAssemblyVisitor {
             Boolean(boolean_literal) => {
                 self.emit(Push(boolean_literal.value.into()));
             }
-            String(_string_literal) => {
-                todo!("String literals are not yet supported");
+            String(string_literal) => {
+                let constant_address = self.emit_constant(
+                    bytecode::Constant::String(string_literal.value.clone()),
+                );
+
+                self.emit(Constant(constant_address));
             }
             Template(_template_literal) => {
                 todo!("Template literals are not yet supported");
             }
             Integer(integer_literal) => {
+                // Directly emit the integer value as an immediate
+                // operand of the PUSH instruction, instead of
+                // first emitting a CONST instruction.
                 self.emit(Push(integer_literal.value.into()));
             }
             Decimal(_decimal_literal) => {

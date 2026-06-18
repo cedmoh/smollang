@@ -8,7 +8,7 @@ mod tests {
     use super::Compiler;
     use ast::Program;
     use ast::*;
-    use bytecode::bytecode;
+    use bytecode::{Constant, Instruction, bytecode};
 
     #[test]
     fn should_compile_integer_literal() {
@@ -22,8 +22,10 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program).instructions;
+        let instructions: Vec<Instruction> =
+            compiler.compile(program).instructions.into();
 
+        // Assert
         assert_eq!(
             instructions,
             bytecode!(
@@ -45,7 +47,8 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program).instructions;
+        let instructions: Vec<Instruction> =
+            compiler.compile(program).instructions.into();
 
         assert_eq!(
             instructions,
@@ -64,7 +67,8 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program).instructions;
+        let instructions: Vec<Instruction> =
+            compiler.compile(program).instructions.into();
 
         assert_eq!(
             instructions,
@@ -76,7 +80,7 @@ mod tests {
     }
 
     #[test]
-    fn should_compile_add_operation() {
+    fn should_compile_add_integer_operation() {
         // Arrange
         let left = 1;
         let right = 2;
@@ -92,8 +96,10 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let instructions = compiler.compile(program).instructions;
+        let instructions: Vec<Instruction> =
+            compiler.compile(program).instructions.into();
 
+        // Assert
         assert_eq!(
             instructions,
             bytecode!(
@@ -103,5 +109,62 @@ mod tests {
                 HALT
             )
         );
+    }
+
+    #[test]
+    fn should_compile_add_string_operation() {
+        // Arrange
+        let left = "Hello, ".to_string();
+        let right = "world!".to_string();
+
+        let program = Program::builder()
+            .with_expression(Dyadic::new(
+                DyadicOperator::Add,
+                StringLiteral::new(left.clone()),
+                StringLiteral::new(right.clone()),
+            ))
+            .build();
+
+        let mut compiler = Compiler::new();
+
+        // Act
+        let assembly = compiler.compile(program);
+        let instructions: Vec<Instruction> = assembly.instructions.into();
+        let constants: Vec<Constant> = assembly.constants.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                CONST 0
+                CONST 1
+                ADD
+                HALT
+            )
+        );
+
+        assert_eq!(
+            constants,
+            vec![Constant::String(left), Constant::String(right),]
+        );
+    }
+
+    #[test]
+    fn run() {
+        // Arrange
+        let program = Program::builder()
+            .with_expression(Dyadic::new(
+                DyadicOperator::Add,
+                IntegerLiteral::new(1),
+                IntegerLiteral::new(2),
+            ))
+            .build();
+
+        let mut compiler = Compiler::new();
+
+        // Act
+        let result = compiler.compile(program);
+
+        println!("{}", result);
     }
 }
