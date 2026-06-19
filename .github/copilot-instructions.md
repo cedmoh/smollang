@@ -8,13 +8,10 @@ The project must follow the guidelines for API design in Rust, described in the 
 
 ### Error Handling
 
-Using `Result<T, E>` is the preferred way to handle errors in Rust. The `?` operator should be used to propagate errors when possible.
-
-A function returning `Result<T, E>` should define a custom error type `E` that is an enum with variants for each possible error that can occur in the function.
-
-When prototyping, `expect()` could be used to handle errors.
-
-- If a check made before the `expect()` makes sure that the error will never occur, then it is acceptable to use `expect()` in the final code. The error message should be descriptive and describe the assumption that is made that leads to the conclusion that the error will never occur. (e.g. `expect("Expected input to have been validated before being parsed.")`).
+1. In production code, use `Result<T, E>` to handle errors. Use the `?` operator to propagate errors when possible.
+2. A function returning `Result<T, E>` should define a custom error type `E` that is an enum with variants for each possible error that can occur in the function.
+3. In production code, `expect()` is permitted only when a preceding invariant check guarantees that the error cannot occur. The `expect()` message must describe that invariant. For example: `expect("Expected input to have been validated before being parsed.")`.
+4. In prototype or exploratory code, `expect()` may be used temporarily and must be replaced before merging.
 
 ### Object Construction
 

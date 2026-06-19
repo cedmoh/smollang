@@ -1,7 +1,7 @@
 use ast::{
-    Directive, Dyadic, DyadicOperator, Expression, FunctionCallArguments,
-    FunctionParameter, FunctionParameters, Identifier, Literal, PipeArm,
-    PipeArms, Program,
+    Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
+    FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
+    Literal, PipeArm, PipeArms, Program,
 };
 use bytecode::{
     AssemblyBuilder, Constant, ConstantAddress, Instruction, Value,
@@ -137,6 +137,22 @@ impl Visitor<DyadicOperator> for AstToAssemblyVisitor {
     }
 }
 
+impl Visitor<FunctionCall> for AstToAssemblyVisitor {
+    fn visit(&mut self, function_call: &FunctionCall) {
+        match &*function_call.callee {
+            Expression::Identifier(identifier) if &identifier.id == "print" => {
+                function_call.arguments.expressions.items.iter().for_each(
+                    |expression| {
+                        self.visit(expression);
+                        self.emit(Instruction::Out);
+                    },
+                );
+            }
+            _ => todo!(),
+        }
+    }
+}
+
 impl Visitor<Directive> for AstToAssemblyVisitor {
     fn visit(&mut self, directive: &Directive) {
         match directive {
@@ -213,9 +229,7 @@ impl Visitor<Expression> for AstToAssemblyVisitor {
                 self.visit(dyadic);
             }
             Expression::FunctionCall(function_call) => {
-                println!("FunctionCall");
-                self.visit(&*function_call.callee);
-                self.visit(&function_call.arguments);
+                self.visit(function_call);
             }
             Expression::FunctionDeclaration(function_declaration) => {
                 if let Some(body) = &function_declaration.body {
