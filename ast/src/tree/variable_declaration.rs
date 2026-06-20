@@ -36,6 +36,18 @@ pub struct VariableDeclaration {
 }
 
 impl VariableDeclaration {
+    pub fn new(
+        name: Identifier,
+        is_mutable: bool,
+        initial_value: Option<Box<Expression>>,
+    ) -> Self {
+        Self {
+            name,
+            is_mutable,
+            initial_value,
+        }
+    }
+
     /// Creates a new [`VariableDeclarationBuilder`] with the given variable
     /// name.
     ///
@@ -44,7 +56,7 @@ impl VariableDeclaration {
     /// ```
     /// use ast::{Identifier, VariableDeclaration};
     ///
-    /// let declaration = VariableDeclaration::builder(Identifier::new("x".to_string()))
+    /// let declaration = VariableDeclaration::builder("x")
     ///     .with_mutability(true)
     ///     .build();
     ///
@@ -52,8 +64,8 @@ impl VariableDeclaration {
     /// assert!(declaration.is_mutable);
     /// assert!(declaration.initial_value.is_none());
     /// ```
-    pub fn builder(name: Identifier) -> VariableDeclarationBuilder {
-        VariableDeclarationBuilder::new(name)
+    pub fn builder(name: impl Into<Identifier>) -> VariableDeclarationBuilder {
+        VariableDeclarationBuilder::new(name.into())
     }
 }
 
@@ -82,16 +94,15 @@ impl VariableDeclarationBuilder {
         self
     }
 
-    pub fn with_initial_value(mut self, initial_value: Expression) -> Self {
-        self.initial_value = Some(Box::new(initial_value));
+    pub fn with_initial_value(
+        mut self,
+        initial_value: impl Into<Expression>,
+    ) -> Self {
+        self.initial_value = Some(Box::new(initial_value.into()));
         self
     }
 
     pub fn build(self) -> VariableDeclaration {
-        VariableDeclaration {
-            name: self.name,
-            is_mutable: self.is_mutable,
-            initial_value: self.initial_value,
-        }
+        VariableDeclaration::new(self.name, self.is_mutable, self.initial_value)
     }
 }

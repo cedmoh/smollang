@@ -197,4 +197,9 @@ mod tests {
         // Assert
         assert_eq!(vm.io.drain_stdout().unwrap(), string);
     }
+
+    #[test]
+    fn should_allow_defining_variables_with_copy_values() {
+        todo!()
+    }
 }

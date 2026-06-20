@@ -8,7 +8,7 @@ mod tests {
     use super::Compiler;
     use ast::Program;
     use ast::*;
-    use bytecode::{Constant, Instruction, bytecode};
+    use bytecode::{Constant, Instruction, Value, bytecode};
 
     #[test]
     fn should_compile_integer_literal() {
@@ -150,21 +150,43 @@ mod tests {
     }
 
     #[test]
-    fn run() {
+    fn should_handle_variables_with_simple_values() {
         // Arrange
+        let identifier_name = "x".to_string();
+        let initial_value = 42;
+
+        let identifier = Identifier::new(identifier_name.clone());
+
         let program = Program::builder()
+            .with_expression(
+                VariableDeclaration::builder(identifier.clone())
+                    .with_initial_value(IntegerLiteral::new(initial_value))
+                    .build(),
+            )
             .with_expression(Dyadic::new(
                 DyadicOperator::Add,
-                IntegerLiteral::new(1),
-                IntegerLiteral::new(2),
+                identifier.clone(),
+                identifier,
             ))
             .build();
 
         let mut compiler = Compiler::new();
 
         // Act
-        let result = compiler.compile(program);
+        let instructions: Vec<Instruction> =
+            compiler.compile(program).instructions.into();
 
-        println!("{}", result);
+        // Assert
+        let initial_value = Value::Int(initial_value);
+
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH initial_value
+                PUSH initial_value
+                ADD
+                HALT
+            )
+        );
     }
 }

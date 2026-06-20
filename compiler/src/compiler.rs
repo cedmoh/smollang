@@ -4,13 +4,13 @@ use bytecode::Assembly;
 use std::collections::HashMap;
 
 pub struct Compiler {
-    _symbol_table: HashMap<String, ()>,
+    symbol_table: HashMap<String, ()>,
 }
 
 impl Compiler {
     pub fn new() -> Self {
         Self {
-            _symbol_table: HashMap::new(),
+            symbol_table: HashMap::new(),
         }
     }
 
