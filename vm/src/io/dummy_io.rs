@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use thiserror::Error;
 
-use crate::io::Io;
+use crate::io::{Io, ToIoString};
 
 /// A dummy implementation of the `Io` trait for testing purposes.
 /// It allows recording output and simulating input without actually performing
@@ -29,7 +29,7 @@ impl Io<DummyIoError> for DummyIo {
     }
 
     fn write_line(&mut self, line: &str) {
-        self.stdout.push_back(line.to_string());
+        self.stdout.push_back(line.to_io_string());
     }
 
     fn drain_stdout(&mut self) -> Result<String, DummyIoError> {
@@ -42,4 +42,8 @@ pub enum DummyIoError {
     /// Error indicating that there is no input available in the stdin buffer.
     #[error("No input available in stdin")]
     NoInput,
+
+    /// Error indicating that there was a failure to format the output for writing.
+    #[error("Failed to format output for writing: {0}")]
+    FormatError(#[from] std::fmt::Error),
 }

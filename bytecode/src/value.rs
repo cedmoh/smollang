@@ -78,7 +78,9 @@ impl Display for Value {
                 true => write!(f, "true"),
                 false => write!(f, "false"),
             },
-            Value::Object(_) => write!(f, "<object>"),
+            Value::Object(object_handle) => {
+                write!(f, "[Object:{}]", object_handle.into_memory_address())
+            }
             Value::Nil => write!(f, "nil"),
         }
     }

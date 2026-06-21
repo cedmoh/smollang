@@ -335,12 +335,12 @@ impl<IoError> Vm<IoError> {
 
                             match object.data {
                                 ObjectData::String(s) => {
-                                    self.io.write_line(&s.0);
+                                    self.io.write_line(&s.0.to_io_string());
                                 }
                             }
                         }
                         x => {
-                            self.io.write_line(&x.to_string());
+                            self.io.write_line(&x.to_io_string());
                         }
                     }
 
