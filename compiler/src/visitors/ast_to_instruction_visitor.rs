@@ -1,7 +1,7 @@
 use ast::{
     Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
     FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
-    Literal, PipeArm, PipeArms, Program, VariableDeclaration,
+    Literal, Loop, PipeArm, PipeArms, Program, VariableDeclaration,
 };
 use bytecode::{
     AssemblyBuilder, Constant, ConstantAddress, Instruction, Value,
@@ -28,6 +28,11 @@ pub enum AstToAssemblyVisitorError {
     /// symbol table.
     #[error("Unknown identifier: {0}")]
     UnknownIdentifier(String),
+
+    /// An error indicating that an instruction index cannot be represented as
+    /// an isize without truncation.
+    #[error("Instruction index {0} cannot be represented as isize")]
+    InstructionIndexTruncation(usize),
 }
 
 impl AstToAssemblyVisitor {
@@ -144,6 +149,22 @@ impl Visitor<Literal, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
                 todo!("Object literals are not yet supported");
             }
         }
+
+        Ok(())
+    }
+}
+
+impl Visitor<Loop, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        loop_expression: &Loop,
+    ) -> Result<(), AstToAssemblyVisitorError> {
+        let loop_start = self.assembly_builder.instruction_length();
+        self.visit(&*loop_expression.body)?;
+        let loop_end = self.assembly_builder.instruction_length();
+
+        let difference: isize = loop_start as isize - loop_end as isize;
+        self.emit(Instruction::Jump(difference.into()));
 
         Ok(())
     }
@@ -393,9 +414,7 @@ impl Visitor<Expression, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
             Continue(_continue_expression) => {
                 todo!("Visiting continue expressions is not yet supported");
             }
-            Loop(_loop_expression) => {
-                todo!("Visiting loop expressions is not yet supported");
-            }
+            Loop(loop_expression) => self.visit(loop_expression)?,
             VariableDeclaration(variable_declaration) => {
                 self.visit(variable_declaration)?;
             }

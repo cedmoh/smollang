@@ -85,12 +85,24 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Constant($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
+    (@collect $p:ident JUMP - $x:literal $($rest:tt)*) => {
+        $p.push($crate::Instruction::Jump((-$x as isize).into()));
+        bytecode!(@collect $p $($rest)*);
+    };
     (@collect $p:ident JUMP $x:tt $($rest:tt)*) => {
         $p.push($crate::Instruction::Jump($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
+    (@collect $p:ident JT - $x:literal $($rest:tt)*) => {
+        $p.push($crate::Instruction::JumpIfTrue((-$x as isize).into()));
+        bytecode!(@collect $p $($rest)*);
+    };
     (@collect $p:ident JT $x:tt $($rest:tt)*) => {
         $p.push($crate::Instruction::JumpIfTrue($x.into()));
+        bytecode!(@collect $p $($rest)*);
+    };
+    (@collect $p:ident JF - $x:literal $($rest:tt)*) => {
+        $p.push($crate::Instruction::JumpIfFalse((-$x as isize).into()));
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident JF $x:tt $($rest:tt)*) => {
@@ -108,6 +120,14 @@ macro_rules! bytecode {
     (@collect $p:ident GETGB $x:tt $($rest:tt)*) => {
         $p.push($crate::Instruction::GetGlobal($x.into()));
         bytecode!(@collect $p $($rest)*);
+    };
+
+    // Prevent recursive fallback when an unknown token appears in @collect mode.
+    (@collect $p:ident $unexpected:tt $($rest:tt)*) => {
+        compile_error!(concat!(
+            "Unknown bytecode instruction or operand: ",
+            stringify!($unexpected)
+        ));
     };
 
     // Entry point — must be last, as ($($tokens:tt)*) matches everything

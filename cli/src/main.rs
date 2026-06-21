@@ -27,6 +27,7 @@ fn main() -> anyhow::Result<()> {
         )
         .subcommand(
             Command::new("compile")
+                .alias("c")
                 .about("Compile the file at the given path and print the resulting assembly.")
                 .arg(
                     Arg::new("file")
@@ -37,6 +38,7 @@ fn main() -> anyhow::Result<()> {
         )
         .subcommand(
             Command::new("parse")
+                .alias("p")
                 .about("Parse the file at the given path and print the resulting AST.")
                 .arg(
                     Arg::new("file")
@@ -59,7 +61,8 @@ fn main() -> anyhow::Result<()> {
                 ),
         )
         .subcommand(
-            Command::new("fmt")
+            Command::new("format")
+                .alias("f")
                 .about("Format files in the given path recursively.")
                 .arg(
                     Arg::new("path")
@@ -80,8 +83,8 @@ fn main() -> anyhow::Result<()> {
                 repl()
             }
         }
-        // Provided Subcommand is `fmt`
-        Some(("fmt", sub_m)) => {
+        // Provided Subcommand is `format`
+        Some(("format", sub_m)) => {
             let path: &PathBuf = sub_m.get_one("path").unwrap();
             format_path(path)
         }

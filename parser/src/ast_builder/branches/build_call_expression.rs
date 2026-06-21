@@ -155,8 +155,8 @@ mod tests {
         // Assert
         let function_call =
             FunctionCall::builder(Identifier::new("add".into()).into())
-                .with_argument(Identifier::new("x".into()).into())
-                .with_argument(Identifier::new("y".into()).into())
+                .with_argument(Identifier::new("x".into()))
+                .with_argument(Identifier::new("y".into()))
                 .build();
 
         assert_eq!(call_expression, Ok(function_call));

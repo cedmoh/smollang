@@ -31,7 +31,12 @@ impl InstructionAddress {
     }
 
     pub fn add_offset(&mut self, offset: InstructionOffset) {
-        self.0 += offset.as_usize();
+        let isize = offset.as_isize();
+        if isize.is_positive() {
+            self.0 += isize as usize;
+        } else {
+            self.0 -= isize.abs() as usize;
+        }
     }
 }
 
@@ -51,7 +56,9 @@ impl Add<InstructionOffset> for InstructionAddress {
     type Output = Self;
 
     fn add(self, rhs: InstructionOffset) -> Self::Output {
-        Self(self.0 + rhs.as_usize())
+        let mut result = self;
+        result.add_offset(rhs);
+        result
     }
 }
 

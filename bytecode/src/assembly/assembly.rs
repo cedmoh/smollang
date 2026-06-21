@@ -79,6 +79,10 @@ impl AssemblyBuilder {
         self
     }
 
+    pub fn instruction_length(&self) -> usize {
+        self.instructions.len()
+    }
+
     pub fn add_constant(&mut self, constant: Constant) -> &mut Self {
         self.constants.push(constant);
         self

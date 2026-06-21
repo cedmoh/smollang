@@ -7,7 +7,6 @@ pub use compiler::Compiler;
 #[cfg(test)]
 mod tests {
     use super::Compiler;
-    use ast::Program;
     use ast::*;
     use bytecode::{Assembly, Constant, Instruction, Value, bytecode};
 
@@ -208,5 +207,40 @@ mod tests {
             )
         );
         assert_eq!(constants, vec![Constant::String(identifier_name),]);
+    }
+
+    #[test]
+    fn should_handle_loops() {
+        // Arrange
+        let message = "hello world".to_string();
+
+        let program = Program::builder()
+            // loop print 'hello world'
+            .with_expression(Loop::new(
+                FunctionCallBuilder::new(Identifier::new("print".to_string()))
+                    .build(),
+            ))
+            .build();
+
+        let Assembly {
+            instructions,
+            constants,
+        } = Compiler::new().compile(program).unwrap();
+
+        // Act
+        let instructions: Vec<Instruction> = instructions.into();
+        let constants: Vec<Constant> = constants.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                CONST 0
+                OUT
+                JUMP -2
+                HALT
+            )
+        );
+        assert_eq!(constants, vec![Constant::String(message),]);
     }
 }

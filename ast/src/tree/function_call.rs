@@ -39,20 +39,23 @@ pub struct FunctionCallBuilder {
 }
 
 impl FunctionCallBuilder {
-    pub fn new(callee: Expression) -> Self {
+    pub fn new(callee: impl Into<Expression>) -> Self {
         Self {
-            callee: Box::new(callee),
+            callee: Box::new(callee.into()),
             arguments: FunctionCallArguments::default(),
         }
     }
 
-    pub fn with_argument(mut self, argument: Expression) -> Self {
-        self.arguments.expressions.add_expression(argument);
+    pub fn with_argument(mut self, argument: impl Into<Expression>) -> Self {
+        self.arguments.expressions.add_expression(argument.into());
         self
     }
 
-    pub fn add_argument(&mut self, argument: Expression) -> &mut Self {
-        self.arguments.expressions.add_expression(argument);
+    pub fn add_argument(
+        &mut self,
+        argument: impl Into<Expression>,
+    ) -> &mut Self {
+        self.arguments.expressions.add_expression(argument.into());
         self
     }
 

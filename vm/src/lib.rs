@@ -11,7 +11,20 @@ pub use vm::Vm;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bytecode::{Assembly, Constant, Value, bytecode};
+    use bytecode::{Assembly, Constant, Instruction, Value, bytecode};
+
+    #[test]
+    fn should_parse_negative_jump_offset_in_bytecode_macro() {
+        let instructions = bytecode!(
+            JUMP -2
+            HALT
+        );
+
+        assert_eq!(
+            instructions,
+            vec![Instruction::Jump((-2isize).into()), Instruction::Halt]
+        );
+    }
 
     #[test]
     fn should_push_items_in_the_right_order() {

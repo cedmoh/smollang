@@ -6,9 +6,9 @@ pub struct Loop {
 }
 
 impl Loop {
-    pub fn new(body: Expression) -> Self {
+    pub fn new(body: impl Into<Expression>) -> Self {
         Self {
-            body: Box::new(body),
+            body: Box::new(body.into()),
         }
     }
 }

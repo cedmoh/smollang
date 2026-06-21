@@ -86,7 +86,7 @@ mod tests {
         // Assert
         assert_eq!(
             loop_expression,
-            Ok(Loop::new(Identifier::new("body".to_string()).into()))
+            Ok(Loop::new(Identifier::new("body".to_string())))
         );
     }
 
