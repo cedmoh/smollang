@@ -1,9 +1,11 @@
 use crate::call_stack::CallStack;
+use crate::global_environment::GlobalEnvironment;
 use crate::io::{DummyIo, DummyIoError, Io};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{
-    Assembly, Instruction, InstructionAddress, Object, ObjectData, Value,
+    Assembly, Constant, ConstantAddress, Instruction, InstructionAddress,
+    Object, ObjectData, Value,
 };
 use thiserror::Error;
 
@@ -23,6 +25,9 @@ pub struct Vm<IoError> {
     /// The program, which is a list of instructions to be executed
     assembly: Assembly,
 
+    /// The global environment table, which maps variable names to their values
+    global_environment: GlobalEnvironment,
+
     /// used for standard input and output (e.g. for the `Print` instruction)
     pub io: Box<dyn Io<IoError>>,
 }
@@ -35,6 +40,7 @@ impl Vm<DummyIoError> {
             call_stack: CallStack::new(),
             memory: Memory::new(),
             assembly: Assembly::new(),
+            global_environment: GlobalEnvironment::new(),
             io: Box::new(DummyIo::new()),
         }
     }
@@ -48,6 +54,7 @@ impl<IoError> Vm<IoError> {
             call_stack: CallStack::new(),
             memory: Memory::new(),
             assembly: Assembly::new(),
+            global_environment: GlobalEnvironment::new(),
             io,
         }
     }
@@ -270,7 +277,13 @@ impl<IoError> Vm<IoError> {
                     // Clone the constant from the assembly's constant pool and
                     // convert it into a value that can be
                     // pushed onto the stack.
-                    let value = match self.assembly.constants[addr].clone() {
+                    let value = match self
+                        .assembly
+                        .constants
+                        .get(addr)
+                        .ok_or(InvalidConstantAddress(addr))?
+                        .clone()
+                    {
                         Constant::Nil => Value::Nil,
                         Constant::Int(i) => Value::Int(i),
                         Constant::Boolean(b) => Value::Boolean(b),
@@ -333,6 +346,67 @@ impl<IoError> Vm<IoError> {
 
                     self.instruction_pointer.increment();
                 }
+                SetGlobal(constant_address) => {
+                    // That we don’t pop the value until after we add it to the
+                    // hash table. This ensures the VM can still find the value
+                    // if a garbage collection is triggered right in the middle
+                    // of adding it to the hash table.
+                    let value = self
+                        .stack
+                        .peek()
+                        .ok_or(ValueStackError::StackUnderflow)?
+                        .clone();
+
+                    let name =
+                        match self.assembly.constants.get(constant_address) {
+                            Some(bytecode::Constant::String(name)) => name,
+                            Some(constant) => {
+                                return Err(InvalidConstantType(
+                                    constant_address,
+                                    "String",
+                                    constant.clone(),
+                                ));
+                            }
+                            None => {
+                                return Err(InvalidConstantAddress(
+                                    constant_address,
+                                ));
+                            }
+                        };
+
+                    self.global_environment.insert(name.clone(), value);
+                    self.stack.pop()?;
+                    self.instruction_pointer.increment();
+                }
+                GetGlobal(constant_address) => {
+                    let name = match self
+                        .assembly
+                        .constants
+                        .get(constant_address)
+                        .ok_or(InvalidConstantAddress(constant_address))?
+                        .clone()
+                    {
+                        bytecode::Constant::String(s) => s,
+                        other => {
+                            return Err(InvalidConstantType(
+                                constant_address,
+                                "String",
+                                other,
+                            ));
+                        }
+                    };
+
+                    let value = self
+                        .global_environment
+                        .get(&name)
+                        .ok_or_else(|| {
+                            InvalidConstantAddress(constant_address)
+                        })?
+                        .clone();
+
+                    self.stack.push(value);
+                    self.instruction_pointer.increment();
+                }
 
                 Halt => break Ok(()),
                 _ => todo!(),
@@ -351,4 +425,15 @@ pub enum VmError {
 
     #[error("Attempted to pop return address from empty call stack")]
     CallStackUnderflow,
+
+    /// Returned when the VM attempts to access a constant at an address that
+    /// does not exist in the assembly's constant pool.
+    #[error("Attempted to access constant at invalid address: {0}")]
+    InvalidConstantAddress(ConstantAddress),
+
+    /// Returned when the VM attempts to access a constant at an address that
+    /// exists in the assembly's constant pool, but the constant at that address
+    /// is not of the expected type.
+    #[error("Expected constant at address {0} to be a {1}, but it was a {2}")]
+    InvalidConstantType(ConstantAddress, &'static str, Constant),
 }

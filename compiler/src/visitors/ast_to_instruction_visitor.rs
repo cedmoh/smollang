@@ -1,21 +1,39 @@
 use ast::{
-    Directive, Dyadic, DyadicOperator, Expression, FunctionCallArguments,
-    FunctionParameter, FunctionParameters, Identifier, Literal, PipeArm,
-    PipeArms, Program,
+    Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
+    FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
+    Literal, PipeArm, PipeArms, Program, VariableDeclaration,
 };
 use bytecode::{
     AssemblyBuilder, Constant, ConstantAddress, Instruction, Value,
 };
+use thiserror::Error;
 
-use crate::visitors::visitor::Visitor;
+use crate::{
+    symbol::{Symbol, SymbolTable},
+    visitors::visitor::Visitor,
+};
 
 pub struct AstToAssemblyVisitor {
+    /// A symbol table for tracking variable and function names and their
+    pub symbol_table: SymbolTable,
+
+    /// An assembly builder for constructing the assembly representation of the
+    /// program
     pub assembly_builder: AssemblyBuilder,
+}
+
+#[derive(Debug, Error)]
+pub enum AstToAssemblyVisitorError {
+    /// An error indicating that an identifier was used but not defined in the
+    /// symbol table.
+    #[error("Unknown identifier: {0}")]
+    UnknownIdentifier(String),
 }
 
 impl AstToAssemblyVisitor {
     pub fn new() -> Self {
         Self {
+            symbol_table: SymbolTable::new(),
             assembly_builder: AssemblyBuilder::new(),
         }
     }
@@ -33,20 +51,58 @@ impl AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Program> for AstToAssemblyVisitor {
-    fn visit(&mut self, program: &Program) {
+impl Visitor<Program, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        program: &Program,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         for directive in &program.directives.items {
-            self.visit(directive);
+            self.visit(directive)?;
         }
 
         for expression in &program.body.items {
-            self.visit(expression);
+            self.visit(expression)?;
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<Literal> for AstToAssemblyVisitor {
-    fn visit(&mut self, literal: &Literal) {
+impl Visitor<VariableDeclaration, AstToAssemblyVisitorError>
+    for AstToAssemblyVisitor
+{
+    fn visit(
+        &mut self,
+        variable_declaration: &VariableDeclaration,
+    ) -> Result<(), AstToAssemblyVisitorError> {
+        println!("VariableDeclaration: {:?}", variable_declaration);
+
+        match &variable_declaration.initial_value {
+            Some(initializer) => self.visit(initializer.as_ref())?,
+            None => self.emit(Instruction::Push(Value::Nil)),
+        }
+
+        match &variable_declaration.name {
+            Identifier { id } => {
+                let constant_address =
+                    self.emit_constant(bytecode::Constant::String(id.clone()));
+
+                self.symbol_table
+                    .insert(id.clone(), Symbol::Global(constant_address));
+
+                self.emit(Instruction::SetGlobal(constant_address));
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Visitor<Literal, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        literal: &Literal,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         use Instruction::*;
         use Literal::*;
 
@@ -90,22 +146,34 @@ impl Visitor<Literal> for AstToAssemblyVisitor {
                 todo!("Object literals are not yet supported");
             }
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<Dyadic> for AstToAssemblyVisitor {
-    fn visit(&mut self, dyadic: &Dyadic) {
+impl Visitor<Dyadic, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        dyadic: &Dyadic,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         // Note: The order of visiting the left and right expressions is
         // important, as it determines the order in which they are evaluated and
         // how their results are used by the operator.
-        self.visit(&*dyadic.left);
-        self.visit(&*dyadic.right);
-        self.visit(&dyadic.operator);
+        self.visit(&*dyadic.left)?;
+        self.visit(&*dyadic.right)?;
+        self.visit(&dyadic.operator)?;
+
+        Ok(())
     }
 }
 
-impl Visitor<DyadicOperator> for AstToAssemblyVisitor {
-    fn visit(&mut self, operator: &DyadicOperator) {
+impl Visitor<DyadicOperator, AstToAssemblyVisitorError>
+    for AstToAssemblyVisitor
+{
+    fn visit(
+        &mut self,
+        operator: &DyadicOperator,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         use DyadicOperator::*;
 
         match operator {
@@ -134,11 +202,16 @@ impl Visitor<DyadicOperator> for AstToAssemblyVisitor {
             RangeInclusive => todo!("RangeInclusive is not yet supported"),
             Range => todo!("Range is not yet supported"),
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<Directive> for AstToAssemblyVisitor {
-    fn visit(&mut self, directive: &Directive) {
+impl Visitor<Directive, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        directive: &Directive,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         match directive {
             Directive::Use(use_directive) => {
                 println!(
@@ -147,120 +220,187 @@ impl Visitor<Directive> for AstToAssemblyVisitor {
                 )
             }
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<Identifier> for AstToAssemblyVisitor {
-    fn visit(&mut self, identifier: &Identifier) {
+impl Visitor<Identifier, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        identifier: &Identifier,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("Identifier({:?})", identifier.id);
+        // Assume all identifiers refer to global variables for now, and emit a
+        // GETGB instruction to load the variable's value onto the stack.
+        let constant_address = match self.symbol_table.get(&identifier.id) {
+            Some(Symbol::Global(constant_address)) => *constant_address,
+            None => {
+                return Err(AstToAssemblyVisitorError::UnknownIdentifier(
+                    identifier.id.clone(),
+                ));
+            }
+        };
+
+        self.emit(Instruction::GetGlobal(constant_address));
+
+        Ok(())
     }
 }
 
-impl Visitor<FunctionCallArguments> for AstToAssemblyVisitor {
-    fn visit(&mut self, arguments: &FunctionCallArguments) {
+impl Visitor<FunctionCall, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        function_call: &FunctionCall,
+    ) -> Result<(), AstToAssemblyVisitorError> {
+        println!("FunctionCall");
+
+        todo!()
+    }
+}
+
+impl Visitor<FunctionCallArguments, AstToAssemblyVisitorError>
+    for AstToAssemblyVisitor
+{
+    fn visit(
+        &mut self,
+        arguments: &FunctionCallArguments,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("FunctionCallArguments");
         for expression in &arguments.expressions.items {
-            self.visit(expression);
+            self.visit(expression)?;
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<FunctionParameters> for AstToAssemblyVisitor {
-    fn visit(&mut self, parameters: &FunctionParameters) {
+impl Visitor<FunctionParameters, AstToAssemblyVisitorError>
+    for AstToAssemblyVisitor
+{
+    fn visit(
+        &mut self,
+        parameters: &FunctionParameters,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("FunctionParameters");
         for parameter in &parameters.items {
-            self.visit(parameter);
+            self.visit(parameter)?;
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<FunctionParameter> for AstToAssemblyVisitor {
-    fn visit(&mut self, program: &FunctionParameter) {
+impl Visitor<FunctionParameter, AstToAssemblyVisitorError>
+    for AstToAssemblyVisitor
+{
+    fn visit(
+        &mut self,
+        program: &FunctionParameter,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("FunctionParameter({:?})", program.name);
+
+        Ok(())
     }
 }
 
-impl Visitor<PipeArms> for AstToAssemblyVisitor {
-    fn visit(&mut self, pipe_arms: &PipeArms) {
+impl Visitor<PipeArms, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        pipe_arms: &PipeArms,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("PipeArms");
         for arm in &pipe_arms.arms {
-            self.visit(arm);
+            self.visit(arm)?;
         }
+
+        Ok(())
     }
 }
 
-impl Visitor<PipeArm> for AstToAssemblyVisitor {
-    fn visit(&mut self, pipe_arm: &PipeArm) {
+impl Visitor<PipeArm, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        pipe_arm: &PipeArm,
+    ) -> Result<(), AstToAssemblyVisitorError> {
         println!("PipeArm");
-        self.visit(&pipe_arm.expression);
+        self.visit(&pipe_arm.expression)?;
+
+        Ok(())
     }
 }
-impl Visitor<Expression> for AstToAssemblyVisitor {
-    fn visit(&mut self, expression: &Expression) {
+impl Visitor<Expression, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        expression: &Expression,
+    ) -> Result<(), AstToAssemblyVisitorError> {
+        use Expression::*;
+
         match expression {
-            Expression::Assignment(assignment) => {
+            Assignment(assignment) => {
                 println!("Assignment");
-                self.visit(&assignment.left);
-                self.visit(&*assignment.right);
+                self.visit(&assignment.left)?;
+                self.visit(&*assignment.right)?;
             }
-            Expression::Block(block) => {
+            Block(block) => {
                 println!("Block");
                 for expression in &block.body.items {
-                    self.visit(expression);
+                    self.visit(expression)?;
                 }
             }
-            Expression::Dyadic(dyadic) => {
-                self.visit(dyadic);
+            Dyadic(dyadic) => {
+                self.visit(dyadic)?;
             }
-            Expression::FunctionCall(function_call) => {
+            FunctionCall(function_call) => {
                 println!("FunctionCall");
-                self.visit(&*function_call.callee);
-                self.visit(&function_call.arguments);
+                self.visit(function_call)?;
             }
-            Expression::FunctionDeclaration(function_declaration) => {
+            FunctionDeclaration(function_declaration) => {
                 if let Some(body) = &function_declaration.body {
-                    self.visit(&*body.body);
+                    self.visit(&*body.body)?;
                 }
 
-                self.visit(&function_declaration.params);
+                self.visit(&function_declaration.params)?;
             }
-            Expression::Then(then_expression) => {
-                self.visit(&*then_expression.condition);
-                self.visit(&*then_expression.then_body);
+            Then(then_expression) => {
+                self.visit(&*then_expression.condition)?;
+                self.visit(&*then_expression.then_body)?;
                 if let Some(else_body) = &then_expression.else_body {
-                    self.visit(&**else_body);
+                    self.visit(&**else_body)?;
                 }
             }
-            Expression::Pipe(pipe) => {
-                self.visit(&pipe.arms);
+            Pipe(pipe) => {
+                self.visit(&pipe.arms)?;
             }
-            Expression::Identifier(identifier) => {
-                self.visit(identifier);
+            Identifier(identifier) => {
+                self.visit(identifier)?;
             }
-            Expression::Literal(literal) => {
-                self.visit(literal);
+            Literal(literal) => {
+                self.visit(literal)?;
             }
-            Expression::Match(_match_expression) => {
+            Match(_match_expression) => {
                 todo!("Visiting match expressions is not yet supported");
             }
-            Expression::Member(_member) => {
+            Member(_member) => {
                 todo!("Visiting member expressions is not yet supported");
             }
-            Expression::Return(_return_expression) => {
+            Return(_return_expression) => {
                 todo!("Visiting return expressions is not yet supported");
             }
-            Expression::Break(_break_expression) => {
+            Break(_break_expression) => {
                 todo!("Visiting break expressions is not yet supported");
             }
-            Expression::Continue(_continue_expression) => {
+            Continue(_continue_expression) => {
                 todo!("Visiting continue expressions is not yet supported");
             }
-            Expression::Loop(_loop_expression) => {
+            Loop(_loop_expression) => {
                 todo!("Visiting loop expressions is not yet supported");
             }
-            Expression::VariableDeclaration(_variable_declaration) => {
-                todo!("Visiting variable declarations is not yet supported");
+            VariableDeclaration(variable_declaration) => {
+                self.visit(variable_declaration)?;
             }
         }
+
+        Ok(())
     }
 }

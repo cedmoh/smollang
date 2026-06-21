@@ -68,6 +68,14 @@ pub enum Instruction {
     /// Pop a value from the stack and store it in memory at the given address
     Store(MemoryAddress),
 
+    /// Pop a value from the stack, store it in the globals table.
+    /// The string name of the global variable is stored in the constant pool at
+    /// the given address.
+    SetGlobal(ConstantAddress),
+    /// Look up a global variable by its name (stored in the constant pool at
+    /// the given address), and push its value onto the stack
+    GetGlobal(ConstantAddress),
+
     // Functions
     Call(InstructionAddress),
     Return,
@@ -125,6 +133,12 @@ impl Display for Instruction {
             }
             In => ("IN", None),
             Out => ("OUT", None),
+            SetGlobal(constant_address) => {
+                ("SETGB", Some(constant_address.to_string()))
+            }
+            GetGlobal(constant_address) => {
+                ("GETGB", Some(constant_address.to_string()))
+            }
         };
 
         match operand {

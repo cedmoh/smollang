@@ -1,4 +1,4 @@
-use std::{fmt::Display, ops::Index};
+use std::fmt::Display;
 
 use crate::{Constant, ConstantAddress};
 
@@ -8,6 +8,10 @@ pub struct Constants(Vec<Constant>);
 impl Constants {
     pub fn new(constants: Vec<Constant>) -> Self {
         Self(constants)
+    }
+
+    pub fn get(&self, address: ConstantAddress) -> Option<&Constant> {
+        self.0.get(address.as_usize())
     }
 }
 
@@ -20,14 +24,6 @@ impl From<Vec<Constant>> for Constants {
 impl Into<Vec<Constant>> for Constants {
     fn into(self) -> Vec<Constant> {
         self.0
-    }
-}
-
-impl Index<ConstantAddress> for Constants {
-    type Output = Constant;
-
-    fn index(&self, index: ConstantAddress) -> &Self::Output {
-        &self.0[index.as_usize()]
     }
 }
 

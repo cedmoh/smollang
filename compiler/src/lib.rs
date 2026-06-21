@@ -1,4 +1,5 @@
 mod compiler;
+mod symbol;
 mod visitors;
 
 pub use compiler::Compiler;
@@ -8,7 +9,7 @@ mod tests {
     use super::Compiler;
     use ast::Program;
     use ast::*;
-    use bytecode::{Constant, Instruction, Value, bytecode};
+    use bytecode::{Assembly, Constant, Instruction, Value, bytecode};
 
     #[test]
     fn should_compile_integer_literal() {
@@ -16,6 +17,7 @@ mod tests {
         let integer = 42;
 
         let program = Program::builder()
+            // 42
             .with_expression(IntegerLiteral::new(integer))
             .build();
 
@@ -23,7 +25,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).instructions.into();
+            compiler.compile(program).unwrap().instructions.into();
 
         // Assert
         assert_eq!(
@@ -41,6 +43,7 @@ mod tests {
         let boolean = true;
 
         let program = Program::builder()
+            // true
             .with_expression(BooleanLiteral::new(boolean))
             .build();
 
@@ -48,7 +51,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).instructions.into();
+            compiler.compile(program).unwrap().instructions.into();
 
         assert_eq!(
             instructions,
@@ -62,13 +65,16 @@ mod tests {
     #[test]
     fn should_compile_nil_literal() {
         // Arrange
-        let program = Program::builder().with_expression(Literal::Nil).build();
+        let program = Program::builder()
+            // nil
+            .with_expression(Literal::Nil)
+            .build();
 
         let mut compiler = Compiler::new();
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).instructions.into();
+            compiler.compile(program).unwrap().instructions.into();
 
         assert_eq!(
             instructions,
@@ -86,6 +92,7 @@ mod tests {
         let right = 2;
 
         let program = Program::builder()
+            // 1 + 2
             .with_expression(Dyadic::new(
                 DyadicOperator::Add,
                 IntegerLiteral::new(left),
@@ -97,7 +104,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).instructions.into();
+            compiler.compile(program).unwrap().instructions.into();
 
         // Assert
         assert_eq!(
@@ -118,6 +125,7 @@ mod tests {
         let right = "world!".to_string();
 
         let program = Program::builder()
+            // "Hello, " + "world!"
             .with_expression(Dyadic::new(
                 DyadicOperator::Add,
                 StringLiteral::new(left.clone()),
@@ -128,9 +136,13 @@ mod tests {
         let mut compiler = Compiler::new();
 
         // Act
-        let assembly = compiler.compile(program);
-        let instructions: Vec<Instruction> = assembly.instructions.into();
-        let constants: Vec<Constant> = assembly.constants.into();
+        let Assembly {
+            instructions,
+            constants,
+        } = compiler.compile(program).unwrap();
+
+        let instructions: Vec<Instruction> = instructions.into();
+        let constants: Vec<Constant> = constants.into();
 
         // Assert
         assert_eq!(
@@ -158,11 +170,13 @@ mod tests {
         let identifier = Identifier::new(identifier_name.clone());
 
         let program = Program::builder()
+            // x val 42
             .with_expression(
                 VariableDeclaration::builder(identifier.clone())
                     .with_initial_value(IntegerLiteral::new(initial_value))
                     .build(),
             )
+            // x + x
             .with_expression(Dyadic::new(
                 DyadicOperator::Add,
                 identifier.clone(),
@@ -170,11 +184,14 @@ mod tests {
             ))
             .build();
 
-        let mut compiler = Compiler::new();
+        let Assembly {
+            instructions,
+            constants,
+        } = Compiler::new().compile(program).unwrap();
 
         // Act
-        let instructions: Vec<Instruction> =
-            compiler.compile(program).instructions.into();
+        let instructions: Vec<Instruction> = instructions.into();
+        let constants: Vec<Constant> = constants.into();
 
         // Assert
         let initial_value = Value::Int(initial_value);
@@ -183,10 +200,13 @@ mod tests {
             instructions,
             bytecode!(
                 PUSH initial_value
-                PUSH initial_value
+                SETGB 0 // the zero-th constant is the variable's name
+                GETGB 0
+                GETGB 0
                 ADD
                 HALT
             )
         );
+        assert_eq!(constants, vec![Constant::String(identifier_name),]);
     }
 }

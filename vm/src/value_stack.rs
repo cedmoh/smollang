@@ -19,6 +19,15 @@ impl ValueStack {
         self.values.push(value);
     }
 
+    pub fn peek(&self) -> Option<&Value> {
+        self.values.last()
+    }
+
+    pub fn peek_at(&self, index: usize) -> Option<&Value> {
+        let last = self.values.len() - 1;
+        self.values.get(last - index)
+    }
+
     pub fn duplicate(&mut self) -> Result<(), ValueStackError> {
         let value =
             self.values.last().ok_or(ValueStackError::StackUnderflow)?;

@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 ast = { path = "../ast" }
 bytecode = { path = "../bytecode" }
+thiserror = "^2.0.18"

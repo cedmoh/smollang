@@ -101,6 +101,14 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Call($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
+    (@collect $p:ident SETGB $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::SetGlobal($x.into()));
+        bytecode!(@collect $p $($rest)*);
+    };
+    (@collect $p:ident GETGB $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::GetGlobal($x.into()));
+        bytecode!(@collect $p $($rest)*);
+    };
 
     // Entry point — must be last, as ($($tokens:tt)*) matches everything
     ($($tokens:tt)*) => {{

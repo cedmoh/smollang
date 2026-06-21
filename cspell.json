@@ -6,8 +6,22 @@
   "language": "en",
   "useGitignore": true,
   // words - list of words to be always considered correct
-  "words": ["Smollang", "smol", "VecDeque"],
-  "dictionaries": ["rust", "html", "css", "json", "markdown", "gitHub"],
+  "words": [
+    "GETGB",
+    "SETGB",
+    "smol",
+    "Smollang",
+    "thiserror",
+    "VecDeque"
+  ],
+  "dictionaries": [
+    "rust",
+    "html",
+    "css",
+    "json",
+    "markdown",
+    "gitHub"
+  ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.
   "flagWords": []

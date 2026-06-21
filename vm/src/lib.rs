@@ -1,4 +1,5 @@
 mod call_stack;
+mod global_environment;
 mod io;
 mod memory;
 mod value_stack;
