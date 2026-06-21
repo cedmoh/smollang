@@ -1,6 +1,6 @@
 use crate::call_stack::CallStack;
 use crate::global_environment::GlobalEnvironment;
-use crate::io::{DummyIo, DummyIoError, Io};
+use crate::io::{DummyIo, DummyIoError, Io, ToIoString};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{

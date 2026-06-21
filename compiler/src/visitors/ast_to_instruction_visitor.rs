@@ -75,8 +75,6 @@ impl Visitor<VariableDeclaration, AstToAssemblyVisitorError>
         &mut self,
         variable_declaration: &VariableDeclaration,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("VariableDeclaration: {:?}", variable_declaration);
-
         match &variable_declaration.initial_value {
             Some(initializer) => self.visit(initializer.as_ref())?,
             None => self.emit(Instruction::Push(Value::Nil)),
@@ -214,14 +212,12 @@ impl Visitor<Directive, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
     ) -> Result<(), AstToAssemblyVisitorError> {
         match directive {
             Directive::Use(use_directive) => {
-                println!(
-                    "Use({:?})({:?})",
-                    use_directive.imports, use_directive.path
-                )
+                todo!(
+                    "Use directives are not yet supported: {:?}",
+                    use_directive
+                );
             }
         }
-
-        Ok(())
     }
 }
 
@@ -230,7 +226,6 @@ impl Visitor<Identifier, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
         &mut self,
         identifier: &Identifier,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("Identifier({:?})", identifier.id);
         // Assume all identifiers refer to global variables for now, and emit a
         // GETGB instruction to load the variable's value onto the stack.
         let constant_address = match self.symbol_table.get(&identifier.id) {
@@ -253,9 +248,23 @@ impl Visitor<FunctionCall, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
         &mut self,
         function_call: &FunctionCall,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("FunctionCall");
+        match &*function_call.callee {
+            Expression::Identifier(identifier) if &identifier.id == "print" => {
+                function_call
+                    .arguments
+                    .expressions
+                    .items
+                    .iter()
+                    .try_for_each(|expression| {
+                        self.visit(expression)?;
+                        self.emit(Instruction::Out);
+                        Ok(())
+                    })?;
+            }
+            _ => todo!(),
+        }
 
-        todo!()
+        Ok(())
     }
 }
 
@@ -266,7 +275,6 @@ impl Visitor<FunctionCallArguments, AstToAssemblyVisitorError>
         &mut self,
         arguments: &FunctionCallArguments,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("FunctionCallArguments");
         for expression in &arguments.expressions.items {
             self.visit(expression)?;
         }
@@ -282,7 +290,6 @@ impl Visitor<FunctionParameters, AstToAssemblyVisitorError>
         &mut self,
         parameters: &FunctionParameters,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("FunctionParameters");
         for parameter in &parameters.items {
             self.visit(parameter)?;
         }
@@ -296,10 +303,8 @@ impl Visitor<FunctionParameter, AstToAssemblyVisitorError>
 {
     fn visit(
         &mut self,
-        program: &FunctionParameter,
+        _program: &FunctionParameter,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("FunctionParameter({:?})", program.name);
-
         Ok(())
     }
 }
@@ -309,7 +314,6 @@ impl Visitor<PipeArms, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
         &mut self,
         pipe_arms: &PipeArms,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("PipeArms");
         for arm in &pipe_arms.arms {
             self.visit(arm)?;
         }
@@ -323,7 +327,6 @@ impl Visitor<PipeArm, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
         &mut self,
         pipe_arm: &PipeArm,
     ) -> Result<(), AstToAssemblyVisitorError> {
-        println!("PipeArm");
         self.visit(&pipe_arm.expression)?;
 
         Ok(())
@@ -338,12 +341,10 @@ impl Visitor<Expression, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
 
         match expression {
             Assignment(assignment) => {
-                println!("Assignment");
                 self.visit(&assignment.left)?;
                 self.visit(&*assignment.right)?;
             }
             Block(block) => {
-                println!("Block");
                 for expression in &block.body.items {
                     self.visit(expression)?;
                 }
@@ -352,7 +353,6 @@ impl Visitor<Expression, AstToAssemblyVisitorError> for AstToAssemblyVisitor {
                 self.visit(dyadic)?;
             }
             FunctionCall(function_call) => {
-                println!("FunctionCall");
                 self.visit(function_call)?;
             }
             FunctionDeclaration(function_declaration) => {
