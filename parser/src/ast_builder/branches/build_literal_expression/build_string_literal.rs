@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::StringLiteral;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -20,14 +20,14 @@ pub fn build_string_literal(
         return Err(UnexpectedInnerLiteral(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let string_text_pair = pair
         .into_inner()
         .find(|p| p.as_rule() == Rule::string_text)
         .ok_or(EmptyStringLiteral)?;
 
-    Ok(StringLiteral::synthetic(
-        string_text_pair.as_str().to_string(),
-    ))
+    Ok(StringLiteral::new(string_text_pair.as_str().to_string(), span))
 }
 
 #[derive(Debug, Error)]
@@ -43,6 +43,7 @@ pub enum BuildStringLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
+    use ast::Span;
 
     #[test]
     fn should_build_string_literal() {
@@ -59,9 +60,8 @@ mod tests {
 
         // Assert
         assert!(result.is_ok());
-        assert_eq!(
-            result.expect("Asserted successful build of string_literal"),
-            StringLiteral::synthetic("Hello World!".to_string())
-        );
+        let result = result.expect("Asserted successful build of string_literal");
+        assert_eq!(result.value, "Hello World!");
+        assert_ne!(result.span, Span::DUMMY);
     }
 }

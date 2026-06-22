@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::Identifier;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -24,8 +24,9 @@ pub fn build_identifier_expression(
     }
 
     let id = pair.to_string();
+    let span = pair.as_span().into_ast_span();
 
-    Ok(Identifier::synthetic(id))
+    Ok(Identifier::new(id, span))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -40,6 +41,7 @@ pub enum BuildIdentifierExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
+    use ast::Span;
 
     #[test]
     fn test_build_identifier_expression() {
@@ -55,9 +57,9 @@ mod tests {
         let identifier = build_identifier_expression(rule);
 
         // Assert
-        assert_eq!(
-            identifier,
-            Ok(Identifier::synthetic("myVariable".to_string()))
-        );
+        assert!(identifier.is_ok());
+        let identifier = identifier.unwrap();
+        assert_eq!(identifier.id, "myVariable");
+        assert_ne!(identifier.span, Span::DUMMY);
     }
 }

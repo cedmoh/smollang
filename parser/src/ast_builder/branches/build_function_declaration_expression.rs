@@ -3,6 +3,7 @@ use crate::{
         BuildAstExpressionError, BuildIdentifierExpressionError,
         build_ast_expression, build_identifier_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::{FunctionDeclaration, FunctionParameter};
@@ -62,6 +63,8 @@ pub fn build_function_declaration_expression(
         return Err(RuleIsNotAFunctionDeclaration(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
     let mut builder = FunctionDeclaration::builder();
 
@@ -108,7 +111,7 @@ pub fn build_function_declaration_expression(
         }
     }
 
-    Ok(builder.build())
+    Ok(builder.with_span(span).build())
 }
 
 #[derive(Debug, PartialEq, Error)]

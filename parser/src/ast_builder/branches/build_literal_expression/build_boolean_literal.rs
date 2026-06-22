@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::BooleanLiteral;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -23,13 +23,15 @@ pub fn build_boolean_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let value = match pair.as_str() {
         "true" => true,
         "false" => false,
         other => return Err(UnexpectedBooleanText(other.to_string())),
     };
 
-    Ok(BooleanLiteral::synthetic(value))
+    Ok(BooleanLiteral::new(value, span))
 }
 
 #[derive(Debug, Error)]
@@ -45,6 +47,7 @@ pub enum BuildBooleanLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
+    use ast::Span;
 
     #[test]
     fn should_build_true_when_input_is_true() {
@@ -60,10 +63,9 @@ mod tests {
         let result = build_boolean_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of boolean_literal"),
-            BooleanLiteral::synthetic(true)
-        );
+        let result = result.expect("Asserted successful build of boolean_literal");
+        assert!(result.value);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -80,9 +82,8 @@ mod tests {
         let result = build_boolean_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of boolean_literal"),
-            BooleanLiteral::synthetic(false)
-        );
+        let result = result.expect("Asserted successful build of boolean_literal");
+        assert!(!result.value);
+        assert_ne!(result.span, Span::DUMMY);
     }
 }

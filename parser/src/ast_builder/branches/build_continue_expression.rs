@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::Continue;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -22,7 +22,9 @@ pub fn build_continue_expression(
         return Err(RuleIsNotAContinue(rule));
     }
 
-    Ok(Continue::synthetic())
+    let span = pair.as_span().into_ast_span();
+
+    Ok(Continue::new(span))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -37,6 +39,7 @@ pub enum BuildContinueExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
+    use ast::Span;
 
     #[test]
     fn should_build_continue_expression() {
@@ -53,7 +56,9 @@ mod tests {
         let continue_expression = build_continue_expression(continue_rule);
 
         // Assert
-        assert_eq!(continue_expression, Ok(Continue::synthetic()));
+        assert!(continue_expression.is_ok());
+        let continue_expression = continue_expression.unwrap();
+        assert_ne!(continue_expression.span, Span::DUMMY);
     }
 
     #[test]

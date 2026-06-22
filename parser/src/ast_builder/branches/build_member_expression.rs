@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::build_ast_expression,
+    into_ast_span::IntoAstSpan,
     rule_parser::{MEMBER_PRATT_PARSER, Rule},
 };
 use ast::{Expression, FunctionCall, Member};
@@ -34,8 +35,7 @@ pub fn build_member_expression(
 ) -> Result<Member, BuildMemberExpressionError> {
     use BuildMemberExpressionError::*;
     use Rule::{
-        member, member_call, member_call_postfix, member_dot,
-        member_infix_operator, member_postfix_operator, member_segment,
+        member, member_call, member_call_postfix, member_dot, member_segment,
     };
 
     let rule = pair.as_rule();
@@ -59,16 +59,16 @@ pub fn build_member_expression(
             let lhs = lhs?;
             let rhs = rhs?;
 
-            let member_infix_operator = op.as_rule() else {
-                return Err(UnexpectedMemberInfixOperator(op.as_rule()));
-            };
+            let span = op.as_span().into_ast_span();
 
             let Some(op) = op.into_inner().next() else {
                 return Err(EmptyInfixOperator);
             };
 
             match op.as_rule() {
-                member_dot => Ok((Member::synthetic(lhs, rhs)).into()),
+                member_dot => Ok(
+                    (Member::new(Box::new(lhs), Box::new(rhs), span)).into(),
+                ),
                 member_call => {
                     let mut function_call_builder = FunctionCall::builder(lhs);
 
@@ -86,9 +86,17 @@ pub fn build_member_expression(
                         );
                     }
 
-                    let function_call = function_call_builder.build();
+                    let function_call =
+                        function_call_builder.with_span(span.clone()).build();
 
-                    Ok(Member::synthetic(function_call.into(), rhs).into())
+                    Ok(
+                        (Member::new(
+                            Box::new(function_call.into()),
+                            Box::new(rhs),
+                            span,
+                        ))
+                        .into(),
+                    )
                 }
                 unknown_rule => {
                     return Err(UnexpectedMemberInfixOperator(unknown_rule));
@@ -98,9 +106,7 @@ pub fn build_member_expression(
         .map_postfix(|lhs, op| {
             let lhs = lhs?;
 
-            let member_postfix_operator = op.as_rule() else {
-                return Err(UnexpectedMemberPostfixOperator(op.as_rule()));
-            };
+            let span = op.as_span().into_ast_span();
 
             let Some(op) = op.into_inner().next() else {
                 return Err(EmptyPostfixOperator);
@@ -124,7 +130,7 @@ pub fn build_member_expression(
                         );
                     }
 
-                    Ok(function_call_builder.build().into())
+                    Ok(function_call_builder.with_span(span).build().into())
                 }
                 unknown_rule => {
                     return Err(UnexpectedMemberPostfixOperator(unknown_rule));

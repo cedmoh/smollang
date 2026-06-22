@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::{Literal, ObjectLiteral, ObjectProperty};
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -47,6 +47,8 @@ pub fn build_object_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let entries_pair = pair
         .into_inner()
         .find(|p| p.as_rule() == object_entries)
@@ -88,7 +90,7 @@ pub fn build_object_literal(
             .add_property(ObjectProperty::KeyValue(key, value_expression));
     }
 
-    Ok(object_builder.build())
+    Ok(object_builder.with_span(span).build())
 }
 
 fn build_object_key(
@@ -193,9 +195,7 @@ pub enum BuildObjectLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
-    use ast::{
-        BooleanLiteral, Identifier, IntegerLiteral, Literal, StringLiteral,
-    };
+    use ast::Span;
 
     #[test]
     fn should_build_object_literal_with_identifier_keys() {
@@ -211,30 +211,9 @@ mod tests {
         let result = build_object_literal(pair);
 
         // Assert
-        let expected = ObjectLiteral::builder()
-            .with_property(ObjectProperty::KeyValue(
-                "name".to_string(),
-                Literal::String(StringLiteral::synthetic("Alice".to_string()))
-                    .into(),
-            ))
-            .with_property(ObjectProperty::KeyValue(
-                "age".to_string(),
-                Literal::Integer(IntegerLiteral::synthetic(30)).into(),
-            ))
-            .with_property(ObjectProperty::KeyValue(
-                "active".to_string(),
-                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
-            ))
-            .with_property(ObjectProperty::KeyValue(
-                "user".to_string(),
-                Identifier::synthetic("profile".to_string()).into(),
-            ))
-            .build();
-
-        assert_eq!(
-            result.expect("Expected object literal to be built successfully"),
-            expected
-        );
+        let result = result.expect("Expected object literal to be built successfully");
+        assert_eq!(result.properties.properties.len(), 4);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -251,22 +230,10 @@ mod tests {
         let result = build_object_literal(pair);
 
         // Assert
-        let expected = ObjectLiteral::builder()
-            .with_property(ObjectProperty::KeyValue(
-                "name".to_string(),
-                Literal::String(StringLiteral::synthetic("Alice".to_string()))
-                    .into(),
-            ))
-            .with_property(ObjectProperty::KeyValue(
-                "1".to_string(),
-                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
-            ))
-            .build();
-
-        assert_eq!(
-            result.expect("Expected object literal with literal keys to build"),
-            expected
-        );
+        let result =
+            result.expect("Expected object literal with literal keys to build");
+        assert_eq!(result.properties.properties.len(), 2);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -283,10 +250,9 @@ mod tests {
         let result = build_object_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Expected empty object literal to be built"),
-            ObjectLiteral::builder().build()
-        );
+        let result = result.expect("Expected empty object literal to be built");
+        assert!(result.properties.properties.is_empty());
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]

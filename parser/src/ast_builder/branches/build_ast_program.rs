@@ -8,6 +8,7 @@ use crate::{
         branches::build_ast_expression::BuildAstExpressionError,
         build_ast_directive, build_ast_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::{self, Rule},
 };
 
@@ -38,7 +39,9 @@ pub fn build_ast_program(
         return Err(FirstRuleIsNotProgram(rule));
     };
 
-    let mut program_builder = Program::builder();
+    let span = program.as_span().into_ast_span();
+
+    let mut program_builder = Program::builder().with_span(span);
 
     for program_inner_rule in program.into_inner() {
         match program_inner_rule.as_rule() {

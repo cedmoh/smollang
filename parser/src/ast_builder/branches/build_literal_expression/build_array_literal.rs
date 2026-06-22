@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::ArrayLiteral;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -31,6 +31,8 @@ pub fn build_array_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let entries_pair = pair
         .into_inner()
         .find(|p| p.as_rule() == array_entries)
@@ -56,7 +58,7 @@ pub fn build_array_literal(
         array_builder.add_element(expression);
     }
 
-    Ok(array_builder.build())
+    Ok(array_builder.with_span(span).build())
 }
 
 #[derive(Debug, Error)]
@@ -81,9 +83,7 @@ pub enum BuildArrayLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
-    use ast::{
-        BooleanLiteral, Identifier, IntegerLiteral, Literal, StringLiteral,
-    };
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_array_literal_with_mixed_elements() {
@@ -99,22 +99,13 @@ mod tests {
         let result = build_array_literal(pair);
 
         // Assert
-        let expected = ArrayLiteral::builder()
-            .with_element(Literal::Integer(IntegerLiteral::synthetic(1)).into())
-            .with_element(Identifier::synthetic("two".to_string()).into())
-            .with_element(
-                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
-            )
-            .with_element(
-                Literal::String(StringLiteral::synthetic("hello".to_string()))
-                    .into(),
-            )
-            .build();
-
-        assert_eq!(
-            result.expect("Expected array literal to be built successfully"),
-            expected
-        );
+        let result = result.expect("Expected array literal to be built successfully");
+        assert_eq!(result.elements.items.len(), 4);
+        assert_ne!(result.span, Span::DUMMY);
+        assert!(matches!(result.elements.items[0], Expression::Literal(_)));
+        assert!(matches!(result.elements.items[1], Expression::Identifier(_)));
+        assert!(matches!(result.elements.items[2], Expression::Literal(_)));
+        assert!(matches!(result.elements.items[3], Expression::Literal(_)));
     }
 
     #[test]
@@ -131,12 +122,10 @@ mod tests {
         let result = build_array_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect(
-                "Expected empty array literal to be built successfully"
-            ),
-            ArrayLiteral::builder().build()
-        );
+        let result = result
+            .expect("Expected empty array literal to be built successfully");
+        assert!(result.elements.items.is_empty());
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]

@@ -3,6 +3,7 @@ use crate::{
         BuildAstExpressionError, build_ast_expression,
         match_rule_to_expression_builder,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Then;
@@ -34,6 +35,8 @@ pub fn build_then_expression(
     if rule != then_expression {
         return Err(RuleIsNotAThenExpression(rule));
     };
+
+    let span = pair.as_span().into_ast_span();
 
     let mut inner = pair.into_inner();
 
@@ -113,7 +116,7 @@ pub fn build_then_expression(
         }
     }
 
-    Ok(then_builder.build())
+    Ok(then_builder.with_span(span).build())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -168,7 +171,7 @@ pub enum BuildThenExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Expression, Identifier};
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_then_expression_without_else_body() {
@@ -184,13 +187,12 @@ mod tests {
         let then_expression = build_then_expression(then_rule);
 
         // Assert
-        let expected = Then::builder(
-            Identifier::synthetic("condition".to_string()),
-            Identifier::synthetic("thenBody".to_string()),
-        )
-        .build();
-
-        assert_eq!(then_expression, Ok(expected));
+        assert!(then_expression.is_ok());
+        let then_expression = then_expression.unwrap();
+        assert!(matches!(then_expression.condition.as_ref(), Expression::Identifier(_)));
+        assert!(matches!(then_expression.then_body.as_ref(), Expression::Identifier(_)));
+        assert!(then_expression.else_body.is_none());
+        assert_ne!(then_expression.span, Span::DUMMY);
     }
 
     #[test]
@@ -207,14 +209,12 @@ mod tests {
         let then_expression = build_then_expression(then_rule);
 
         // Assert
-        let expected = Then::builder(
-            Identifier::synthetic("condition".to_string()),
-            Identifier::synthetic("thenBody".to_string()),
-        )
-        .with_else_body(Identifier::synthetic("elseBody".to_string()).into())
-        .build();
-
-        assert_eq!(then_expression, Ok(expected));
+        assert!(then_expression.is_ok());
+        let then_expression = then_expression.unwrap();
+        assert!(matches!(then_expression.condition.as_ref(), Expression::Identifier(_)));
+        assert!(matches!(then_expression.then_body.as_ref(), Expression::Identifier(_)));
+        assert!(then_expression.else_body.is_some());
+        assert_ne!(then_expression.span, Span::DUMMY);
     }
 
     #[test]

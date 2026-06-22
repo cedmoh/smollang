@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::OctalLiteral;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -23,6 +23,8 @@ pub fn build_octal_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let text = pair.as_str();
     let digits = text
         .strip_prefix('o')
@@ -33,7 +35,7 @@ pub fn build_octal_literal(
     let value = i32::from_str_radix(&digits, 8)
         .map_err(|_| ParseFailed(text.to_string()))?;
 
-    Ok(OctalLiteral::synthetic(value))
+    Ok(OctalLiteral::new(value, span))
 }
 
 #[derive(Debug, Error)]
@@ -54,6 +56,7 @@ pub enum BuildOctalLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
+    use ast::Span;
 
     #[test]
     fn should_build_octal_literal() {
@@ -69,10 +72,9 @@ mod tests {
         let result = build_octal_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of octal_literal"),
-            OctalLiteral::synthetic(0o77)
-        );
+        let result = result.expect("Asserted successful build of octal_literal");
+        assert_eq!(result.value, 0o77);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -89,9 +91,8 @@ mod tests {
         let result = build_octal_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of octal_literal"),
-            OctalLiteral::synthetic(0o77)
-        );
+        let result = result.expect("Asserted successful build of octal_literal");
+        assert_eq!(result.value, 0o77);
+        assert_ne!(result.span, Span::DUMMY);
     }
 }

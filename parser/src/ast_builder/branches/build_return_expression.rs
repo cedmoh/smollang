@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::{BuildAstExpressionError, build_ast_expression},
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Return;
@@ -30,6 +31,8 @@ pub fn build_return_expression(
         return Err(RuleIsNotAReturn(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner_rules = pair.into_inner();
 
     let next_inner_rule = inner_rules.next();
@@ -37,11 +40,11 @@ pub fn build_return_expression(
     let Some(next_inner_rule) = next_inner_rule else {
         // This means we have a return statement without an expression, e.g.,
         // `ret`
-        return Ok(Return::synthetic(None));
+        return Ok(Return::new(None, span));
     };
 
     match build_ast_expression(next_inner_rule) {
-        Ok(expr) => Ok(Return::synthetic(Some(expr))),
+        Ok(expr) => Ok(Return::new(Some(Box::new(expr)), span)),
         Err(error) => Err(BuildExpressionError(error)),
     }
 }

@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::{BuildAstExpressionError, build_ast_expression},
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Loop;
@@ -26,6 +27,8 @@ pub fn build_loop_expression(
         return Err(RuleIsNotALoopExpression(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
 
     let body_pair = inner.next().ok_or(MissingLoopBody)?;
@@ -38,7 +41,7 @@ pub fn build_loop_expression(
         body_pair.into_inner().next().ok_or(EmptyLoopBody)?;
     let body = build_ast_expression(body_expression_pair)?;
 
-    Ok(Loop::synthetic(body))
+    Ok(Loop::new(Box::new(body), span))
 }
 #[derive(Debug, PartialEq, Error)]
 #[non_exhaustive]
@@ -68,7 +71,7 @@ pub enum BuildLoopExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::Identifier;
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_loop_expression_with_identifier_body() {
@@ -84,10 +87,13 @@ mod tests {
         let loop_expression = build_loop_expression(loop_rule);
 
         // Assert
-        assert_eq!(
-            loop_expression,
-            Ok(Loop::synthetic(Identifier::synthetic("body".to_string())))
-        );
+        assert!(loop_expression.is_ok());
+        let loop_expression = loop_expression.unwrap();
+        assert_ne!(loop_expression.span, Span::DUMMY);
+        assert!(matches!(
+            loop_expression.body.as_ref(),
+            Expression::Identifier(_)
+        ));
     }
 
     #[test]

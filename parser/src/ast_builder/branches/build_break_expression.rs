@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::{BuildAstExpressionError, build_ast_expression},
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Break;
@@ -25,16 +26,18 @@ pub fn build_break_expression(
         return Err(RuleIsNotABreak(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner_rules = pair.into_inner();
 
     let next_inner_rule = inner_rules.next();
 
     let Some(next_inner_rule) = next_inner_rule else {
-        return Ok(Break::synthetic(None));
+        return Ok(Break::new(None, span));
     };
 
     match build_ast_expression(next_inner_rule) {
-        Ok(expr) => Ok(Break::synthetic(Some(expr))),
+        Ok(expr) => Ok(Break::new(Some(Box::new(expr)), span)),
         Err(error) => Err(BuildExpressionError(error)),
     }
 }
@@ -55,7 +58,7 @@ pub enum BuildBreakExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::Identifier;
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_break_expression_without_payload() {
@@ -71,7 +74,10 @@ mod tests {
         let break_expression = build_break_expression(break_rule);
 
         // Assert
-        assert_eq!(break_expression, Ok(Break::synthetic(None)));
+        assert!(break_expression.is_ok());
+        let break_expression = break_expression.unwrap();
+        assert!(break_expression.expression.is_none());
+        assert_ne!(break_expression.span, Span::DUMMY);
     }
 
     #[test]
@@ -88,12 +94,15 @@ mod tests {
         let break_expression = build_break_expression(break_rule);
 
         // Assert
-        assert_eq!(
-            break_expression,
-            Ok(Break::synthetic(Some(
-                Identifier::synthetic("value".to_string()).into()
-            )))
-        );
+        assert!(break_expression.is_ok());
+        let break_expression = break_expression.unwrap();
+        assert_ne!(break_expression.span, Span::DUMMY);
+        match break_expression.expression {
+            Some(expr) => {
+                assert!(matches!(expr.as_ref(), Expression::Identifier(_)));
+            }
+            None => panic!("Expected break payload expression"),
+        }
     }
 
     #[test]

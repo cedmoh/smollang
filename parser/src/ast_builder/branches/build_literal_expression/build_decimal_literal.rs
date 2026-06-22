@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::{DecimalLiteral, Literal};
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -20,11 +20,13 @@ pub fn build_decimal_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let text = pair.as_str().trim().replace('_', "");
 
     let value: f64 =
         text.parse().map_err(|_| ParseDecimalFailed(text.clone()))?;
-    Ok(DecimalLiteral::synthetic(value).into())
+    Ok(DecimalLiteral::new(value, span).into())
 }
 
 #[derive(Debug, Error)]
@@ -40,6 +42,7 @@ pub enum BuildDecimalLiteralError {
 mod tests {
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
+    use ast::Span;
 
     #[test]
     fn should_build_decimal_literal_when_decimal_point_present() {
@@ -55,10 +58,14 @@ mod tests {
         let result = build_decimal_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of decimal_literal"),
-            Literal::Decimal(DecimalLiteral::synthetic(3.14))
-        );
+        let result = result.expect("Asserted successful build of decimal_literal");
+        match result {
+            Literal::Decimal(value) => {
+                assert_eq!(value.value, 3.14);
+                assert_ne!(value.span, Span::DUMMY);
+            }
+            _ => panic!("Expected decimal literal"),
+        }
     }
 
     #[test]
@@ -75,9 +82,13 @@ mod tests {
         let result = build_decimal_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of decimal_literal"),
-            Literal::Decimal(DecimalLiteral::synthetic(-5.0))
-        );
+        let result = result.expect("Asserted successful build of decimal_literal");
+        match result {
+            Literal::Decimal(value) => {
+                assert_eq!(value.value, -5.0);
+                assert_ne!(value.span, Span::DUMMY);
+            }
+            _ => panic!("Expected decimal literal"),
+        }
     }
 }

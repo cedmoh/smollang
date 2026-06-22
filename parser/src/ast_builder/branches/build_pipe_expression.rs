@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::Pipe;
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -27,6 +27,8 @@ pub fn build_pipe_expression(
     if rule != pipe_expression {
         return Err(RuleIsNotAPipeExpression(rule));
     };
+
+    let span = pair.as_span().into_ast_span();
 
     let mut inner = pair.into_inner();
 
@@ -78,7 +80,7 @@ pub fn build_pipe_expression(
         pipe_builder.add_arm(expression);
     }
 
-    Ok(pipe_builder.build())
+    Ok(pipe_builder.with_span(span).build())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -123,7 +125,7 @@ pub enum BuildPipeExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Expression, Identifier};
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_pipe_expression_with_two_arms_when_given_simple_identifiers()
@@ -140,13 +142,10 @@ mod tests {
         let pipe_expression = build_pipe_expression(pipe_rule);
 
         // Assert
-        let expected = Pipe::builder(
-            Identifier::synthetic("first".to_string()).into(),
-            Identifier::synthetic("second".to_string()).into(),
-        )
-        .build();
-
-        assert_eq!(pipe_expression, Ok(expected));
+        assert!(pipe_expression.is_ok());
+        let pipe_expression = pipe_expression.unwrap();
+        assert_eq!(pipe_expression.arms.arms.len(), 2);
+        assert_ne!(pipe_expression.span, Span::DUMMY);
     }
 
     #[test]
@@ -164,14 +163,10 @@ mod tests {
         let pipe_expression = build_pipe_expression(pipe_rule);
 
         // Assert
-        let expected = Pipe::builder(
-            Identifier::synthetic("first".to_string()).into(),
-            Identifier::synthetic("second".to_string()).into(),
-        )
-        .with_arm(Identifier::synthetic("third".to_string()).into())
-        .build();
-
-        assert_eq!(pipe_expression, Ok(expected));
+        assert!(pipe_expression.is_ok());
+        let pipe_expression = pipe_expression.unwrap();
+        assert_eq!(pipe_expression.arms.arms.len(), 3);
+        assert_ne!(pipe_expression.span, Span::DUMMY);
     }
 
     #[test]

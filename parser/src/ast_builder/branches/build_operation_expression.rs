@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::match_rule_to_expression_builder,
+    into_ast_span::IntoAstSpan,
     rule_parser::{OPERATION_PRATT_PARSER, Rule},
 };
 use ast::{Dyadic, DyadicOperator, Expression};
@@ -46,11 +47,18 @@ pub fn build_operation_expression(
         .map_infix(|lhs, op, rhs| {
             let lhs = lhs?;
             let rhs = rhs?;
+            let span = op.as_span().into_ast_span();
 
             let dyadic_operator = build_dyadic_operator(op)
                 .map_err(|e| BuildDyadicOperatorError(e.to_string()))?;
 
-            Ok((Dyadic::synthetic(dyadic_operator, lhs, rhs)).into())
+            Ok((Dyadic::new(
+                dyadic_operator,
+                Box::new(lhs),
+                Box::new(rhs),
+                span,
+            ))
+            .into())
         })
         .parse(pair.into_inner());
 
@@ -136,7 +144,7 @@ pub enum BuildDyadicOperatorError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Expression, Identifier};
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_operation_when_given_simple_addition() {
@@ -152,13 +160,12 @@ mod tests {
         let operation = build_operation_expression(operation_rule);
 
         // Assert
-        let expected = Dyadic::synthetic(
-            DyadicOperator::Add,
-            Identifier::synthetic("a".to_string()),
-            Identifier::synthetic("b".to_string()),
-        );
-
-        assert_eq!(operation, Ok(expected));
+        assert!(operation.is_ok());
+        let operation = operation.unwrap();
+        assert_eq!(operation.operator, DyadicOperator::Add);
+        assert_ne!(operation.span, Span::DUMMY);
+        assert!(matches!(operation.left.as_ref(), Expression::Identifier(_)));
+        assert!(matches!(operation.right.as_ref(), Expression::Identifier(_)));
     }
 
     #[test]
@@ -175,17 +182,12 @@ mod tests {
         let operation = build_operation_expression(operation_rule);
 
         // Assert
-        let expected = Dyadic::synthetic(
-            DyadicOperator::Add,
-            Identifier::synthetic("a".to_string()),
-            Expression::Dyadic(Dyadic::synthetic(
-                DyadicOperator::Multiply,
-                Identifier::synthetic("b".to_string()),
-                Identifier::synthetic("c".to_string()),
-            )),
-        );
-
-        assert_eq!(operation, Ok(expected));
+        assert!(operation.is_ok());
+        let operation = operation.unwrap();
+        assert_eq!(operation.operator, DyadicOperator::Add);
+        assert_ne!(operation.span, Span::DUMMY);
+        assert!(matches!(operation.left.as_ref(), Expression::Identifier(_)));
+        assert!(matches!(operation.right.as_ref(), Expression::Dyadic(_)));
     }
 
     #[test]

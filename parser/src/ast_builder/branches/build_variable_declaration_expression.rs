@@ -3,6 +3,7 @@ use crate::{
         BuildAstExpressionError, BuildIdentifierExpressionError,
         build_ast_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::{Identifier, VariableDeclaration};
@@ -53,6 +54,8 @@ pub fn build_variable_declaration_expression(
         return Err(RuleIsNotAVariableDeclaration(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
 
     let name_pair = inner.next().ok_or(MissingName)?;
@@ -64,7 +67,10 @@ pub fn build_variable_declaration_expression(
     if name_str.is_empty() {
         return Err(EmptyName);
     }
-    let name = Identifier::synthetic(name_str.to_string());
+    let name = Identifier::new(
+        name_str.to_string(),
+        name_pair.as_span().into_ast_span(),
+    );
 
     let mutability_pair = inner.next().ok_or(MissingMutability)?;
     let mutability_rule = mutability_pair.as_rule();
@@ -76,10 +82,7 @@ pub fn build_variable_declaration_expression(
         return Err(InvalidMutabilityToken(mutability_rule));
     };
 
-    let builder =
-        VariableDeclaration::builder(name).with_mutability(is_mutable);
-
-    let builder = match inner.next() {
+    let initial_value = match inner.next() {
         Some(init_pair) => {
             if init_pair.as_rule() != variable_initialization {
                 return Err(InvalidInitializationRule(init_pair.as_rule()));
@@ -89,12 +92,17 @@ pub fn build_variable_declaration_expression(
                 init_pair.into_inner().next().ok_or(MissingInitialization)?;
             let initial_value = build_ast_expression(expression_pair)?;
 
-            builder.with_initial_value(initial_value)
+            Some(Box::new(initial_value))
         }
-        None => builder,
+        None => None,
     };
 
-    Ok(builder.build())
+    Ok(VariableDeclaration::new(
+        name,
+        is_mutable,
+        initial_value,
+        span,
+    ))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -147,7 +155,7 @@ pub enum BuildVariableDeclarationExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::Identifier;
+    use ast::Span;
 
     #[test]
     fn should_return_error_when_rule_is_not_variable_declaration() {
@@ -184,7 +192,9 @@ mod tests {
         // Assert
         assert!(result.is_ok());
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::synthetic("y".to_string()));
+        assert_eq!(declaration.name.id, "y");
+        assert_ne!(declaration.name.span, Span::DUMMY);
+        assert_ne!(declaration.span, Span::DUMMY);
         assert!(declaration.is_mutable);
         assert!(declaration.initial_value.is_none());
     }
@@ -205,7 +215,9 @@ mod tests {
         // Assert
         assert!(result.is_ok(), "Expected Ok, got: {:?}", result);
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::synthetic("x".to_string()));
+        assert_eq!(declaration.name.id, "x");
+        assert_ne!(declaration.name.span, Span::DUMMY);
+        assert_ne!(declaration.span, Span::DUMMY);
         assert!(declaration.is_mutable);
         assert!(declaration.initial_value.is_some());
     }
@@ -225,7 +237,9 @@ mod tests {
         // Assert
         assert!(result.is_ok(), "Expected Ok, got: {:?}", result);
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::synthetic("x".to_string()));
+        assert_eq!(declaration.name.id, "x");
+        assert_ne!(declaration.name.span, Span::DUMMY);
+        assert_ne!(declaration.span, Span::DUMMY);
         assert!(!declaration.is_mutable);
         assert!(declaration.initial_value.is_some());
     }

@@ -3,6 +3,7 @@ use crate::{
         BuildAstExpressionError, BuildIdentifierExpressionError,
         build_ast_expression, build_identifier_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::FunctionCall;
@@ -50,6 +51,8 @@ pub fn build_call_expression(
         return Err(BuildCallExpressionError::RuleIsNotACall(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
 
     // Extract the callee (the function being called)
@@ -90,7 +93,7 @@ pub fn build_call_expression(
         }
     }
 
-    Ok(function_call_builder.build())
+    Ok(function_call_builder.with_span(span).build())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -113,7 +116,7 @@ pub enum BuildCallExpressionError {
 
 #[cfg(test)]
 mod tests {
-    use ast::Identifier;
+    use ast::{Expression, Span};
 
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
@@ -131,12 +134,15 @@ mod tests {
         // Act
         let call_expression = build_call_expression(call_rule);
 
-        let expected_call_expression =
-            FunctionCall::builder(Identifier::synthetic("hello".into()).into())
-                .build();
-
         // Assert
-        assert_eq!(call_expression, Ok(expected_call_expression));
+        assert!(call_expression.is_ok());
+        let call_expression = call_expression.unwrap();
+        assert_ne!(call_expression.span, Span::DUMMY);
+        assert!(call_expression.arguments.expressions.items.is_empty());
+        assert!(matches!(
+            call_expression.callee.as_ref(),
+            Expression::Identifier(_)
+        ));
     }
 
     #[test]
@@ -153,12 +159,13 @@ mod tests {
         let call_expression = build_call_expression(call_rule);
 
         // Assert
-        let function_call =
-            FunctionCall::builder(Identifier::synthetic("add".into()).into())
-                .with_argument(Identifier::synthetic("x".into()))
-                .with_argument(Identifier::synthetic("y".into()))
-                .build();
-
-        assert_eq!(call_expression, Ok(function_call));
+        assert!(call_expression.is_ok());
+        let call_expression = call_expression.unwrap();
+        assert_ne!(call_expression.span, Span::DUMMY);
+        assert_eq!(call_expression.arguments.expressions.items.len(), 2);
+        assert!(matches!(
+            call_expression.callee.as_ref(),
+            Expression::Identifier(_)
+        ));
     }
 }

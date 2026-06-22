@@ -1,4 +1,4 @@
-use crate::rule_parser::Rule;
+use crate::{into_ast_span::IntoAstSpan, rule_parser::Rule};
 use ast::{IntegerLiteral, Literal};
 use pest::iterators::Pair;
 use thiserror::Error;
@@ -20,12 +20,14 @@ pub fn build_integer_literal(
         return Err(UnexpectedRule(rule));
     }
 
+    let span = pair.as_span().into_ast_span();
+
     let text = pair.as_str().trim().replace('_', "");
 
     let value: i32 =
         text.parse().map_err(|_| ParseIntegerFailed(text.clone()))?;
 
-    Ok(IntegerLiteral::synthetic(value).into())
+    Ok(IntegerLiteral::new(value, span).into())
 }
 
 #[derive(Debug, Error)]
@@ -39,10 +41,9 @@ pub enum BuildIntegerLiteralError {
 
 #[cfg(test)]
 mod tests {
-    use ast::IntegerLiteral;
-
     use super::*;
     use crate::{parse_string_to_rule, rule_parser::Rule};
+    use ast::Span;
 
     #[test]
     fn should_build_integer_literal_when_integer_present() {
@@ -58,10 +59,14 @@ mod tests {
         let result = build_integer_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of integer_literal"),
-            Literal::Integer(IntegerLiteral::synthetic(42))
-        );
+        let result = result.expect("Asserted successful build of integer_literal");
+        match result {
+            Literal::Integer(value) => {
+                assert_eq!(value.value, 42);
+                assert_ne!(value.span, Span::DUMMY);
+            }
+            _ => panic!("Expected integer literal"),
+        }
     }
 
     #[test]
@@ -78,9 +83,13 @@ mod tests {
         let result = build_integer_literal(pair);
 
         // Assert
-        assert_eq!(
-            result.expect("Asserted successful build of integer_literal"),
-            Literal::Integer(IntegerLiteral::synthetic(-5))
-        );
+        let result = result.expect("Asserted successful build of integer_literal");
+        match result {
+            Literal::Integer(value) => {
+                assert_eq!(value.value, -5);
+                assert_ne!(value.span, Span::DUMMY);
+            }
+            _ => panic!("Expected integer literal"),
+        }
     }
 }

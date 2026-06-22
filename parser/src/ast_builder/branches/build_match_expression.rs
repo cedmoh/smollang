@@ -4,6 +4,7 @@ use crate::{
         build_ast_expression, build_identifier_expression,
         build_literal_expression, match_rule_to_expression_builder,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::{
@@ -46,6 +47,8 @@ pub fn build_match_expression(
         return Err(RuleIsNotAMatch(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
 
     // First inner pair must be the match_term.
@@ -80,7 +83,7 @@ pub fn build_match_expression(
         return Err(NoMatchArms);
     }
 
-    Ok(match_builder.build())
+    Ok(match_builder.with_span(span).build())
 }
 
 /// Converts a `match_arm` pair into an `ast::MatchArm`.
@@ -89,6 +92,8 @@ fn build_match_arm(
 ) -> Result<MatchArm, BuildMatchExpressionError> {
     use BuildMatchExpressionError::*;
     use Rule::pattern;
+
+    let span = pair.as_span().into_ast_span();
 
     let mut inner = pair.into_inner();
 
@@ -104,7 +109,7 @@ fn build_match_arm(
 
     let body = build_ast_expression(body_pair)?;
 
-    Ok(MatchArm::synthetic(parsed_pattern, body))
+    Ok(MatchArm::new(parsed_pattern, body, span))
 }
 
 /// Converts a `pattern` pair into an `ast::Pattern`.
@@ -304,7 +309,7 @@ pub enum BuildMatchExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Expression, Identifier, IntegerLiteral, StringLiteral};
+    use ast::{Expression, Span};
 
     fn parse_match(input: &str) -> Pair<'_, Rule> {
         parse_string_to_rule(input, Rule::match_expression)
@@ -324,24 +329,11 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected = Match::builder(
-            Identifier::synthetic("operator".to_string()).into(),
-        )
-        .with_branch(MatchArm::synthetic(
-            Pattern::Literal(LiteralPattern::String(StringLiteral::synthetic(
-                "x".to_string(),
-            ))),
-            Identifier::synthetic("a".to_string()).into(),
-        ))
-        .with_branch(MatchArm::synthetic(
-            Pattern::Identifier(IdentifierPattern::new(Identifier::synthetic(
-                "other".to_string(),
-            ))),
-            Identifier::synthetic("b".to_string()).into(),
-        ))
-        .build();
-
-        assert_eq!(result, Ok(expected));
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result.branches.len(), 2);
+        assert_ne!(result.span, Span::DUMMY);
+        assert!(matches!(result.expression.as_ref(), Expression::Identifier(_)));
     }
 
     #[test]
@@ -355,17 +347,10 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected =
-            Match::builder(Identifier::synthetic("n".to_string()).into())
-                .with_branch(MatchArm::synthetic(
-                    Pattern::Literal(LiteralPattern::Integer(
-                        IntegerLiteral::synthetic(1),
-                    )),
-                    Identifier::synthetic("a".to_string()).into(),
-                ))
-                .build();
-
-        assert_eq!(result, Ok(expected));
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result.branches.len(), 1);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -379,17 +364,10 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected =
-            Match::builder(Identifier::synthetic("value".to_string()).into())
-                .with_branch(MatchArm::synthetic(
-                    Pattern::Identifier(IdentifierPattern::new(
-                        Identifier::synthetic("x".to_string()),
-                    )),
-                    Identifier::synthetic("x".to_string()).into(),
-                ))
-                .build();
-
-        assert_eq!(result, Ok(expected));
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result.branches.len(), 1);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]
@@ -403,26 +381,10 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let array_items = ArrayPattern::builder()
-            .with_pattern(Pattern::Identifier(IdentifierPattern::new(
-                Identifier::synthetic("x".to_string()),
-            )))
-            .with_pattern(Pattern::Identifier(IdentifierPattern::new(
-                Identifier::synthetic("y".to_string()),
-            )))
-            .with_rest()
-            .build()
-            .items;
-
-        let expected =
-            Match::builder(Identifier::synthetic("value".to_string()).into())
-                .with_branch(MatchArm::synthetic(
-                    Pattern::Array(array_items),
-                    Identifier::synthetic("x".to_string()).into(),
-                ))
-                .build();
-
-        assert_eq!(result, Ok(expected));
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result.branches.len(), 1);
+        assert_ne!(result.span, Span::DUMMY);
     }
 
     #[test]

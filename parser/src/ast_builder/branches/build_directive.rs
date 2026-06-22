@@ -60,7 +60,7 @@ pub enum BuildAstDirectiveError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Identifier, Use};
+    use ast::Span;
 
     #[test]
     fn should_build_use_directive_when_rule_is_directive() {
@@ -76,15 +76,17 @@ mod tests {
         let ast_directive = build_ast_directive(directive_pair);
 
         // Assert
-        let expected = Directive::Use(Use::synthetic(
-            "std".to_string(),
-            vec![
-                Identifier::synthetic("first".to_string()),
-                Identifier::synthetic("second".to_string()),
-            ],
-        ));
-
-        assert_eq!(ast_directive, Ok(expected));
+        assert!(ast_directive.is_ok());
+        let ast_directive = ast_directive.unwrap();
+        match ast_directive {
+            Directive::Use(parsed_use) => {
+                assert_eq!(parsed_use.path, "std");
+                assert_eq!(parsed_use.imports.len(), 2);
+                assert_eq!(parsed_use.imports[0].id, "first");
+                assert_eq!(parsed_use.imports[1].id, "second");
+                assert_ne!(parsed_use.span, Span::DUMMY);
+            }
+        }
     }
 
     #[test]

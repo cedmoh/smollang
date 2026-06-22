@@ -1,5 +1,6 @@
 use crate::{
     ast_builder::{BuildAstExpressionError, build_ast_expression},
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Block;
@@ -25,6 +26,8 @@ pub fn build_block_expression(
         return Err(BuildBlockExpressionError::RuleIsNotABlock(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let inner = pair.into_inner();
 
     let mut block_builder = Block::builder();
@@ -40,7 +43,7 @@ pub fn build_block_expression(
         };
     }
 
-    Ok(block_builder.build())
+    Ok(block_builder.with_span(span).build())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -61,6 +64,7 @@ pub enum BuildBlockExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
+    use ast::Span;
 
     #[test]
     fn should_build_empty_block() {
@@ -76,6 +80,9 @@ mod tests {
         let block_expression = build_block_expression(block_rule);
 
         // Assert
-        assert_eq!(block_expression, Ok(Block::default()));
+        assert!(block_expression.is_ok());
+        let block_expression = block_expression.unwrap();
+        assert!(block_expression.body.items.is_empty());
+        assert_ne!(block_expression.span, Span::DUMMY);
     }
 }

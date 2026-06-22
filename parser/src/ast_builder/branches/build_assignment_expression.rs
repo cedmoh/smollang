@@ -3,6 +3,7 @@ use crate::{
         BuildAstExpressionError, BuildIdentifierExpressionError,
         build_ast_expression, build_identifier_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Assignment;
@@ -34,6 +35,8 @@ pub fn build_assignment_expression(
         return Err(RuleIsNotAnAssignment(rule));
     };
 
+    let span = pair.as_span().into_ast_span();
+
     let mut inner = pair.into_inner();
 
     let left_hand_side_pair = inner.next().ok_or(MissingLeftHandSide)?;
@@ -62,7 +65,7 @@ pub fn build_assignment_expression(
 
     let value = build_ast_expression(value_pair)?;
 
-    Ok(Assignment::synthetic(identifier, Box::new(value)))
+    Ok(Assignment::new(identifier, Box::new(value), span))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -109,7 +112,7 @@ pub enum BuildAssignmentExpressionError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::{Expression, Identifier};
+    use ast::{Expression, Span};
 
     #[test]
     fn should_build_assignment_expression_when_given_identifier_and_identifier()
@@ -131,7 +134,9 @@ mod tests {
         assert!(assignment_expression.is_ok());
 
         let assignment = assignment_expression.unwrap();
-        assert_eq!(assignment.left, Identifier::synthetic("x".to_string()));
+        assert_eq!(assignment.left.id, "x");
+        assert_ne!(assignment.left.span, Span::DUMMY);
+        assert_ne!(assignment.span, Span::DUMMY);
         assert!(matches!(
             assignment.right.as_ref(),
             Expression::Identifier(_)

@@ -2,6 +2,7 @@ use crate::{
     ast_builder::{
         BuildIdentifierExpressionError, build_identifier_expression,
     },
+    into_ast_span::IntoAstSpan,
     rule_parser::Rule,
 };
 use ast::Use;
@@ -32,6 +33,8 @@ pub fn build_use_directive(
     if pair.as_rule() != use_directive {
         return Err(RuleIsNotAUseDirective(pair.as_rule()));
     }
+
+    let span = pair.as_span().into_ast_span();
 
     let mut inner = pair.into_inner();
 
@@ -65,12 +68,7 @@ pub fn build_use_directive(
         other => return Err(InvalidPathValueRule(other)),
     };
 
-    let mut use_builder = Use::builder(path);
-    for import in imports {
-        use_builder.add_import(import);
-    }
-
-    Ok(use_builder.build())
+    Ok(Use::new(path, imports, span))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -119,7 +117,7 @@ pub enum BuildUseDirectiveError {
 mod tests {
     use super::*;
     use crate::rule_parser::parse_string_to_rule;
-    use ast::Identifier;
+    use ast::Span;
 
     #[test]
     fn should_build_use_directive_with_identifier_path() {
@@ -135,15 +133,13 @@ mod tests {
         let ast_use = build_use_directive(use_pair);
 
         // Assert
-        let expected = Use::synthetic(
-            "std".to_string(),
-            vec![
-                Identifier::synthetic("first".to_string()),
-                Identifier::synthetic("second".to_string()),
-            ],
-        );
-
-        assert_eq!(ast_use, Ok(expected));
+        assert!(ast_use.is_ok());
+        let ast_use = ast_use.unwrap();
+        assert_eq!(ast_use.path, "std");
+        assert_eq!(ast_use.imports.len(), 2);
+        assert_eq!(ast_use.imports[0].id, "first");
+        assert_eq!(ast_use.imports[1].id, "second");
+        assert_ne!(ast_use.span, Span::DUMMY);
     }
 
     #[test]
@@ -160,12 +156,12 @@ mod tests {
         let ast_use = build_use_directive(use_pair);
 
         // Assert
-        let expected = Use::synthetic(
-            "pkg/core".to_string(),
-            vec![Identifier::synthetic("first".to_string())],
-        );
-
-        assert_eq!(ast_use, Ok(expected));
+        assert!(ast_use.is_ok());
+        let ast_use = ast_use.unwrap();
+        assert_eq!(ast_use.path, "pkg/core");
+        assert_eq!(ast_use.imports.len(), 1);
+        assert_eq!(ast_use.imports[0].id, "first");
+        assert_ne!(ast_use.span, Span::DUMMY);
     }
 
     #[test]

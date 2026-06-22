@@ -1,4 +1,5 @@
 mod ast_builder;
+mod into_ast_span;
 mod parse_string_to_program_ast;
 mod rule_parser;
 
