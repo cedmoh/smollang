@@ -33,7 +33,7 @@ pub fn build_octal_literal(
     let value = i32::from_str_radix(&digits, 8)
         .map_err(|_| ParseFailed(text.to_string()))?;
 
-    Ok(OctalLiteral::new(value))
+    Ok(OctalLiteral::synthetic(value))
 }
 
 #[derive(Debug, Error)]
@@ -71,7 +71,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of octal_literal"),
-            OctalLiteral::new(0o77)
+            OctalLiteral::synthetic(0o77)
         );
     }
 
@@ -91,7 +91,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of octal_literal"),
-            OctalLiteral::new(0o77)
+            OctalLiteral::synthetic(0o77)
         );
     }
 }

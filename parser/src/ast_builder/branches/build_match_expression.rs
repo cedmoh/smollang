@@ -104,7 +104,7 @@ fn build_match_arm(
 
     let body = build_ast_expression(body_pair)?;
 
-    Ok(MatchArm::new(parsed_pattern, body))
+    Ok(MatchArm::synthetic(parsed_pattern, body))
 }
 
 /// Converts a `pattern` pair into an `ast::Pattern`.
@@ -324,21 +324,22 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected =
-            Match::builder(Identifier::new("operator".to_string()).into())
-                .with_branch(MatchArm::new(
-                    Pattern::Literal(LiteralPattern::String(
-                        StringLiteral::new("x".to_string()),
-                    )),
-                    Identifier::new("a".to_string()).into(),
-                ))
-                .with_branch(MatchArm::new(
-                    Pattern::Identifier(IdentifierPattern::new(
-                        Identifier::new("other".to_string()),
-                    )),
-                    Identifier::new("b".to_string()).into(),
-                ))
-                .build();
+        let expected = Match::builder(
+            Identifier::synthetic("operator".to_string()).into(),
+        )
+        .with_branch(MatchArm::synthetic(
+            Pattern::Literal(LiteralPattern::String(StringLiteral::synthetic(
+                "x".to_string(),
+            ))),
+            Identifier::synthetic("a".to_string()).into(),
+        ))
+        .with_branch(MatchArm::synthetic(
+            Pattern::Identifier(IdentifierPattern::new(Identifier::synthetic(
+                "other".to_string(),
+            ))),
+            Identifier::synthetic("b".to_string()).into(),
+        ))
+        .build();
 
         assert_eq!(result, Ok(expected));
     }
@@ -354,14 +355,15 @@ mod tests {
         let result = build_match_expression(match_rule);
 
         // Assert
-        let expected = Match::builder(Identifier::new("n".to_string()).into())
-            .with_branch(MatchArm::new(
-                Pattern::Literal(LiteralPattern::Integer(IntegerLiteral::new(
-                    1,
-                ))),
-                Identifier::new("a".to_string()).into(),
-            ))
-            .build();
+        let expected =
+            Match::builder(Identifier::synthetic("n".to_string()).into())
+                .with_branch(MatchArm::synthetic(
+                    Pattern::Literal(LiteralPattern::Integer(
+                        IntegerLiteral::synthetic(1),
+                    )),
+                    Identifier::synthetic("a".to_string()).into(),
+                ))
+                .build();
 
         assert_eq!(result, Ok(expected));
     }
@@ -378,12 +380,12 @@ mod tests {
 
         // Assert
         let expected =
-            Match::builder(Identifier::new("value".to_string()).into())
-                .with_branch(MatchArm::new(
+            Match::builder(Identifier::synthetic("value".to_string()).into())
+                .with_branch(MatchArm::synthetic(
                     Pattern::Identifier(IdentifierPattern::new(
-                        Identifier::new("x".to_string()),
+                        Identifier::synthetic("x".to_string()),
                     )),
-                    Identifier::new("x".to_string()).into(),
+                    Identifier::synthetic("x".to_string()).into(),
                 ))
                 .build();
 
@@ -403,20 +405,20 @@ mod tests {
         // Assert
         let array_items = ArrayPattern::builder()
             .with_pattern(Pattern::Identifier(IdentifierPattern::new(
-                Identifier::new("x".to_string()),
+                Identifier::synthetic("x".to_string()),
             )))
             .with_pattern(Pattern::Identifier(IdentifierPattern::new(
-                Identifier::new("y".to_string()),
+                Identifier::synthetic("y".to_string()),
             )))
             .with_rest()
             .build()
             .items;
 
         let expected =
-            Match::builder(Identifier::new("value".to_string()).into())
-                .with_branch(MatchArm::new(
+            Match::builder(Identifier::synthetic("value".to_string()).into())
+                .with_branch(MatchArm::synthetic(
                     Pattern::Array(array_items),
-                    Identifier::new("x".to_string()).into(),
+                    Identifier::synthetic("x".to_string()).into(),
                 ))
                 .build();
 

@@ -132,7 +132,7 @@ mod tests {
         let call_expression = build_call_expression(call_rule);
 
         let expected_call_expression =
-            FunctionCall::builder(Identifier::new("hello".into()).into())
+            FunctionCall::builder(Identifier::synthetic("hello".into()).into())
                 .build();
 
         // Assert
@@ -154,9 +154,9 @@ mod tests {
 
         // Assert
         let function_call =
-            FunctionCall::builder(Identifier::new("add".into()).into())
-                .with_argument(Identifier::new("x".into()))
-                .with_argument(Identifier::new("y".into()))
+            FunctionCall::builder(Identifier::synthetic("add".into()).into())
+                .with_argument(Identifier::synthetic("x".into()))
+                .with_argument(Identifier::synthetic("y".into()))
                 .build();
 
         assert_eq!(call_expression, Ok(function_call));

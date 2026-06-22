@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Identifier, Span};
 
 /// An assignment expression
 ///
@@ -17,10 +17,18 @@ pub struct Assignment {
 
     /// The value being assigned
     pub right: Box<Expression>,
+
+    /// The location of the AST node in the source code
+    pub span: Span,
 }
 
 impl Assignment {
-    pub fn new(left: Identifier, right: Box<Expression>) -> Self {
-        Self { left, right }
+    pub fn new(left: Identifier, right: Box<Expression>, span: Span) -> Self {
+        Self { left, right, span }
+    }
+
+    /// Creates a synthetic assignment expression with a dummy span.
+    pub fn synthetic(left: Identifier, right: Box<Expression>) -> Self {
+        Self::new(left, right, Span::DUMMY)
     }
 }

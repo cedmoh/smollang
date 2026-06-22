@@ -25,7 +25,9 @@ pub fn build_template_literal(
         .find(|p| p.as_rule() == Rule::string_text)
         .ok_or(EmptyTemplateLiteral)?;
 
-    Ok(TemplateLiteral::new(string_text_pair.as_str().to_string()))
+    Ok(TemplateLiteral::synthetic(
+        string_text_pair.as_str().to_string(),
+    ))
 }
 
 #[derive(Debug, Error)]
@@ -59,7 +61,7 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(
             result.expect("Asserted successful build of template_literal"),
-            TemplateLiteral::new("Hello {name}!".to_string())
+            TemplateLiteral::synthetic("Hello {name}!".to_string())
         );
     }
 }

@@ -50,7 +50,7 @@ pub fn build_operation_expression(
             let dyadic_operator = build_dyadic_operator(op)
                 .map_err(|e| BuildDyadicOperatorError(e.to_string()))?;
 
-            Ok((Dyadic::new(dyadic_operator, lhs, rhs)).into())
+            Ok((Dyadic::synthetic(dyadic_operator, lhs, rhs)).into())
         })
         .parse(pair.into_inner());
 
@@ -152,10 +152,10 @@ mod tests {
         let operation = build_operation_expression(operation_rule);
 
         // Assert
-        let expected = Dyadic::new(
+        let expected = Dyadic::synthetic(
             DyadicOperator::Add,
-            Identifier::new("a".to_string()),
-            Identifier::new("b".to_string()),
+            Identifier::synthetic("a".to_string()),
+            Identifier::synthetic("b".to_string()),
         );
 
         assert_eq!(operation, Ok(expected));
@@ -175,13 +175,13 @@ mod tests {
         let operation = build_operation_expression(operation_rule);
 
         // Assert
-        let expected = Dyadic::new(
+        let expected = Dyadic::synthetic(
             DyadicOperator::Add,
-            Identifier::new("a".to_string()),
-            Expression::Dyadic(Dyadic::new(
+            Identifier::synthetic("a".to_string()),
+            Expression::Dyadic(Dyadic::synthetic(
                 DyadicOperator::Multiply,
-                Identifier::new("b".to_string()),
-                Identifier::new("c".to_string()),
+                Identifier::synthetic("b".to_string()),
+                Identifier::synthetic("c".to_string()),
             )),
         );
 

@@ -1,14 +1,28 @@
-use crate::Identifier;
+use crate::{Identifier, Span};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Use {
+    /// The path of the module to import.
     pub path: String,
+
+    /// The identifiers to import from the module.
     pub imports: Vec<Identifier>,
+
+    /// The location of the AST node in the source code.
+    pub span: Span,
 }
 
 impl Use {
-    pub fn new(path: String, imports: Vec<Identifier>) -> Self {
-        Self { path, imports }
+    pub fn new(path: String, imports: Vec<Identifier>, span: Span) -> Self {
+        Self {
+            path,
+            imports,
+            span,
+        }
+    }
+
+    pub fn synthetic(path: String, imports: Vec<Identifier>) -> Self {
+        Self::new(path, imports, Span::DUMMY)
     }
 
     pub fn builder(path: String) -> UseBuilder {
@@ -36,6 +50,6 @@ impl UseBuilder {
     }
 
     pub fn build(self) -> Use {
-        Use::new(self.path, self.imports)
+        Use::synthetic(self.path, self.imports)
     }
 }

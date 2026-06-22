@@ -62,7 +62,7 @@ pub fn build_assignment_expression(
 
     let value = build_ast_expression(value_pair)?;
 
-    Ok(Assignment::new(identifier, Box::new(value)))
+    Ok(Assignment::synthetic(identifier, Box::new(value)))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -131,7 +131,7 @@ mod tests {
         assert!(assignment_expression.is_ok());
 
         let assignment = assignment_expression.unwrap();
-        assert_eq!(assignment.left, Identifier::new("x".to_string()));
+        assert_eq!(assignment.left, Identifier::synthetic("x".to_string()));
         assert!(matches!(
             assignment.right.as_ref(),
             Expression::Identifier(_)

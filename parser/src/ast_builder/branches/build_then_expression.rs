@@ -185,8 +185,8 @@ mod tests {
 
         // Assert
         let expected = Then::builder(
-            Identifier::new("condition".to_string()).into(),
-            Identifier::new("thenBody".to_string()).into(),
+            Identifier::synthetic("condition".to_string()),
+            Identifier::synthetic("thenBody".to_string()),
         )
         .build();
 
@@ -208,10 +208,10 @@ mod tests {
 
         // Assert
         let expected = Then::builder(
-            Identifier::new("condition".to_string()).into(),
-            Identifier::new("thenBody".to_string()).into(),
+            Identifier::synthetic("condition".to_string()),
+            Identifier::synthetic("thenBody".to_string()),
         )
-        .with_else_body(Identifier::new("elseBody".to_string()).into())
+        .with_else_body(Identifier::synthetic("elseBody".to_string()).into())
         .build();
 
         assert_eq!(then_expression, Ok(expected));

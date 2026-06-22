@@ -37,11 +37,11 @@ pub fn build_return_expression(
     let Some(next_inner_rule) = next_inner_rule else {
         // This means we have a return statement without an expression, e.g.,
         // `ret`
-        return Ok(Return::new(None));
+        return Ok(Return::synthetic(None));
     };
 
     match build_ast_expression(next_inner_rule) {
-        Ok(expr) => Ok(Return::new(Some(expr))),
+        Ok(expr) => Ok(Return::synthetic(Some(expr))),
         Err(error) => Err(BuildExpressionError(error)),
     }
 }

@@ -29,7 +29,7 @@ pub fn build_boolean_literal(
         other => return Err(UnexpectedBooleanText(other.to_string())),
     };
 
-    Ok(BooleanLiteral { value })
+    Ok(BooleanLiteral::synthetic(value))
 }
 
 #[derive(Debug, Error)]
@@ -62,7 +62,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of boolean_literal"),
-            BooleanLiteral { value: true }
+            BooleanLiteral::synthetic(true)
         );
     }
 
@@ -82,7 +82,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of boolean_literal"),
-            BooleanLiteral { value: false }
+            BooleanLiteral::synthetic(false)
         );
     }
 }

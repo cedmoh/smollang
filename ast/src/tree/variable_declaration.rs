@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Identifier, Span};
 
 /// # Examples
 ///
@@ -33,6 +33,9 @@ pub struct VariableDeclaration {
     /// expression will be evaluated and assigned to the variable upon
     /// declaration.
     pub initial_value: Option<Box<Expression>>,
+
+    /// The location of the AST node in the source code.
+    pub span: Span,
 }
 
 impl VariableDeclaration {
@@ -40,12 +43,23 @@ impl VariableDeclaration {
         name: Identifier,
         is_mutable: bool,
         initial_value: Option<Box<Expression>>,
+        span: Span,
     ) -> Self {
         Self {
             name,
             is_mutable,
             initial_value,
+            span,
         }
+    }
+
+    /// Creates a synthetic variable declaration with a dummy span.
+    pub fn synthetic(
+        name: Identifier,
+        is_mutable: bool,
+        initial_value: Option<Box<Expression>>,
+    ) -> Self {
+        Self::new(name, is_mutable, initial_value, Span::DUMMY)
     }
 
     /// Creates a new [`VariableDeclarationBuilder`] with the given variable
@@ -73,6 +87,7 @@ pub struct VariableDeclarationBuilder {
     name: Identifier,
     is_mutable: bool,
     initial_value: Option<Box<Expression>>,
+    span: Option<Span>,
 }
 
 impl VariableDeclarationBuilder {
@@ -81,6 +96,7 @@ impl VariableDeclarationBuilder {
             name,
             is_mutable: false,
             initial_value: None,
+            span: None,
         }
     }
 
@@ -102,7 +118,21 @@ impl VariableDeclarationBuilder {
         self
     }
 
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
     pub fn build(self) -> VariableDeclaration {
-        VariableDeclaration::new(self.name, self.is_mutable, self.initial_value)
+        VariableDeclaration::synthetic(
+            self.name,
+            self.is_mutable,
+            self.initial_value,
+        )
     }
 }

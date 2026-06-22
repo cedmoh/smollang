@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Identifier, Span};
 
 /// Represents a function declaration.
 ///
@@ -17,9 +17,19 @@ use super::*;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunctionDeclaration {
+    /// The optional name of the function. If the function is anonymous, this
+    /// will be `None`.
     pub name: Option<Identifier>,
+
+    /// The parameters of the function declaration.
     pub params: FunctionParameters,
+
+    /// The body of the function declaration. If the function has no body, this
+    /// will be `None`.
     pub body: Option<FunctionBody>,
+
+    /// The location of the AST node in the source code
+    pub span: Span,
 }
 
 impl FunctionDeclaration {
@@ -27,8 +37,23 @@ impl FunctionDeclaration {
         name: Option<Identifier>,
         params: FunctionParameters,
         body: Option<FunctionBody>,
+        span: Span,
     ) -> Self {
-        Self { name, params, body }
+        Self {
+            name,
+            params,
+            body,
+            span,
+        }
+    }
+
+    /// Creates a synthetic function declaration with a dummy span.
+    pub fn synthetic(
+        name: Option<Identifier>,
+        params: FunctionParameters,
+        body: Option<FunctionBody>,
+    ) -> Self {
+        Self::new(name, params, body, Span::DUMMY)
     }
 
     pub fn builder() -> FunctionDeclarationBuilder {
@@ -79,6 +104,7 @@ pub struct FunctionDeclarationBuilder {
     name: Option<Identifier>,
     params: FunctionParameters,
     body: Option<FunctionBody>,
+    span: Option<Span>,
 }
 
 impl FunctionDeclarationBuilder {
@@ -87,6 +113,7 @@ impl FunctionDeclarationBuilder {
             name: None,
             params: FunctionParameters::default(),
             body: None,
+            span: None,
         }
     }
 
@@ -120,7 +147,22 @@ impl FunctionDeclarationBuilder {
         self
     }
 
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
     pub fn build(self) -> FunctionDeclaration {
-        FunctionDeclaration::new(self.name, self.params, self.body)
+        FunctionDeclaration::new(
+            self.name,
+            self.params,
+            self.body,
+            self.span.unwrap_or(Span::DUMMY),
+        )
     }
 }

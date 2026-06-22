@@ -30,11 +30,11 @@ pub fn build_break_expression(
     let next_inner_rule = inner_rules.next();
 
     let Some(next_inner_rule) = next_inner_rule else {
-        return Ok(Break::new(None));
+        return Ok(Break::synthetic(None));
     };
 
     match build_ast_expression(next_inner_rule) {
-        Ok(expr) => Ok(Break::new(Some(expr))),
+        Ok(expr) => Ok(Break::synthetic(Some(expr))),
         Err(error) => Err(BuildExpressionError(error)),
     }
 }
@@ -71,7 +71,7 @@ mod tests {
         let break_expression = build_break_expression(break_rule);
 
         // Assert
-        assert_eq!(break_expression, Ok(Break::new(None)));
+        assert_eq!(break_expression, Ok(Break::synthetic(None)));
     }
 
     #[test]
@@ -90,8 +90,8 @@ mod tests {
         // Assert
         assert_eq!(
             break_expression,
-            Ok(Break::new(Some(
-                Identifier::new("value".to_string()).into()
+            Ok(Break::synthetic(Some(
+                Identifier::synthetic("value".to_string()).into()
             )))
         );
     }

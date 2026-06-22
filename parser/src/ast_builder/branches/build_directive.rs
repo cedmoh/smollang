@@ -76,11 +76,11 @@ mod tests {
         let ast_directive = build_ast_directive(directive_pair);
 
         // Assert
-        let expected = Directive::Use(Use::new(
+        let expected = Directive::Use(Use::synthetic(
             "std".to_string(),
             vec![
-                Identifier::new("first".to_string()),
-                Identifier::new("second".to_string()),
+                Identifier::synthetic("first".to_string()),
+                Identifier::synthetic("second".to_string()),
             ],
         ));
 

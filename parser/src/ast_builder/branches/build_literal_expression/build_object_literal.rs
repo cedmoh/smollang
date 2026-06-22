@@ -214,19 +214,20 @@ mod tests {
         let expected = ObjectLiteral::builder()
             .with_property(ObjectProperty::KeyValue(
                 "name".to_string(),
-                Literal::String(StringLiteral::new("Alice".to_string())).into(),
+                Literal::String(StringLiteral::synthetic("Alice".to_string()))
+                    .into(),
             ))
             .with_property(ObjectProperty::KeyValue(
                 "age".to_string(),
-                Literal::Integer(IntegerLiteral::new(30)).into(),
+                Literal::Integer(IntegerLiteral::synthetic(30)).into(),
             ))
             .with_property(ObjectProperty::KeyValue(
                 "active".to_string(),
-                Literal::Boolean(BooleanLiteral { value: true }).into(),
+                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
             ))
             .with_property(ObjectProperty::KeyValue(
                 "user".to_string(),
-                Identifier::new("profile".to_string()).into(),
+                Identifier::synthetic("profile".to_string()).into(),
             ))
             .build();
 
@@ -253,11 +254,12 @@ mod tests {
         let expected = ObjectLiteral::builder()
             .with_property(ObjectProperty::KeyValue(
                 "name".to_string(),
-                Literal::String(StringLiteral::new("Alice".to_string())).into(),
+                Literal::String(StringLiteral::synthetic("Alice".to_string()))
+                    .into(),
             ))
             .with_property(ObjectProperty::KeyValue(
                 "1".to_string(),
-                Literal::Boolean(BooleanLiteral { value: true }).into(),
+                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
             ))
             .build();
 

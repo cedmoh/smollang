@@ -68,7 +68,7 @@ pub fn build_member_expression(
             };
 
             match op.as_rule() {
-                member_dot => Ok((Member::new(lhs, rhs)).into()),
+                member_dot => Ok((Member::synthetic(lhs, rhs)).into()),
                 member_call => {
                     let mut function_call_builder = FunctionCall::builder(lhs);
 
@@ -88,7 +88,7 @@ pub fn build_member_expression(
 
                     let function_call = function_call_builder.build();
 
-                    Ok(Member::new(function_call.into(), rhs).into())
+                    Ok(Member::synthetic(function_call.into(), rhs).into())
                 }
                 unknown_rule => {
                     return Err(UnexpectedMemberInfixOperator(unknown_rule));

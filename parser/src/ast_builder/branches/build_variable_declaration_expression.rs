@@ -64,7 +64,7 @@ pub fn build_variable_declaration_expression(
     if name_str.is_empty() {
         return Err(EmptyName);
     }
-    let name = Identifier::new(name_str.to_string());
+    let name = Identifier::synthetic(name_str.to_string());
 
     let mutability_pair = inner.next().ok_or(MissingMutability)?;
     let mutability_rule = mutability_pair.as_rule();
@@ -184,7 +184,7 @@ mod tests {
         // Assert
         assert!(result.is_ok());
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::new("y".to_string()));
+        assert_eq!(declaration.name, Identifier::synthetic("y".to_string()));
         assert!(declaration.is_mutable);
         assert!(declaration.initial_value.is_none());
     }
@@ -205,7 +205,7 @@ mod tests {
         // Assert
         assert!(result.is_ok(), "Expected Ok, got: {:?}", result);
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::new("x".to_string()));
+        assert_eq!(declaration.name, Identifier::synthetic("x".to_string()));
         assert!(declaration.is_mutable);
         assert!(declaration.initial_value.is_some());
     }
@@ -225,7 +225,7 @@ mod tests {
         // Assert
         assert!(result.is_ok(), "Expected Ok, got: {:?}", result);
         let declaration = result.unwrap();
-        assert_eq!(declaration.name, Identifier::new("x".to_string()));
+        assert_eq!(declaration.name, Identifier::synthetic("x".to_string()));
         assert!(!declaration.is_mutable);
         assert!(declaration.initial_value.is_some());
     }

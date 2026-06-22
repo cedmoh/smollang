@@ -22,7 +22,7 @@ pub fn build_continue_expression(
         return Err(RuleIsNotAContinue(rule));
     }
 
-    Ok(Continue::new())
+    Ok(Continue::synthetic())
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -53,7 +53,7 @@ mod tests {
         let continue_expression = build_continue_expression(continue_rule);
 
         // Assert
-        assert_eq!(continue_expression, Ok(Continue::new()));
+        assert_eq!(continue_expression, Ok(Continue::synthetic()));
     }
 
     #[test]

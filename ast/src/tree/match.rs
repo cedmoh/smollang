@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Pattern, Span};
 
 /// A match expression, which is a control flow construct that allows you to
 /// match an expression against a series of patterns and execute the
@@ -11,16 +11,33 @@ use super::*;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Match {
+    /// The expression being matched against the patterns.
     pub expression: Box<Expression>,
+
+    /// The branches of the match expression, which consist of patterns and
+    /// the corresponding blocks of code to execute if the patterns match.
     pub branches: Vec<MatchArm>,
+
+    /// The location of the AST node in the source code.
+    pub span: Span,
 }
 
 impl Match {
-    pub fn new(expression: Expression, branches: Vec<MatchArm>) -> Self {
+    pub fn new(
+        expression: Box<Expression>,
+        branches: Vec<MatchArm>,
+        span: Span,
+    ) -> Self {
         Self {
-            expression: Box::new(expression),
+            expression,
             branches,
+            span,
         }
+    }
+
+    /// Creates a synthetic match expression with a dummy span.
+    pub fn synthetic(expression: Expression, branches: Vec<MatchArm>) -> Self {
+        Self::new(Box::new(expression), branches, Span::DUMMY)
     }
 
     pub fn builder(expression: Expression) -> MatchBuilder {
@@ -32,6 +49,7 @@ impl Match {
 pub struct MatchBuilder {
     expression: Expression,
     branches: Vec<MatchArm>,
+    span: Option<Span>,
 }
 
 impl MatchBuilder {
@@ -39,6 +57,7 @@ impl MatchBuilder {
         Self {
             expression,
             branches: Vec::new(),
+            span: None,
         }
     }
 
@@ -57,8 +76,22 @@ impl MatchBuilder {
         self
     }
 
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
     pub fn build(self) -> Match {
-        Match::new(self.expression, self.branches)
+        Match::new(
+            Box::new(self.expression),
+            self.branches,
+            self.span.unwrap_or(Span::DUMMY),
+        )
     }
 }
 
@@ -77,10 +110,22 @@ pub struct MatchArm {
 
     /// The block of code to execute if the pattern matches.
     pub body: Expression,
+
+    /// The location of the AST node in the source code.
+    pub span: Span,
 }
 
 impl MatchArm {
-    pub fn new(pattern: Pattern, body: Expression) -> Self {
-        Self { pattern, body }
+    pub fn new(pattern: Pattern, body: Expression, span: Span) -> Self {
+        Self {
+            pattern,
+            body,
+            span,
+        }
+    }
+
+    /// Creates a synthetic match arm with a dummy span.
+    pub fn synthetic(pattern: Pattern, body: Expression) -> Self {
+        Self::new(pattern, body, Span::DUMMY)
     }
 }

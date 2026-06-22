@@ -86,7 +86,7 @@ impl Visitor<VariableDeclaration, AstToAssemblyVisitorError>
         }
 
         match &variable_declaration.name {
-            Identifier { id } => {
+            Identifier { id, .. } => {
                 let constant_address =
                     self.emit_constant(bytecode::Constant::String(id.clone()));
 

@@ -141,8 +141,8 @@ mod tests {
 
         // Assert
         let expected = Pipe::builder(
-            Identifier::new("first".to_string()).into(),
-            Identifier::new("second".to_string()).into(),
+            Identifier::synthetic("first".to_string()).into(),
+            Identifier::synthetic("second".to_string()).into(),
         )
         .build();
 
@@ -165,10 +165,10 @@ mod tests {
 
         // Assert
         let expected = Pipe::builder(
-            Identifier::new("first".to_string()).into(),
-            Identifier::new("second".to_string()).into(),
+            Identifier::synthetic("first".to_string()).into(),
+            Identifier::synthetic("second".to_string()).into(),
         )
-        .with_arm(Identifier::new("third".to_string()).into())
+        .with_arm(Identifier::synthetic("third".to_string()).into())
         .build();
 
         assert_eq!(pipe_expression, Ok(expected));

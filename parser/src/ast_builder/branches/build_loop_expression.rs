@@ -38,7 +38,7 @@ pub fn build_loop_expression(
         body_pair.into_inner().next().ok_or(EmptyLoopBody)?;
     let body = build_ast_expression(body_expression_pair)?;
 
-    Ok(Loop::new(body))
+    Ok(Loop::synthetic(body))
 }
 #[derive(Debug, PartialEq, Error)]
 #[non_exhaustive]
@@ -86,7 +86,7 @@ mod tests {
         // Assert
         assert_eq!(
             loop_expression,
-            Ok(Loop::new(Identifier::new("body".to_string())))
+            Ok(Loop::synthetic(Identifier::synthetic("body".to_string())))
         );
     }
 

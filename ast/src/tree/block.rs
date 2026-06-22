@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Expressions, Span};
 
 /// An expression block, which is a sequence of expressions that are executed in
 /// order and the value of the block is the value of the last expression in the
@@ -17,13 +17,20 @@ use super::*;
 pub struct Block {
     /// The expressions in the block.
     pub body: Expressions,
+
+    /// The location of the AST node in the source code
+    pub span: Span,
 }
 
 impl Block {
     /// Creates a new empty block. To create a block with expressions, use the
     /// `builder` method, or the `BlockBuilder` directly.
-    pub fn new() -> Self {
+    pub fn synthetic() -> Self {
         Self::default()
+    }
+
+    pub fn new(body: Expressions, span: Span) -> Self {
+        Self { body, span }
     }
 
     /// Returns a builder for creating a block with expressions.
@@ -36,6 +43,9 @@ impl Block {
 pub struct BlockBuilder {
     /// The expressions in the block.
     expressions: Expressions,
+
+    /// The location of the AST node in the source code
+    span: Option<Span>,
 }
 
 impl BlockBuilder {
@@ -43,6 +53,7 @@ impl BlockBuilder {
     pub fn new() -> Self {
         Self {
             expressions: Expressions::default(),
+            span: None,
         }
     }
 
@@ -52,10 +63,19 @@ impl BlockBuilder {
         self
     }
 
+    /// Sets the span for the block.
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
     /// Builds the block expression.
     pub fn build(self) -> Block {
-        Block {
-            body: self.expressions,
-        }
+        Block::new(self.expressions, self.span.unwrap_or(Span::DUMMY))
     }
 }

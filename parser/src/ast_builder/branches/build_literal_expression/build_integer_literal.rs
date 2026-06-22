@@ -25,7 +25,7 @@ pub fn build_integer_literal(
     let value: i32 =
         text.parse().map_err(|_| ParseIntegerFailed(text.clone()))?;
 
-    Ok(IntegerLiteral::new(value).into())
+    Ok(IntegerLiteral::synthetic(value).into())
 }
 
 #[derive(Debug, Error)]
@@ -60,7 +60,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of integer_literal"),
-            Literal::Integer(IntegerLiteral::new(42))
+            Literal::Integer(IntegerLiteral::synthetic(42))
         );
     }
 
@@ -80,7 +80,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of integer_literal"),
-            Literal::Integer(IntegerLiteral::new(-5))
+            Literal::Integer(IntegerLiteral::synthetic(-5))
         );
     }
 }

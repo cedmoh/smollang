@@ -17,7 +17,7 @@ mod tests {
 
         let program = Program::builder()
             // 42
-            .with_expression(IntegerLiteral::new(integer))
+            .with_expression(IntegerLiteral::synthetic(integer))
             .build();
 
         let mut compiler = Compiler::new();
@@ -43,7 +43,7 @@ mod tests {
 
         let program = Program::builder()
             // true
-            .with_expression(BooleanLiteral::new(boolean))
+            .with_expression(BooleanLiteral::synthetic(boolean))
             .build();
 
         let mut compiler = Compiler::new();
@@ -92,10 +92,10 @@ mod tests {
 
         let program = Program::builder()
             // 1 + 2
-            .with_expression(Dyadic::new(
+            .with_expression(Dyadic::synthetic(
                 DyadicOperator::Add,
-                IntegerLiteral::new(left),
-                IntegerLiteral::new(right),
+                IntegerLiteral::synthetic(left),
+                IntegerLiteral::synthetic(right),
             ))
             .build();
 
@@ -125,10 +125,10 @@ mod tests {
 
         let program = Program::builder()
             // "Hello, " + "world!"
-            .with_expression(Dyadic::new(
+            .with_expression(Dyadic::synthetic(
                 DyadicOperator::Add,
-                StringLiteral::new(left.clone()),
-                StringLiteral::new(right.clone()),
+                StringLiteral::synthetic(left.clone()),
+                StringLiteral::synthetic(right.clone()),
             ))
             .build();
 
@@ -166,17 +166,19 @@ mod tests {
         let identifier_name = "x".to_string();
         let initial_value = 42;
 
-        let identifier = Identifier::new(identifier_name.clone());
+        let identifier = Identifier::synthetic(identifier_name.clone());
 
         let program = Program::builder()
             // x val 42
             .with_expression(
                 VariableDeclaration::builder(identifier.clone())
-                    .with_initial_value(IntegerLiteral::new(initial_value))
+                    .with_initial_value(IntegerLiteral::synthetic(
+                        initial_value,
+                    ))
                     .build(),
             )
             // x + x
-            .with_expression(Dyadic::new(
+            .with_expression(Dyadic::synthetic(
                 DyadicOperator::Add,
                 identifier.clone(),
                 identifier,
@@ -216,9 +218,11 @@ mod tests {
 
         let program = Program::builder()
             // loop print 'hello world'
-            .with_expression(Loop::new(
-                FunctionCallBuilder::new(Identifier::new("print".to_string()))
-                    .build(),
+            .with_expression(Loop::synthetic(
+                FunctionCallBuilder::new(Identifier::synthetic(
+                    "print".to_string(),
+                ))
+                .build(),
             ))
             .build();
 

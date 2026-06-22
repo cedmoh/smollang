@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Span};
 
 /// A dyadic operator, which is an operator that takes two operands and performs
 /// a specific operation on them. The following operators are supported:
@@ -53,21 +53,45 @@ pub enum DyadicOperator {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Dyadic {
+    /// The operator of the dyadic expression.
     pub operator: DyadicOperator,
+
+    /// The left-hand side of the dyadic expression.
     pub left: Box<Expression>,
+
+    /// The right-hand side of the dyadic expression.
     pub right: Box<Expression>,
+
+    /// The location of the AST node in the source code
+    pub span: Span,
 }
 
 impl Dyadic {
     pub fn new(
         operator: DyadicOperator,
-        left: impl Into<Expression>,
-        right: impl Into<Expression>,
+        left: Box<Expression>,
+        right: Box<Expression>,
+        span: Span,
     ) -> Self {
         Self {
             operator,
-            left: Box::new(left.into()),
-            right: Box::new(right.into()),
+            left,
+            right,
+            span,
         }
+    }
+
+    /// Creates a synthetic dyadic expression with a dummy span.
+    pub fn synthetic(
+        operator: DyadicOperator,
+        left: impl Into<Expression>,
+        right: impl Into<Expression>,
+    ) -> Self {
+        Self::new(
+            operator,
+            Box::new(left.into()),
+            Box::new(right.into()),
+            Span::DUMMY,
+        )
     }
 }

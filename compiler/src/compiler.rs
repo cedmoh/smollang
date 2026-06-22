@@ -3,17 +3,12 @@ use crate::visitors::{
 };
 use ast::Program;
 use bytecode::Assembly;
-use std::collections::HashMap;
 
-pub struct Compiler {
-    _symbol_table: HashMap<String, ()>,
-}
+pub struct Compiler {}
 
 impl Compiler {
     pub fn new() -> Self {
-        Self {
-            _symbol_table: HashMap::new(),
-        }
+        Self {}
     }
 
     pub fn compile(

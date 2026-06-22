@@ -25,7 +25,9 @@ pub fn build_string_literal(
         .find(|p| p.as_rule() == Rule::string_text)
         .ok_or(EmptyStringLiteral)?;
 
-    Ok(StringLiteral::new(string_text_pair.as_str().to_string()))
+    Ok(StringLiteral::synthetic(
+        string_text_pair.as_str().to_string(),
+    ))
 }
 
 #[derive(Debug, Error)]
@@ -59,7 +61,7 @@ mod tests {
         assert!(result.is_ok());
         assert_eq!(
             result.expect("Asserted successful build of string_literal"),
-            StringLiteral::new("Hello World!".to_string())
+            StringLiteral::synthetic("Hello World!".to_string())
         );
     }
 }

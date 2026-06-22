@@ -1,4 +1,4 @@
-use super::*;
+use crate::{Expression, Expressions, Span};
 
 /// Represents a function call.
 ///
@@ -18,9 +18,31 @@ pub struct FunctionCall {
 
     /// The arguments passed to the function call.
     pub arguments: FunctionCallArguments,
+
+    /// The location of the AST node in the source code
+    pub span: Span,
 }
 
 impl FunctionCall {
+    pub fn new(
+        callee: Box<Expression>,
+        arguments: FunctionCallArguments,
+        span: Span,
+    ) -> Self {
+        Self {
+            callee,
+            arguments,
+            span,
+        }
+    }
+
+    pub fn synthetic(
+        callee: impl Into<Expression>,
+        arguments: FunctionCallArguments,
+    ) -> Self {
+        Self::new(Box::new(callee.into()), arguments, Span::DUMMY)
+    }
+
     pub fn builder(callee: Expression) -> FunctionCallBuilder {
         FunctionCallBuilder::new(callee)
     }
@@ -36,6 +58,8 @@ pub struct FunctionCallBuilder {
     callee: Box<Expression>,
 
     arguments: FunctionCallArguments,
+
+    span: Option<Span>,
 }
 
 impl FunctionCallBuilder {
@@ -43,6 +67,7 @@ impl FunctionCallBuilder {
         Self {
             callee: Box::new(callee.into()),
             arguments: FunctionCallArguments::default(),
+            span: None,
         }
     }
 
@@ -59,10 +84,21 @@ impl FunctionCallBuilder {
         self
     }
 
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
     pub fn build(self) -> FunctionCall {
-        FunctionCall {
-            callee: self.callee,
-            arguments: self.arguments,
-        }
+        FunctionCall::new(
+            self.callee,
+            self.arguments,
+            self.span.unwrap_or(Span::DUMMY),
+        )
     }
 }

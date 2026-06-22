@@ -135,11 +135,11 @@ mod tests {
         let ast_use = build_use_directive(use_pair);
 
         // Assert
-        let expected = Use::new(
+        let expected = Use::synthetic(
             "std".to_string(),
             vec![
-                Identifier::new("first".to_string()),
-                Identifier::new("second".to_string()),
+                Identifier::synthetic("first".to_string()),
+                Identifier::synthetic("second".to_string()),
             ],
         );
 
@@ -160,9 +160,9 @@ mod tests {
         let ast_use = build_use_directive(use_pair);
 
         // Assert
-        let expected = Use::new(
+        let expected = Use::synthetic(
             "pkg/core".to_string(),
-            vec![Identifier::new("first".to_string())],
+            vec![Identifier::synthetic("first".to_string())],
         );
 
         assert_eq!(ast_use, Ok(expected));

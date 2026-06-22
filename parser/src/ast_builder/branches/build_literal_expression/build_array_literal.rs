@@ -100,13 +100,14 @@ mod tests {
 
         // Assert
         let expected = ArrayLiteral::builder()
-            .with_element(Literal::Integer(IntegerLiteral::new(1)).into())
-            .with_element(Identifier::new("two".to_string()).into())
+            .with_element(Literal::Integer(IntegerLiteral::synthetic(1)).into())
+            .with_element(Identifier::synthetic("two".to_string()).into())
             .with_element(
-                Literal::Boolean(BooleanLiteral { value: true }).into(),
+                Literal::Boolean(BooleanLiteral::synthetic(true)).into(),
             )
             .with_element(
-                Literal::String(StringLiteral::new("hello".to_string())).into(),
+                Literal::String(StringLiteral::synthetic("hello".to_string()))
+                    .into(),
             )
             .build();
 

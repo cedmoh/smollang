@@ -25,7 +25,7 @@ pub fn build_identifier_expression(
 
     let id = pair.to_string();
 
-    Ok(Identifier::new(id))
+    Ok(Identifier::synthetic(id))
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -55,6 +55,9 @@ mod tests {
         let identifier = build_identifier_expression(rule);
 
         // Assert
-        assert_eq!(identifier, Ok(Identifier::new("myVariable".to_string())));
+        assert_eq!(
+            identifier,
+            Ok(Identifier::synthetic("myVariable".to_string()))
+        );
     }
 }

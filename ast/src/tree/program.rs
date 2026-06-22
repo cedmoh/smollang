@@ -1,18 +1,33 @@
-use crate::{Directive, Directives, Expression, Expressions};
+use crate::{Directive, Directives, Expression, Expressions, Span};
 
 /// A program represents a File. It consists of a sequence of expressions that
 /// will be executed in order.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Program {
+    /// The directives in the program, which are used to import modules or
     pub directives: Directives,
+
     /// The body of the program, which consists of a sequence of expressions
     /// that will be executed in order.
     pub body: Expressions,
+
+    /// The location of the AST node in the source code.
+    pub span: Span,
 }
 
 impl Program {
-    pub fn new(directives: Directives, body: Expressions) -> Self {
-        Self { directives, body }
+    pub fn new(directives: Directives, body: Expressions, span: Span) -> Self {
+        Self {
+            directives,
+            body,
+            span,
+        }
+    }
+
+    /// Creates a synthetic program with the given directives and body, and a
+    /// dummy span.
+    pub fn synthetic(directives: Directives, body: Expressions) -> Self {
+        Self::new(directives, body, Span::DUMMY)
     }
 
     pub fn builder() -> ProgramBuilder {
@@ -24,6 +39,7 @@ impl Program {
 pub struct ProgramBuilder {
     directives: Directives,
     body: Expressions,
+    span: Option<Span>,
 }
 
 impl ProgramBuilder {
@@ -56,10 +72,21 @@ impl ProgramBuilder {
         self
     }
 
+    pub fn with_span(mut self, span: Span) -> Self {
+        self.span = Some(span);
+        self
+    }
+
+    pub fn span(&mut self, span: Span) -> &mut Self {
+        self.span = Some(span);
+        self
+    }
+
     pub fn build(self) -> Program {
-        Program {
-            directives: self.directives,
-            body: self.body,
-        }
+        Program::new(
+            self.directives,
+            self.body,
+            self.span.unwrap_or(Span::DUMMY),
+        )
     }
 }

@@ -24,7 +24,7 @@ pub fn build_decimal_literal(
 
     let value: f64 =
         text.parse().map_err(|_| ParseDecimalFailed(text.clone()))?;
-    Ok(DecimalLiteral::new(value).into())
+    Ok(DecimalLiteral::synthetic(value).into())
 }
 
 #[derive(Debug, Error)]
@@ -57,7 +57,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of decimal_literal"),
-            Literal::Decimal(DecimalLiteral::new(3.14))
+            Literal::Decimal(DecimalLiteral::synthetic(3.14))
         );
     }
 
@@ -77,7 +77,7 @@ mod tests {
         // Assert
         assert_eq!(
             result.expect("Asserted successful build of decimal_literal"),
-            Literal::Decimal(DecimalLiteral::new(-5.0))
+            Literal::Decimal(DecimalLiteral::synthetic(-5.0))
         );
     }
 }
