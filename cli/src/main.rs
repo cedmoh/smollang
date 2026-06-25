@@ -152,9 +152,7 @@ fn execute_file(path: &PathBuf) -> anyhow::Result<()> {
 
     let io = StandardIo::new();
 
-    Vm::new_with_io(Box::new(io))
-        .load_assembly(assembly)
-        .run()?;
+    Vm::new_with_io(io).load_assembly(assembly).run()?;
 
     Ok(())
 }

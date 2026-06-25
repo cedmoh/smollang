@@ -1,6 +1,6 @@
 use crate::call_stack::CallStack;
 use crate::global_environment::GlobalEnvironment;
-use crate::io::{DummyIo, DummyIoError, Io, ToIoString};
+use crate::io::{DummyIo, Io, IoError, ToIoString};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{
@@ -9,7 +9,10 @@ use bytecode::{
 };
 use thiserror::Error;
 
-pub struct Vm<IoError> {
+pub struct Vm<I>
+where
+    I: Io,
+{
     /// Points to the current instruction being executed
     pub instruction_pointer: InstructionAddress,
 
@@ -29,10 +32,10 @@ pub struct Vm<IoError> {
     global_environment: GlobalEnvironment,
 
     /// used for standard input and output (e.g. for the `Print` instruction)
-    pub io: Box<dyn Io<IoError>>,
+    pub io: I,
 }
 
-impl Vm<DummyIoError> {
+impl Vm<DummyIo> {
     pub fn new() -> Self {
         Self {
             instruction_pointer: InstructionAddress::zero(),
@@ -41,13 +44,16 @@ impl Vm<DummyIoError> {
             memory: Memory::new(),
             assembly: Assembly::new(),
             global_environment: GlobalEnvironment::new(),
-            io: Box::new(DummyIo::new()),
+            io: DummyIo::new(),
         }
     }
 }
 
-impl<IoError> Vm<IoError> {
-    pub fn new_with_io(io: Box<dyn Io<IoError>>) -> Self {
+impl<I> Vm<I>
+where
+    I: Io,
+{
+    pub fn new_with_io(io: I) -> Self {
         Self {
             instruction_pointer: InstructionAddress::zero(),
             stack: ValueStack::new(),
@@ -323,7 +329,18 @@ impl<IoError> Vm<IoError> {
 
                 // IO
                 In => {
-                    todo!("The IN instruction is not yet implemented");
+                    let input = self.io.read_line()?;
+
+                    self.stack.push(Value::Object(
+                        // Cast the memory address to an object handle
+                        // because we know that the memory address returned
+                        // by `store` will always be a valid object handle.
+                        self.memory
+                            .store(Object::new_string(input))?
+                            .cast_to_object_handle(),
+                    ));
+
+                    self.instruction_pointer.increment();
                 }
                 Out => {
                     let value = self.stack.pop()?;
@@ -335,12 +352,12 @@ impl<IoError> Vm<IoError> {
 
                             match object.data {
                                 ObjectData::String(s) => {
-                                    self.io.write_line(&s.0.to_io_string());
+                                    self.io.write_line(&s.0.to_io_string())?;
                                 }
                             }
                         }
                         x => {
-                            self.io.write_line(&x.to_io_string());
+                            self.io.write_line(&x.to_io_string())?;
                         }
                     }
 
@@ -436,4 +453,7 @@ pub enum VmError {
     /// is not of the expected type.
     #[error("Expected constant at address {0} to be a {1}, but it was a {2}")]
     InvalidConstantType(ConstantAddress, &'static str, Constant),
+
+    #[error("IO error: {0}")]
+    IoError(#[from] IoError),
 }

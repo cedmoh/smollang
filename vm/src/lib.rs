@@ -5,7 +5,7 @@ mod memory;
 mod value_stack;
 mod vm;
 
-pub use io::Io;
+pub use io::{Io, IoError};
 pub use vm::Vm;
 
 #[cfg(test)]
@@ -213,7 +213,24 @@ mod tests {
     }
 
     #[test]
-    fn should_allow_defining_variables_with_copy_values() {
-        todo!()
+    fn should_read_input() {
+        // Arrange
+        let instructions = bytecode!(
+            IN
+            HALT
+        );
+
+        let mut vm = Vm::new();
+        vm.io.write_line("Hello, world!");
+
+        // Act
+        vm.load_assembly(
+            Assembly::builder().instructions(instructions).build(),
+        )
+        .run()
+        .unwrap();
+
+        // Assert
+        assert_eq!(vm.io.drain_stdout().unwrap(), "Hello, world!");
     }
 }

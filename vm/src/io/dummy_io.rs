@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use thiserror::Error;
 
-use crate::io::{Io, ToIoString};
+use crate::io::{Io, IoError, ToIoString};
 
 /// A dummy implementation of the `Io` trait for testing purposes.
 /// It allows recording output and simulating input without actually performing
@@ -23,16 +23,19 @@ impl DummyIo {
     }
 }
 
-impl Io<DummyIoError> for DummyIo {
-    fn read_line(&mut self) -> Result<String, DummyIoError> {
-        self.stdin.pop_front().ok_or(DummyIoError::NoInput)
+impl Io for DummyIo {
+    fn read_line(&mut self) -> Result<String, IoError> {
+        self.stdin
+            .pop_front()
+            .ok_or(IoError::ReadError(Box::new(DummyIoError::NoInput)))
     }
 
-    fn write_line(&mut self, line: &str) {
+    fn write_line(&mut self, line: &str) -> Result<(), IoError> {
         self.stdout.push_back(line.to_io_string());
+        Ok(())
     }
 
-    fn drain_stdout(&mut self) -> Result<String, DummyIoError> {
+    fn drain_stdout(&mut self) -> Result<String, IoError> {
         Ok(self.stdout.drain(..).collect::<Vec<String>>().join("\n"))
     }
 }
@@ -43,7 +46,8 @@ pub enum DummyIoError {
     #[error("No input available in stdin")]
     NoInput,
 
-    /// Error indicating that there was a failure to format the output for writing.
+    /// Error indicating that there was a failure to format the output for
+    /// writing.
     #[error("Failed to format output for writing: {0}")]
     FormatError(#[from] std::fmt::Error),
 }

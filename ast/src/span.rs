@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Span {
     pub start: usize,
@@ -16,5 +18,11 @@ impl Span {
 impl Default for Span {
     fn default() -> Self {
         Self::DUMMY
+    }
+}
+
+impl Display for Span {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", self.start, self.end)
     }
 }

@@ -1,6 +1,4 @@
-use crate::visitors::{
-    AstToAssemblyVisitor, AstToAssemblyVisitorError, Visitor,
-};
+use crate::visitors::{AstToAssemblyVisitor, FatalCompilerError, Visitor};
 use ast::Program;
 use bytecode::Assembly;
 
@@ -14,7 +12,7 @@ impl Compiler {
     pub fn compile(
         &mut self,
         program: Program,
-    ) -> Result<Assembly, AstToAssemblyVisitorError> {
+    ) -> Result<Assembly, FatalCompilerError> {
         let mut visitor = AstToAssemblyVisitor::new();
 
         visitor.visit(&program)?;
