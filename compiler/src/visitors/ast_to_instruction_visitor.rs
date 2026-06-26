@@ -1,6 +1,7 @@
 use crate::{
-    symbol::{Symbol, SymbolTable},
-    visitors::{Local, visitor::Visitor},
+    globals::Globals,
+    locals::{Local, Locals},
+    visitors::visitor::Visitor,
 };
 use ast::{
     Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
@@ -14,8 +15,9 @@ use bytecode::{
 use thiserror::Error;
 
 pub struct AstToAssemblyVisitor {
-    /// A symbol table for tracking variable and function names and their
-    pub symbol_table: SymbolTable,
+    /// A table of global variables and their corresponding constant addresses
+    /// in the constant pool.
+    pub globals: Globals,
 
     /// An assembly builder for constructing the assembly representation of the
     /// program
@@ -25,7 +27,7 @@ pub struct AstToAssemblyVisitor {
     pub errors: Vec<CompilerError>,
 
     /// The set of locals currently in scope, ordered by declaration order.
-    locals: Vec<Local>,
+    locals: Locals,
 
     /// The current lexical scope depth. Zero means top-level (global scope).
     scope_depth: usize,
@@ -55,10 +57,10 @@ pub enum FatalCompilerError {}
 impl AstToAssemblyVisitor {
     pub fn new() -> Self {
         Self {
-            symbol_table: SymbolTable::new(),
+            globals: Globals::new(),
             assembly_builder: AssemblyBuilder::new(),
             errors: Vec::new(),
-            locals: Vec::new(),
+            locals: Locals::new(),
             scope_depth: 0,
         }
     }
@@ -91,12 +93,12 @@ impl AstToAssemblyVisitor {
         self.scope_depth += 1;
     }
 
-    /// End the current lexical scope. This decreases the scope depth and removes
-    /// any local variables that were declared within this scope from the list of
-    /// locals.
+    /// End the current lexical scope. This decreases the scope depth and
+    /// removes any local variables that were declared within this scope
+    /// from the list of locals.
     fn end_scope(&mut self) {
         while self.locals.last().is_some_and(|local| {
-            local.depth.is_some_and(|depth| depth == self.scope_depth)
+            local.is_initialized_at_depth(self.scope_depth)
         }) {
             self.emit(Instruction::Pop);
             self.locals.pop();
@@ -107,8 +109,10 @@ impl AstToAssemblyVisitor {
         }
     }
 
-    /// Declare a new local variable in the current scope. If a variable with the
-    /// same name already exists in the current scope, an error is recorded.
+    /// Declare a new local variable in the current scope.
+    ///
+    /// If a variable with the same name already exists in the current scope,
+    /// an error is recorded.
     fn declare_local(&mut self, identifier: &Identifier) {
         if self.scope_depth == 0 {
             return;
@@ -117,13 +121,19 @@ impl AstToAssemblyVisitor {
         let is_already_declared_in_same_scope = self
             .locals
             .iter()
-            // Check the most recently declared locals first because they are more likely to be in the same scope
+            // Check the most recently declared locals first because they are
+            // more likely to be in the same scope
             .rev()
-            .take_while(|local| match local.depth {
-                Some(depth) => depth == self.scope_depth,
-                None => true,
+            // Get only the locals that are in the current scope by walking
+            // backwards through the list of locals until we find one that is
+            // not in the current scope
+            .take_while(|local| match local {
+                Local::Initialized { depth, .. } => *depth == self.scope_depth,
+                Local::Uninitialized { .. } => true,
             })
-            .any(|local| local.id == identifier.id);
+            // Check if any of the locals in the current scope have the same
+            // name as the identifier being declared
+            .any(|local| local.id() == &identifier.id);
 
         if is_already_declared_in_same_scope {
             self.error(CompilerError::DuplicateLocalDeclaration {
@@ -134,9 +144,8 @@ impl AstToAssemblyVisitor {
             return;
         }
 
-        self.locals.push(Local {
+        self.locals.push(Local::Uninitialized {
             id: identifier.id.clone(),
-            depth: None,
         });
     }
 
@@ -147,14 +156,14 @@ impl AstToAssemblyVisitor {
     /// If there are no locals in the current scope, this
     /// function does nothing.
     fn mark_local_initialized(&mut self) {
-        // TODO: Consider removing because locals can be declared in the global scope
-        // as well
+        // TODO: Consider removing because locals can be declared in the global
+        // scope as well
         if self.scope_depth == 0 {
             return;
         }
 
         if let Some(local) = self.locals.last_mut() {
-            local.depth = Some(self.scope_depth);
+            local.initialize(self.scope_depth);
         }
     }
 
@@ -163,18 +172,19 @@ impl AstToAssemblyVisitor {
     /// If the variable is found in the current scope or any enclosing scope,
     /// its memory address is returned.
     ///
-    /// If the variable is not found, `None` is returned. If the variable is found but
-    /// is being accessed in its own initializer, an error is recorded.
+    /// If the variable is not found, `None` is returned. If the variable is
+    /// found but is being accessed in its own initializer, an error is
+    /// recorded.
     fn resolve_local(
         &mut self,
         identifier: &Identifier,
     ) -> Option<MemoryAddress> {
         for (slot, local) in self.locals.iter().enumerate().rev() {
-            if local.id != identifier.id {
+            if local.id() != &identifier.id {
                 continue;
             }
 
-            if local.depth.is_none() {
+            if !local.is_initialized() {
                 self.error(CompilerError::LocalReadInOwnInitializer {
                     identifier: identifier.id.clone(),
                     span: identifier.span.clone(),
@@ -189,20 +199,17 @@ impl AstToAssemblyVisitor {
 
     /// Get the constant address for a global variable by its identifier.
     ///
-    /// If the variable is already in the symbol table, its constant address is returned.
-    /// If the variable is not in the symbol table, a new constant is created for it
-    /// and its address is returned.
+    /// If the variable is already in the symbol table, its constant address is
+    /// returned. If the variable is not in the symbol table, a new constant
+    /// is created for it and its address is returned.
     fn global_name_constant(&mut self, id: &str) -> ConstantAddress {
-        if let Some(Symbol::Global(constant_address)) =
-            self.symbol_table.get(id)
-        {
+        if let Some(constant_address) = self.globals.get(id) {
             *constant_address
         } else {
             let constant_address =
                 self.emit_constant(bytecode::Constant::String(id.to_string()));
 
-            self.symbol_table
-                .insert(id.to_string(), Symbol::Global(constant_address));
+            self.globals.insert(id.to_string(), constant_address);
 
             constant_address
         }
@@ -228,8 +235,11 @@ impl Visitor<VariableDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
         &mut self,
         variable_declaration: &VariableDeclaration,
     ) -> Result<(), FatalCompilerError> {
+        // Declare the variable
         self.declare_local(&variable_declaration.name);
 
+        // Initialize the variable before marking it as initialized to prevent
+        // reading the variable in its own initializer
         match &variable_declaration.initial_value {
             Some(initializer) => self.visit(initializer.as_ref())?,
             None => self.emit(Instruction::Push(Value::Nil)),
@@ -237,13 +247,12 @@ impl Visitor<VariableDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
 
         if self.scope_depth > 0 {
             self.mark_local_initialized();
-            return Ok(());
+        } else {
+            let constant_address =
+                self.global_name_constant(&variable_declaration.name.id);
+
+            self.emit(Instruction::SetGlobal(constant_address));
         }
-
-        let constant_address =
-            self.global_name_constant(&variable_declaration.name.id);
-
-        self.emit(Instruction::SetGlobal(constant_address));
 
         Ok(())
     }
@@ -392,8 +401,8 @@ impl Visitor<Identifier, FatalCompilerError> for AstToAssemblyVisitor {
             return Ok(());
         }
 
-        let constant_address = match self.symbol_table.get(&identifier.id) {
-            Some(Symbol::Global(constant_address)) => *constant_address,
+        let constant_address = match self.globals.get(&identifier.id) {
+            Some(constant_address) => *constant_address,
             None => {
                 self.error(CompilerError::UnknownIdentifier {
                     identifier: identifier.id.clone(),
@@ -415,12 +424,8 @@ impl Visitor<FunctionCall, FatalCompilerError> for AstToAssemblyVisitor {
         &mut self,
         function_call: &FunctionCall,
     ) -> Result<(), FatalCompilerError> {
-        println!("Visiting function call: {:?}", function_call);
-
         match function_call.callee.as_ref() {
             Expression::Identifier(identifier) if &identifier.id == "print" => {
-                dbg!("Visiting function call: {:?}", function_call);
-
                 function_call
                     .arguments
                     .expressions
@@ -525,10 +530,8 @@ impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
                     self.emit(Instruction::SetLocal(local_slot));
                 } else {
                     let constant_address =
-                        match self.symbol_table.get(&assignment.left.id) {
-                            Some(Symbol::Global(constant_address)) => {
-                                *constant_address
-                            }
+                        match self.globals.get(&assignment.left.id) {
+                            Some(constant_address) => *constant_address,
                             None => {
                                 self.error(CompilerError::UnknownIdentifier {
                                     identifier: assignment.left.id.clone(),

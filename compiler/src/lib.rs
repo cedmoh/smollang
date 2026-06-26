@@ -1,6 +1,7 @@
 mod compiler;
-mod symbol;
+mod globals;
 mod visitors;
+mod locals;
 
 pub use compiler::Compiler;
 

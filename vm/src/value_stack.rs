@@ -5,7 +5,7 @@ use std::{
 };
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ValueStack {
     values: Vec<Value>,
 }

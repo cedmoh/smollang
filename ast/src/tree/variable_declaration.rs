@@ -62,22 +62,7 @@ impl VariableDeclaration {
         Self::new(name, is_mutable, initial_value, Span::DUMMY)
     }
 
-    /// Creates a new [`VariableDeclarationBuilder`] with the given variable
-    /// name.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use ast::{Identifier, VariableDeclaration};
-    ///
-    /// let declaration = VariableDeclaration::builder("x")
-    ///     .with_mutability(true)
-    ///     .build();
-    ///
-    /// assert_eq!(declaration.name, Identifier::new("x".to_string()));
-    /// assert!(declaration.is_mutable);
-    /// assert!(declaration.initial_value.is_none());
-    /// ```
+    /// Returns a builder for constructing a `VariableDeclaration`.
     pub fn builder(name: impl Into<Identifier>) -> VariableDeclarationBuilder {
         VariableDeclarationBuilder::new(name.into())
     }
