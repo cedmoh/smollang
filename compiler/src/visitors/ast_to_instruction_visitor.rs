@@ -6,11 +6,12 @@ use crate::{
 use ast::{
     Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
     FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
-    Literal, Loop, PipeArm, PipeArms, Program, Span, VariableDeclaration,
+    Literal, Loop, PipeArm, PipeArms, Program, Span, Then, VariableDeclaration,
 };
 use bytecode::{
-    AssemblyBuilder, Constant, ConstantAddress, Instruction, MemoryAddress,
-    Value,
+    AssemblyBuilder, Constant, ConstantAddress,
+    Instruction::{self, JumpIfFalse},
+    InstructionOffset, MemoryAddress, Value,
 };
 use thiserror::Error;
 
@@ -52,7 +53,10 @@ pub enum CompilerError {
 }
 
 #[derive(Debug, Error)]
-pub enum FatalCompilerError {}
+pub enum FatalCompilerError {
+    #[error("Instruction offset overflow")]
+    InstructionOffsetOverflow,
+}
 
 impl AstToAssemblyVisitor {
     pub fn new() -> Self {
@@ -74,6 +78,11 @@ impl AstToAssemblyVisitor {
     /// Emit an instruction to the assembly builder.
     fn emit(&mut self, instruction: Instruction) {
         self.assembly_builder.add_instruction(instruction);
+    }
+
+    /// Emit an instruction at a specific index in the assembly builder.
+    fn emit_at(&mut self, index: usize, instruction: Instruction) {
+        self.assembly_builder.insert_instruction(index, instruction);
     }
 
     /// Emit a constant to the assembly builder and return its address in the
@@ -252,6 +261,40 @@ impl Visitor<VariableDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
                 self.global_name_constant(&variable_declaration.name.id);
 
             self.emit(Instruction::SetGlobal(constant_address));
+        }
+
+        Ok(())
+    }
+}
+
+impl Visitor<Then, FatalCompilerError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        then_expression: &Then,
+    ) -> Result<(), FatalCompilerError> {
+        self.visit(then_expression.condition.as_ref())?;
+
+        // <- This is where the JumpIfFalse instruction will be inserted after
+        // the body is visited
+        let body_start = self.assembly_builder.instruction_length();
+
+        self.visit(then_expression.then_body.as_ref())?;
+        let body_end = self.assembly_builder.instruction_length();
+
+        let diff = body_end - body_start; // The number of instructions in the then body
+        let diff = diff + 1; // +1 for the JumpIfFalse instruction itself
+
+        self.emit_at(
+            body_start,
+            JumpIfFalse(InstructionOffset::new(
+                (diff).try_into().map_err(|_| {
+                    FatalCompilerError::InstructionOffsetOverflow
+                })?,
+            )),
+        );
+
+        if let Some(else_body) = &then_expression.else_body {
+            self.visit(else_body.as_ref())?;
         }
 
         Ok(())
@@ -568,11 +611,7 @@ impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
                 self.visit(&function_declaration.params)?;
             }
             Then(then_expression) => {
-                self.visit(&*then_expression.condition)?;
-                self.visit(&*then_expression.then_body)?;
-                if let Some(else_body) = &then_expression.else_body {
-                    self.visit(&**else_body)?;
-                }
+                self.visit(then_expression)?;
             }
             Pipe(pipe) => {
                 self.visit(&pipe.arms)?;

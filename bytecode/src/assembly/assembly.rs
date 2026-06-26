@@ -74,6 +74,15 @@ impl AssemblyBuilder {
         self
     }
 
+    pub fn insert_instruction(
+        &mut self,
+        index: usize,
+        instruction: Instruction,
+    ) -> &mut Self {
+        self.instructions.insert(index, instruction);
+        self
+    }
+
     pub fn instructions(mut self, instructions: Vec<Instruction>) -> Self {
         self.instructions = instructions;
         self

@@ -223,16 +223,16 @@ where
                 GreaterThanOrEqual => todo!(),
 
                 // Control flow
-                Jump(addr) => {
-                    self.instruction_pointer += addr;
+                Jump(offset) => {
+                    self.instruction_pointer.add_offset(offset);
                 }
-                JumpIfTrue(addr) => {
+                JumpIfTrue(offset) => {
                     use Value::*;
 
                     let cond = self.stack.pop()?;
                     match cond {
                         Boolean(true) => {
-                            self.instruction_pointer += addr;
+                            self.instruction_pointer.add_offset(offset);
                         }
                         Boolean(false) => {
                             self.instruction_pointer.increment();
@@ -243,7 +243,7 @@ where
                         _ => unreachable!(),
                     }
                 }
-                JumpIfFalse(addr) => {
+                JumpIfFalse(offset) => {
                     use Value::*;
 
                     let cond = self.stack.pop()?;
@@ -252,7 +252,7 @@ where
                             self.instruction_pointer.increment();
                         }
                         Boolean(false) => {
-                            self.instruction_pointer += addr;
+                            self.instruction_pointer.add_offset(offset);
                         }
                         // The usage of the VM should ensure that only boolean
                         // values are used for

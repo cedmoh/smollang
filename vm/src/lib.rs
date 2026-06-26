@@ -12,7 +12,7 @@ pub use vm::Vm;
 mod tests {
     use super::*;
     use bytecode::{
-        Assembly, Constant, Instruction, MemoryAddress, Object, ObjectData,
+        Assembly, Constant, Instruction, MemoryAddress, ObjectData,
         ObjectHandle, Value, bytecode,
     };
 

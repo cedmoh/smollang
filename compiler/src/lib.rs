@@ -350,4 +350,45 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn should_handle_then_expression_without_else() {
+        // Arrange
+        let message = "hello".to_string();
+        
+        let program = Program::builder()
+            // true then <...>
+            .with_expression(
+                Then::builder(
+                    BooleanLiteral::synthetic(true),
+                    // print 'hello'
+                    FunctionCallBuilder::new(
+                        Identifier::synthetic("print".to_string())
+                    ).with_argument(
+                        StringLiteral::synthetic(message.clone())
+                    ).build()
+                )
+                .build(),
+            )
+            .build();
+        
+       
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH true
+                JF 3
+                CONST 0
+                OUT
+                HALT
+            )
+        );
+    }
 }
