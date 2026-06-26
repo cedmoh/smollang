@@ -81,6 +81,14 @@ macro_rules! bytecode {
         $p.push($crate::Instruction::Store($x.into()));
         bytecode!(@collect $p $($rest)*);
     };
+    (@collect $p:ident SETLC $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::SetLocal($x.into()));
+        bytecode!(@collect $p $($rest)*);
+    };
+    (@collect $p:ident GETLC $x:tt $($rest:tt)*) => {
+        $p.push($crate::Instruction::GetLocal($x.into()));
+        bytecode!(@collect $p $($rest)*);
+    };
     (@collect $p:ident CONST $x:tt $($rest:tt)*) => {
         $p.push($crate::Instruction::Constant($x.into()));
         bytecode!(@collect $p $($rest)*);

@@ -23,12 +23,20 @@ pub struct Assignment {
 }
 
 impl Assignment {
-    pub fn new(left: Identifier, right: Box<Expression>, span: Span) -> Self {
-        Self { left, right, span }
+    pub fn new(
+        left: Identifier,
+        right: impl Into<Expression>,
+        span: Span,
+    ) -> Self {
+        Self {
+            left,
+            right: Box::new(right.into()),
+            span,
+        }
     }
 
     /// Creates a synthetic assignment expression with a dummy span.
-    pub fn synthetic(left: Identifier, right: Box<Expression>) -> Self {
+    pub fn synthetic(left: Identifier, right: impl Into<Expression>) -> Self {
         Self::new(left, right, Span::DUMMY)
     }
 }

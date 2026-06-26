@@ -68,6 +68,13 @@ pub enum Instruction {
     /// Pop a value from the stack and store it in memory at the given address
     Store(MemoryAddress),
 
+    /// Set a local variable at the given slot index from the top stack value.
+    /// This instruction does not pop the stack value.
+    SetLocal(MemoryAddress),
+    /// Get a local variable from the given slot index and push it onto the
+    /// stack.
+    GetLocal(MemoryAddress),
+
     /// Pop a value from the stack, store it in the globals table.
     /// The string name of the global variable is stored in the constant pool at
     /// the given address.
@@ -121,6 +128,12 @@ impl Display for Instruction {
             Load(memory_address) => ("LOAD", Some(memory_address.to_string())),
             Store(memory_address) => {
                 ("STORE", Some(memory_address.to_string()))
+            }
+            SetLocal(memory_address) => {
+                ("SETLC", Some(memory_address.to_string()))
+            }
+            GetLocal(memory_address) => {
+                ("GETLC", Some(memory_address.to_string()))
             }
             Call(call_stack_address) => {
                 ("CALL", Some(call_stack_address.to_string()))

@@ -23,7 +23,7 @@ where
     call_stack: CallStack,
 
     /// Used for storing values in a simple fixed-size memory
-    memory: Memory,
+    pub memory: Memory,
 
     /// The program, which is a list of instructions to be executed
     assembly: Assembly,
@@ -274,6 +274,22 @@ where
                 }
                 Store(_addr) => {
                     todo!("The STORE instruction is not yet implemented");
+                }
+                SetLocal(slot) => {
+                    let value = self
+                        .stack
+                        .peek()
+                        .ok_or(ValueStackError::StackUnderflow)?
+                        .clone();
+
+                    self.stack.set_at(slot.as_usize(), value)?;
+                    self.instruction_pointer.increment();
+                }
+                GetLocal(slot) => {
+                    let value = self.stack.get_at(slot.as_usize())?.clone();
+
+                    self.stack.push(value);
+                    self.instruction_pointer.increment();
                 }
 
                 // Constants

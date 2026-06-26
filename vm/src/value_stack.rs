@@ -63,6 +63,27 @@ impl ValueStack {
         self.values.pop().ok_or(ValueStackError::StackUnderflow)
     }
 
+    pub fn get_at(&self, index: usize) -> Result<&Value, ValueStackError> {
+        self.values
+            .get(index)
+            .ok_or(ValueStackError::InvalidIndex(index))
+    }
+
+    pub fn set_at(
+        &mut self,
+        index: usize,
+        value: Value,
+    ) -> Result<(), ValueStackError> {
+        let slot = self
+            .values
+            .get_mut(index)
+            .ok_or(ValueStackError::InvalidIndex(index))?;
+
+        *slot = value;
+
+        Ok(())
+    }
+
     pub fn last(&self) -> Option<&Value> {
         self.values.last()
     }
@@ -115,4 +136,8 @@ pub enum ValueStackError {
     /// pop.
     #[error("Attempted to pop value from empty stack")]
     StackUnderflow,
+
+    /// Returned when accessing an absolute stack slot that does not exist.
+    #[error("Attempted to access stack index that does not exist: {0}")]
+    InvalidIndex(usize),
 }

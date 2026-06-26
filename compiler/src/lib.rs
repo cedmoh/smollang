@@ -216,14 +216,23 @@ mod tests {
         // Arrange
         let message = "hello world".to_string();
 
-        let program = Program::builder()
-            // loop print 'hello world'
-            .with_expression(Loop::synthetic(
+
+        let r#loop =
+            // loop
+            Loop::synthetic(
+                // print
                 FunctionCallBuilder::new(Identifier::synthetic(
                     "print".to_string(),
                 ))
+                // 'hello world'
+                .with_argument(
+                    StringLiteral::synthetic(message.clone()),
+                )
                 .build(),
-            ))
+            );
+
+        let program = Program::builder()
+            .with_expression(r#loop)
             .build();
 
         let Assembly {
@@ -246,5 +255,98 @@ mod tests {
             )
         );
         assert_eq!(constants, vec![Constant::String(message),]);
+    }
+
+    #[test]
+    fn should_compile_local_variable_access_inside_block() {
+        // Arrange
+        let local_name = "x".to_string();
+        let initial_value = 42;
+
+        let identifier = Identifier::synthetic(local_name);
+        let block = 
+            // (
+            BlockBuilder::new()
+                // x val 42
+                .with_expression(
+                    VariableDeclarationBuilder::new(identifier.clone())
+                        .with_initial_value(IntegerLiteral::synthetic(
+                            initial_value,
+                        ))
+                        .build(),
+                )
+                // x
+                .with_expression(identifier)
+            // )
+                .build();
+
+        let program = Program::builder().with_expression(block).build();
+
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions
+            .into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH initial_value
+                GETLC 0
+                POP
+                HALT
+            )
+        );
+    }
+
+    #[test]
+    fn should_compile_assignment_to_local_variable_inside_block() {
+        // Arrange
+        let local_name = "x".to_string();
+        let initial_value = 1;
+        let new_value = 9;
+        let identifier = Identifier::synthetic(local_name);
+
+        let block = 
+        // (
+        BlockBuilder::new()
+            // x val 1
+            .with_expression(
+                VariableDeclaration::builder(identifier.clone())
+                    .with_initial_value(IntegerLiteral::synthetic(
+                        initial_value,
+                    ))
+                    .build(),
+            )
+            // x = 9
+            .with_expression(Assignment::synthetic(
+                identifier.clone(),
+                IntegerLiteral::synthetic(new_value),
+            ))
+            // )
+            .build();
+
+        let program = Program::builder().with_expression(block).build();
+
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions
+            .into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH initial_value
+                PUSH new_value
+                SETLC 0
+                POP
+                HALT
+            )
+        );
     }
 }

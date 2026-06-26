@@ -58,6 +58,12 @@ impl ObjectString {
     }
 }
 
+impl From<String> for ObjectString {
+    fn from(chars: String) -> Self {
+        Self::new(chars)
+    }
+}
+
 impl From<i32> for Value {
     fn from(value: i32) -> Self {
         Value::Int(value)

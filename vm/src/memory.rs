@@ -17,7 +17,7 @@ impl Memory {
         Self {
             // Initialize memory with 1024 cells
             data: vec![None; 1024],
-            free: (0..1024).collect(),
+            free: (0..1024).rev().collect(),
         }
     }
 

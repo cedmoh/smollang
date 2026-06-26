@@ -58,8 +58,20 @@ impl BlockBuilder {
     }
 
     /// Adds an expression to the block.
-    pub fn add_expression(&mut self, expression: Expression) -> &mut Self {
-        self.expressions.add_expression(expression);
+    pub fn add_expression(
+        &mut self,
+        expression: impl Into<Expression>,
+    ) -> &mut Self {
+        self.expressions.add_expression(expression.into());
+        self
+    }
+
+    /// Adds an expression to the block and returns the builder for chaining.
+    pub fn with_expression(
+        mut self,
+        expression: impl Into<Expression>,
+    ) -> Self {
+        self.expressions.add_expression(expression.into());
         self
     }
 

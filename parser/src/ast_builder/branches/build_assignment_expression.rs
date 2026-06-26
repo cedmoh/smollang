@@ -65,7 +65,7 @@ pub fn build_assignment_expression(
 
     let value = build_ast_expression(value_pair)?;
 
-    Ok(Assignment::new(identifier, Box::new(value), span))
+    Ok(Assignment::new(identifier, value, span))
 }
 
 #[derive(Debug, PartialEq, Error)]
