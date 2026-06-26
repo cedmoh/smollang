@@ -4,9 +4,10 @@ use crate::{
     visitors::visitor::Visitor,
 };
 use ast::{
-    Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
+    Block, Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
     FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
-    Literal, Loop, PipeArm, PipeArms, Program, Span, Then, VariableDeclaration,
+    Literal, Loop, Pipe, PipeArm, PipeArms, Program, Span, Then,
+    VariableDeclaration,
 };
 use bytecode::{
     AssemblyBuilder, Constant, ConstantAddress,
@@ -222,6 +223,20 @@ impl AstToAssemblyVisitor {
 
             constant_address
         }
+    }
+}
+
+impl Visitor<Block, FatalCompilerError> for AstToAssemblyVisitor {
+    fn visit(&mut self, block: &Block) -> Result<(), FatalCompilerError> {
+        self.begin_scope();
+
+        for expression in &block.body.items {
+            self.visit(expression)?;
+        }
+
+        self.end_scope();
+
+        Ok(())
     }
 }
 
@@ -573,6 +588,45 @@ impl Visitor<PipeArm, FatalCompilerError> for AstToAssemblyVisitor {
         Ok(())
     }
 }
+
+impl Visitor<Pipe, FatalCompilerError> for AstToAssemblyVisitor {
+    fn visit(&mut self, pipe: &Pipe) -> Result<(), FatalCompilerError> {
+        if pipe.arms.arms.is_empty() {
+            return Ok(());
+        }
+
+        // Open a new scope for the pipe to isolate the 'it' variable
+        self.begin_scope();
+
+        // Process the first arm and store its result in 'it'
+        self.visit(&pipe.arms.arms[0])?;
+
+        let it_identifier = Identifier::synthetic("it".to_string());
+        self.declare_local(&it_identifier);
+        self.mark_local_initialized();
+
+        // Process remaining arms
+        let remaining_arms = &pipe.arms.arms[1..];
+        for (index, arm) in remaining_arms.iter().enumerate() {
+            self.visit(arm)?;
+
+            // After each arm except the last, store the result back into 'it'
+            // for the next arm to use
+            let is_last_arm = index == remaining_arms.len() - 1;
+            if !is_last_arm {
+                if let Some(it_slot) = self.resolve_local(&it_identifier) {
+                    self.emit(Instruction::SetLocal(it_slot));
+                }
+            }
+        }
+
+        // Close the scope
+        self.end_scope();
+
+        Ok(())
+    }
+}
+
 impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
@@ -629,7 +683,7 @@ impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
                 self.visit(then_expression)?;
             }
             Pipe(pipe) => {
-                self.visit(&pipe.arms)?;
+                self.visit(pipe)?;
             }
             Identifier(identifier) => {
                 self.visit(identifier)?;

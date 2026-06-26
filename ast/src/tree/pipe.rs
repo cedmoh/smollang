@@ -28,10 +28,10 @@ impl Pipe {
     }
 
     pub fn builder(
-        first_expression: Expression,
-        second_expression: Expression,
+        first_expression: impl Into<Expression>,
+        second_expression: impl Into<Expression>,
     ) -> PipeBuilder {
-        PipeBuilder::new(first_expression, second_expression)
+        PipeBuilder::new(first_expression.into(), second_expression.into())
     }
 }
 
@@ -86,25 +86,25 @@ pub struct PipeBuilder {
 
 impl PipeBuilder {
     pub fn new(
-        first_expression: Expression,
-        second_expression: Expression,
+        first_expression: impl Into<Expression>,
+        second_expression: impl Into<Expression>,
     ) -> Self {
         Self {
             arms: PipeArms::synthetic(vec![
-                PipeArm::synthetic(first_expression),
-                PipeArm::synthetic(second_expression),
+                PipeArm::synthetic(first_expression.into()),
+                PipeArm::synthetic(second_expression.into()),
             ]),
             span: None,
         }
     }
 
-    pub fn with_arm(mut self, expression: Expression) -> Self {
-        self.arms.add_arm(PipeArm::synthetic(expression));
+    pub fn with_arm(mut self, expression: impl Into<Expression>) -> Self {
+        self.arms.add_arm(PipeArm::synthetic(expression.into()));
         self
     }
 
-    pub fn add_arm(&mut self, expression: Expression) -> &mut Self {
-        self.arms.add_arm(PipeArm::synthetic(expression));
+    pub fn add_arm(&mut self, expression: impl Into<Expression>) -> &mut Self {
+        self.arms.add_arm(PipeArm::synthetic(expression.into()));
         self
     }
 

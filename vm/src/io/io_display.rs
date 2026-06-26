@@ -13,8 +13,8 @@ impl ToIoString for Value {
         match self {
             Nil => format!("nil"),
             Int(integer) => format!("{}", integer),
-            Boolean(boolean) => format!("{}", boolean),
-            Object(object_handle) => {
+            Bool(boolean) => format!("{}", boolean),
+            Obj(object_handle) => {
                 format!("[Object:{}]", object_handle.into_memory_address())
             }
         }

@@ -183,7 +183,7 @@ mod tests {
 
         assert_eq!(vm.stack[0], Value::Nil);
         assert_eq!(vm.stack[1], Value::Int(42));
-        assert_eq!(vm.stack[2], Value::Boolean(true));
+        assert_eq!(vm.stack[2], Value::Bool(true));
         assert_eq!(vm.stack.len(), 3);
     }
 
@@ -238,7 +238,7 @@ mod tests {
         // Assert
         assert_eq!(
             vm.stack.pop().unwrap(),
-            Value::Object(ObjectHandle::new(MemoryAddress::new(0)))
+            Value::Obj(ObjectHandle::new(MemoryAddress::new(0)))
         );
         std::assert_matches!(
             vm.memory.load(MemoryAddress::new(0)).unwrap().data,

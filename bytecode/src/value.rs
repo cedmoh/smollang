@@ -5,8 +5,8 @@ use std::fmt::Display;
 pub enum Value {
     Nil,
     Int(i32),
-    Boolean(bool),
-    Object(ObjectHandle),
+    Bool(bool),
+    Obj(ObjectHandle),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -72,7 +72,7 @@ impl From<i32> for Value {
 
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
-        Value::Boolean(value)
+        Value::Bool(value)
     }
 }
 
@@ -80,11 +80,11 @@ impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Value::Int(i) => write!(f, "{}i", i),
-            Value::Boolean(b) => match b {
+            Value::Bool(b) => match b {
                 true => write!(f, "true"),
                 false => write!(f, "false"),
             },
-            Value::Object(object_handle) => {
+            Value::Obj(object_handle) => {
                 write!(f, "[Object:{}]", object_handle.into_memory_address())
             }
             Value::Nil => write!(f, "nil"),
@@ -99,8 +99,8 @@ mod tests {
     #[test]
     fn test_value_display() {
         assert_eq!(Value::Int(42).to_string(), "42i");
-        assert_eq!(Value::Boolean(true).to_string(), "true");
-        assert_eq!(Value::Boolean(false).to_string(), "false");
+        assert_eq!(Value::Bool(true).to_string(), "true");
+        assert_eq!(Value::Bool(false).to_string(), "false");
         assert_eq!(Value::Nil.to_string(), "nil");
     }
 }

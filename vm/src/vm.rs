@@ -107,9 +107,40 @@ where
                         (Int(lhs), Int(rhs)) => {
                             self.stack.push(Int(lhs + rhs));
                         }
-                        // The usage of the VM should ensure that only integers
-                        // are attempted to be added.
-                        _ => unreachable!(),
+                        (Obj(lhs_handle), Obj(rhs_handle)) => {
+                            let lhs_object =
+                                self.memory.load(lhs_handle.into())?;
+                            let rhs_object =
+                                self.memory.load(rhs_handle.into())?;
+
+                            match (lhs_object.data, rhs_object.data) {
+                                (
+                                    ObjectData::String(lhs_string),
+                                    ObjectData::String(rhs_string),
+                                ) => {
+                                    let concatenated_string = format!(
+                                        "{}{}",
+                                        lhs_string.0, rhs_string.0
+                                    );
+                                    let new_object =
+                                        Object::new_string(concatenated_string);
+                                    let new_object_handle = self
+                                        .memory
+                                        .store(new_object)?
+                                        .cast_to_object_handle();
+                                    self.stack
+                                        .push(Value::Obj(new_object_handle));
+                                }
+                            }
+                        }
+                        (x, y) => {
+                            return Err(
+                                self::ArithmeticError::UnsupportedAdditionOperands(
+                                    x, y,
+                                )
+                                .into(),
+                            );
+                        }
                     }
 
                     self.instruction_pointer.increment();
@@ -175,7 +206,7 @@ where
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack.push(Boolean(lhs == rhs));
+                            self.stack.push(Bool(lhs == rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
@@ -192,7 +223,7 @@ where
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack.push(Boolean(lhs < rhs));
+                            self.stack.push(Bool(lhs < rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
@@ -209,7 +240,7 @@ where
 
                     match (a, b) {
                         (Int(lhs), Int(rhs)) => {
-                            self.stack.push(Boolean(lhs > rhs));
+                            self.stack.push(Bool(lhs > rhs));
                         }
                         // The usage of the VM should ensure that only integers
                         // are attempted to be compared.
@@ -231,10 +262,10 @@ where
 
                     let cond = self.stack.pop()?;
                     match cond {
-                        Boolean(true) => {
+                        Bool(true) => {
                             self.instruction_pointer.add_offset(offset);
                         }
-                        Boolean(false) => {
+                        Bool(false) => {
                             self.instruction_pointer.increment();
                         }
                         // The usage of the VM should ensure that only boolean
@@ -248,10 +279,10 @@ where
 
                     let cond = self.stack.pop()?;
                     match cond {
-                        Boolean(true) => {
+                        Bool(true) => {
                             self.instruction_pointer.increment();
                         }
-                        Boolean(false) => {
+                        Bool(false) => {
                             self.instruction_pointer.add_offset(offset);
                         }
                         // The usage of the VM should ensure that only boolean
@@ -263,7 +294,7 @@ where
 
                 // Memory
                 Load(addr) => {
-                    self.stack.push(Value::Object(
+                    self.stack.push(Value::Obj(
                         // Cast the memory address to an object handle
                         // The memory address should always be a valid object
                         // handle
@@ -308,11 +339,11 @@ where
                     {
                         Constant::Nil => Value::Nil,
                         Constant::Int(i) => Value::Int(i),
-                        Constant::Boolean(b) => Value::Boolean(b),
+                        Constant::Boolean(b) => Value::Bool(b),
                         Constant::Float(_) => {
                             todo!("Float constants are not yet supported")
                         }
-                        Constant::String(s) => Value::Object(
+                        Constant::String(s) => Value::Obj(
                             // Cast the memory address to an object handle
                             // because we know that the memory address returned
                             // by `store` will always be a valid object handle.
@@ -347,7 +378,7 @@ where
                 In => {
                     let input = self.io.read_line()?;
 
-                    self.stack.push(Value::Object(
+                    self.stack.push(Value::Obj(
                         // Cast the memory address to an object handle
                         // because we know that the memory address returned
                         // by `store` will always be a valid object handle.
@@ -362,7 +393,7 @@ where
                     let value = self.stack.pop()?;
 
                     match value {
-                        Value::Object(object_handle) => {
+                        Value::Obj(object_handle) => {
                             let object =
                                 self.memory.load(object_handle.into())?;
 
@@ -450,10 +481,10 @@ where
 
 #[derive(Debug, Error)]
 pub enum VmError {
-    #[error("Value stack error: {0}")]
+    #[error("Value stack error.")]
     StackError(#[from] ValueStackError),
 
-    #[error("Memory error: {0}")]
+    #[error("Memory error.")]
     MemoryError(#[from] MemoryError),
 
     #[error("Attempted to pop return address from empty call stack")]
@@ -470,6 +501,15 @@ pub enum VmError {
     #[error("Expected constant at address {0} to be a {1}, but it was a {2}")]
     InvalidConstantType(ConstantAddress, &'static str, Constant),
 
-    #[error("IO error: {0}")]
+    #[error("IO error.")]
     IoError(#[from] IoError),
+
+    #[error("Arithmetic error.")]
+    ArithmeticError(#[from] ArithmeticError),
+}
+
+#[derive(Debug, Error)]
+pub enum ArithmeticError {
+    #[error("Cannot add values {0} and {1}")]
+    UnsupportedAdditionOperands(Value, Value),
 }

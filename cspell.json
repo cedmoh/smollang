@@ -9,19 +9,14 @@
   "words": [
     "GETGB",
     "SETGB",
+    "SETLC",
+    "GETLC",
     "smol",
     "Smollang",
     "thiserror",
     "VecDeque"
   ],
-  "dictionaries": [
-    "rust",
-    "html",
-    "css",
-    "json",
-    "markdown",
-    "gitHub"
-  ],
+  "dictionaries": ["rust", "html", "css", "json", "markdown", "gitHub"],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.
   "flagWords": []

@@ -443,4 +443,40 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn should_compile_pipe_expression() {
+        // Arrange
+        let program = Program::builder()
+            // 'hello' |> print it
+            .with_expression(
+                Pipe::builder(
+                    StringLiteral::synthetic("hello".to_string()),
+                    FunctionCallBuilder::new(
+                        Identifier::synthetic("print".to_string())
+                    ).with_argument(
+                        Identifier::synthetic("it".to_string())
+                    ).build()
+                ).build()
+            )
+            .build();
+
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                CONST 0
+                SETLC 0 // TODO: optimize this to avoid creating a local variable for the pipe value
+                GETLC 0
+                OUT
+                HALT
+            )
+        );
+    }
 }

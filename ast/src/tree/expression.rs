@@ -28,6 +28,24 @@ pub enum Expression {
     VariableDeclaration(VariableDeclaration),
 }
 
+impl From<Pipe> for Expression {
+    fn from(pipe: Pipe) -> Self {
+        Expression::Pipe(pipe)
+    }
+}
+
+impl From<Break> for Expression {
+    fn from(break_expression: Break) -> Self {
+        Expression::Break(break_expression)
+    }
+}
+
+impl From<Continue> for Expression {
+    fn from(continue_expression: Continue) -> Self {
+        Expression::Continue(continue_expression)
+    }
+}
+
 impl From<Assignment> for Expression {
     fn from(assignment: Assignment) -> Self {
         Expression::Assignment(assignment)
