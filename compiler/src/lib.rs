@@ -391,4 +391,56 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn should_handle_then_expression_with_else() {
+        // Arrange
+        let then_message = "hello".to_string();
+        let else_message = "goodbye".to_string();
+
+        let program = Program::builder()
+            // true then <...> else <...>
+            .with_expression(
+                Then::builder(
+                    BooleanLiteral::synthetic(true),
+                    // print 'hello'
+                    FunctionCallBuilder::new(
+                        Identifier::synthetic("print".to_string())
+                    ).with_argument(
+                        StringLiteral::synthetic(then_message.clone())
+                    ).build()
+                )
+                .with_else_body(
+                    // print 'goodbye'
+                    FunctionCallBuilder::new(
+                        Identifier::synthetic("print".to_string())
+                    ).with_argument(
+                        StringLiteral::synthetic(else_message.clone())
+                    ).build()
+                )
+                .build(),
+            )
+            .build();
+
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH true
+                JF 3      
+                CONST 0  // + 
+                OUT      // + 
+                JUMP 3   // + 
+                CONST 1  // -
+                OUT      // -
+                HALT
+            )
+        );
+    }
 }

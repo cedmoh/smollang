@@ -27,7 +27,7 @@ impl Display for InstructionOffset {
             std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => "+",
         };
 
-        write!(f, "{}{:04}", sign, self.0.abs())
+        write!(f, "{}{:01}", sign, self.0.abs())
     }
 }
 
@@ -39,20 +39,20 @@ mod tests {
     fn should_display_positive_offset() {
         let offset = InstructionOffset::new(42);
 
-        assert_eq!(format!("{}", offset), "+0042");
+        assert_eq!(format!("{}", offset), "+42");
     }
 
     #[test]
     fn should_display_negative_offset() {
         let offset = InstructionOffset::new(-42);
 
-        assert_eq!(format!("{}", offset), "-0042");
+        assert_eq!(format!("{}", offset), "-42");
     }
 
     #[test]
     fn should_display_zero_offset() {
         let offset = InstructionOffset::new(0);
 
-        assert_eq!(format!("{}", offset), "+0000");
+        assert_eq!(format!("{}", offset), "+0");
     }
 }

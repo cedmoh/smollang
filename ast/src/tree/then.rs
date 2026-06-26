@@ -79,22 +79,28 @@ pub struct ThenBuilder {
 }
 
 impl ThenBuilder {
-    pub fn new(condition: Expression, then_body: Expression) -> Self {
+    pub fn new(
+        condition: impl Into<Expression>,
+        then_body: impl Into<Expression>,
+    ) -> Self {
         Self {
-            condition,
-            then_body,
+            condition: condition.into(),
+            then_body: then_body.into(),
             else_body: None,
             span: None,
         }
     }
 
-    pub fn add_else_body(&mut self, else_body: Expression) -> &mut Self {
-        self.else_body = Some(else_body);
+    pub fn add_else_body(
+        &mut self,
+        else_body: impl Into<Expression>,
+    ) -> &mut Self {
+        self.else_body = Some(else_body.into());
         self
     }
 
-    pub fn with_else_body(mut self, else_body: Expression) -> Self {
-        self.else_body = Some(else_body);
+    pub fn with_else_body(mut self, else_body: impl Into<Expression>) -> Self {
+        self.else_body = Some(else_body.into());
         self
     }
 

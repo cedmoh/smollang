@@ -10,7 +10,7 @@ use ast::{
 };
 use bytecode::{
     AssemblyBuilder, Constant, ConstantAddress,
-    Instruction::{self, JumpIfFalse},
+    Instruction::{self, Jump, JumpIfFalse},
     InstructionOffset, MemoryAddress, Value,
 };
 use thiserror::Error;
@@ -294,7 +294,19 @@ impl Visitor<Then, FatalCompilerError> for AstToAssemblyVisitor {
         );
 
         if let Some(else_body) = &then_expression.else_body {
+            let else_start = self.assembly_builder.instruction_length();
             self.visit(else_body.as_ref())?;
+            let else_end = self.assembly_builder.instruction_length();
+
+            let diff = else_end - else_start; // The number of instructions in the else body
+            let diff = diff + 1; // +1 for the Jump instruction itself
+
+            self.emit_at(
+                else_start,
+                Jump(InstructionOffset::new((diff).try_into().map_err(
+                    |_| FatalCompilerError::InstructionOffsetOverflow,
+                )?)),
+            );
         }
 
         Ok(())
