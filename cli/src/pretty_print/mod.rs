@@ -1,7 +1,11 @@
+mod assembly_pretty_print;
 mod ast_implementations;
 mod helpers;
+mod memory_pretty_print;
 
+pub use assembly_pretty_print::AssemblyPrettyPrint;
 pub use helpers::*;
+pub use memory_pretty_print::MemoryPrettyPrint;
 
 use std::fmt::{self, Display, Formatter};
 

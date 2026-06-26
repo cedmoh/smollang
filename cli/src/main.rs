@@ -9,7 +9,10 @@ use std::path::PathBuf;
 use styles::CARGO_STYLING;
 use vm::Vm;
 
-use crate::standard_io::StandardIo;
+use crate::{
+    pretty_print::{AssemblyPrettyPrint, MemoryPrettyPrint},
+    standard_io::StandardIo,
+};
 
 fn main() -> anyhow::Result<()> {
     let command = command!()
@@ -24,6 +27,13 @@ fn main() -> anyhow::Result<()> {
                 .value_parser(clap::value_parser!(PathBuf))
                 .required(false)
                 .index(1),
+        )
+        .arg(
+            Arg::new("dump")
+                .help("Dump the VM memory after execution.")
+                .long("dump")
+                .action(clap::ArgAction::SetTrue)
+                .requires("file"),
         )
         .subcommand(
             Command::new("compile")
@@ -78,7 +88,9 @@ fn main() -> anyhow::Result<()> {
         // No subcommand provided.
         None => {
             if let Some(file) = matches.get_one::<PathBuf>("file") {
-                execute_file(file)
+                let dump: bool =
+                    matches.get_one("dump").copied().unwrap_or(false);
+                execute_file(file, dump)
             } else {
                 repl()
             }
@@ -137,12 +149,12 @@ fn compile_file(path: &PathBuf) -> anyhow::Result<()> {
     let mut compiler = Compiler::new();
     let assembly = compiler.compile(ast)?;
 
-    println!("{}", assembly);
+    println!("{}", assembly.pretty_print(true));
 
     Ok(())
 }
 
-fn execute_file(path: &PathBuf) -> anyhow::Result<()> {
+fn execute_file(path: &PathBuf, dump: bool) -> anyhow::Result<()> {
     let input = std::fs::read_to_string(path)?;
 
     let ast = parser::parse_string_to_program_ast(&input)?;
@@ -152,7 +164,17 @@ fn execute_file(path: &PathBuf) -> anyhow::Result<()> {
 
     let io = StandardIo::new();
 
-    Vm::new_with_io(io).load_assembly(assembly).run()?;
+    let mut vm = Vm::new_with_io(io);
+
+    match vm.load_assembly(assembly).run() {
+        x => {
+            if dump {
+                println!("{}", vm.memory.pretty_print(true));
+            }
+
+            x?
+        }
+    }
 
     Ok(())
 }

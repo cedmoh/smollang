@@ -13,6 +13,10 @@ impl Constants {
     pub fn get(&self, address: ConstantAddress) -> Option<&Constant> {
         self.0.get(address.as_usize())
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Constant> {
+        self.0.iter()
+    }
 }
 
 impl From<Vec<Constant>> for Constants {

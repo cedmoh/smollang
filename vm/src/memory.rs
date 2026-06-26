@@ -5,19 +5,27 @@ use thiserror::Error;
 pub struct Memory {
     /// The collection of cells in memory that can hold objects.
     /// Each cell can either be occupied by an object or be empty (None).
-    data: Vec<Option<Object>>,
+    pub data: Vec<Option<Object>>,
 
     /// A list of free memory addresses that can be reused for storing new
     /// objects.
-    free: Vec<usize>,
+    pub free: Vec<usize>,
 }
+
+const MEMORY_CAPACITY: usize = 32;
 
 impl Memory {
     pub fn new() -> Self {
         Self {
-            // Initialize memory with 1024 cells
-            data: vec![None; 1024],
-            free: (0..1024).rev().collect(),
+            data: vec![None; MEMORY_CAPACITY],
+            free: (0..MEMORY_CAPACITY).rev().collect(),
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            data: vec![None; capacity],
+            free: (0..capacity).rev().collect(),
         }
     }
 

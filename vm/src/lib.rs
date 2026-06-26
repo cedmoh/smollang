@@ -6,6 +6,7 @@ mod value_stack;
 mod vm;
 
 pub use io::{Io, IoError};
+pub use memory::{Memory, MemoryError};
 pub use vm::Vm;
 
 #[cfg(test)]

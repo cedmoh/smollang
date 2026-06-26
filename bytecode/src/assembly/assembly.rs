@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::{
     Constant, ConstantAddress, Constants,
     Instruction::{self, Halt},
@@ -33,17 +31,6 @@ impl Assembly {
 
     pub fn builder() -> AssemblyBuilder {
         AssemblyBuilder::new()
-    }
-}
-
-impl Display for Assembly {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "== Program ==")?;
-        writeln!(f, "{}", self.instructions)?;
-        writeln!(f, "== Constants ==")?;
-        writeln!(f, "{}", self.constants)?;
-
-        Ok(())
     }
 }
 
