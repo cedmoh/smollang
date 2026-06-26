@@ -282,7 +282,10 @@ impl Visitor<Then, FatalCompilerError> for AstToAssemblyVisitor {
         let body_end = self.assembly_builder.instruction_length();
 
         let diff = body_end - body_start; // The number of instructions in the then body
-        let diff = diff + 1; // +1 for the JumpIfFalse instruction itself
+        let mut diff = diff + 1; // +1 for the JumpIfFalse instruction itself
+        if then_expression.else_body.is_some() {
+            diff += 1; // +1 for the Jump instruction that will be inserted after the then body
+        }
 
         self.emit_at(
             body_start,
