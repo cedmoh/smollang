@@ -31,6 +31,12 @@ pub enum Instruction {
     /// Divide the top two values on the stack and push the result back onto the
     /// stack
     Divide,
+    /// Perform modulo operation on the top two values on the stack and push the
+    /// result back onto the stack
+    Modulo,
+    /// Perform exponentiation on the top two values on the stack and push the
+    /// result back onto the stack
+    Power,
 
     // Comparison
     /// Compare the top two values on the stack for equality and push the result
@@ -97,9 +103,12 @@ pub enum Instruction {
     /// Push a constant value from the constant pool onto the stack
     Constant(ConstantAddress),
 
+    /// Debug instruction for debugging purposes.
+    /// Prints the current state of the VM, including the stack, instruction
+    /// pointer, and other relevant information to the standard output.
+    Debug,
+
     Halt,
-    Modulo,
-    Power,
 }
 
 impl Instruction {
@@ -138,6 +147,7 @@ impl Instruction {
             Halt => "HALT",
             Modulo => "MOD",
             Power => "POW",
+            Debug => "DEBUG",
         }
     }
 
@@ -161,7 +171,7 @@ impl Instruction {
             Pop | Duplicate | DuplicateTwo | Add | Subtract | Multiply
             | Divide | Equals | NotEquals | LessThan | GreaterThan
             | LessThanOrEqual | GreaterThanOrEqual | Return | In | Out
-            | Halt | Modulo | Power => None,
+            | Halt | Modulo | Power | Debug => None,
         }
     }
 }

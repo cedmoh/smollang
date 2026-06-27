@@ -1,6 +1,7 @@
 use bytecode::Value;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct GlobalEnvironment {
     /// The global environment table, which maps variable names to their values
     pub table: HashMap<String, Value>,

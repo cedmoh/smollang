@@ -1,5 +1,3 @@
-#![recursion_limit = "256"]
-
 mod assembly;
 mod bytecode_macro;
 mod memory_address;

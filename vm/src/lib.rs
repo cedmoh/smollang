@@ -5,9 +5,10 @@ mod memory;
 mod value_stack;
 mod vm;
 
-pub use io::{Io, IoError};
-pub use memory::{Memory, MemoryError};
-pub use vm::Vm;
+pub use io::*;
+pub use memory::*;
+pub use value_stack::*;
+pub use vm::*;
 
 #[cfg(test)]
 mod tests {
@@ -289,4 +290,27 @@ mod tests {
         assert_eq!(vm.stack[1], Value::Int(2));
         assert_eq!(vm.stack[2], Value::Int(9));
     }
+
+    #[test]
+    fn should_handle_function_calls_and_returns() {
+        let instructions = bytecode!(
+            CALL 2
+            HALT
+            PUSH 42
+            RET
+            HALT
+        );
+
+        let mut vm = Vm::new();
+        vm.load_assembly(
+            Assembly::builder().instructions(instructions).build(),
+        )
+        .run()
+        .unwrap();
+
+        assert_eq!(vm.stack[0], Value::Int(42));
+    }
+
+    #[test]
+    fn should_handle_function_declarations() {}
 }

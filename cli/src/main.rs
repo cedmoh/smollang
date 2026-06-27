@@ -169,7 +169,8 @@ fn execute_file(path: &PathBuf, dump: bool) -> anyhow::Result<()> {
     match vm.load_assembly(assembly).run() {
         x => {
             if dump {
-                println!("{}", vm.memory.pretty_print(true));
+                println!("=== Stack === \n{}", vm.stack.pretty_print(true));
+                println!("=== Memory === \n{}", vm.memory.pretty_print(true));
             }
 
             x?

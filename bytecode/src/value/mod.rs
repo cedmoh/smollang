@@ -1,4 +1,6 @@
-use crate::MemoryAddress;
+mod object;
+
+pub use object::*;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -7,61 +9,6 @@ pub enum Value {
     Int(i32),
     Bool(bool),
     Obj(ObjectHandle),
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct ObjectHandle(MemoryAddress);
-
-/// A handle to an object in the heap.
-/// This is what gets stored on the stack when an object is created.
-impl ObjectHandle {
-    pub fn new(address: MemoryAddress) -> Self {
-        Self(address)
-    }
-
-    pub fn into_memory_address(&self) -> MemoryAddress {
-        self.0
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Object {
-    // TODO: Use when implementing garbage collection
-    _marked: bool,
-    pub data: ObjectData,
-}
-
-impl Object {
-    pub fn new(data: ObjectData) -> Self {
-        Self {
-            _marked: false,
-            data,
-        }
-    }
-
-    pub fn new_string(chars: String) -> Self {
-        Self::new(ObjectData::String(ObjectString::new(chars)))
-    }
-}
-
-#[derive(Debug, Clone)]
-pub enum ObjectData {
-    String(ObjectString),
-}
-
-#[derive(Debug, Clone)]
-pub struct ObjectString(pub String);
-
-impl ObjectString {
-    pub fn new(chars: String) -> Self {
-        Self(chars)
-    }
-}
-
-impl From<String> for ObjectString {
-    fn from(chars: String) -> Self {
-        Self::new(chars)
-    }
 }
 
 impl From<i32> for Value {

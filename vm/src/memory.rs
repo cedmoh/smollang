@@ -1,15 +1,15 @@
 use bytecode::{MemoryAddress, Object};
 use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Memory {
     /// The collection of cells in memory that can hold objects.
     /// Each cell can either be occupied by an object or be empty (None).
-    pub data: Vec<Option<Object>>,
+    data: Vec<Option<Object>>,
 
     /// A list of free memory addresses that can be reused for storing new
     /// objects.
-    pub free: Vec<usize>,
+    free: Vec<usize>,
 }
 
 const MEMORY_CAPACITY: usize = 32;
@@ -53,6 +53,10 @@ impl Memory {
             }
             None => Err(MemoryError::OutOfMemory),
         }
+    }
+
+    pub fn dump(self) -> Vec<Option<Object>> {
+        self.data
     }
 }
 

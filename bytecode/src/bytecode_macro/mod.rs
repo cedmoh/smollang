@@ -60,7 +60,7 @@ macro_rules! bytecode {
         bytecode!(@collect $p $($rest)*);
     };
     (@collect $p:ident RET $($rest:tt)*) => {
-        $p.push($crate::Instruction::Ret);
+        $p.push($crate::Instruction::Return);
         bytecode!(@collect $p $($rest)*);
     };
 

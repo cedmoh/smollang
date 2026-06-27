@@ -91,6 +91,10 @@ impl ValueStack {
     pub fn len(&self) -> usize {
         self.values.len()
     }
+
+    pub fn dump(self) -> Vec<Value> {
+        self.values
+    }
 }
 
 impl Index<usize> for ValueStack {

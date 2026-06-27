@@ -5,7 +5,7 @@ use crate::{
 };
 
 /// Represents a complete compiled program.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Assembly {
     /// A list of instructions that make up the program.
     /// This is the main component of the assembly,

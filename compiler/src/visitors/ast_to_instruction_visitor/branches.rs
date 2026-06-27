@@ -3,8 +3,9 @@ use crate::visitors::{
 };
 use ast::{
     Block, Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
-    FunctionCallArguments, FunctionParameter, FunctionParameters, Identifier,
-    Literal, Loop, Pipe, PipeArm, PipeArms, Program, Then, VariableDeclaration,
+    FunctionCallArguments, FunctionDeclaration, FunctionParameter,
+    FunctionParameters, Identifier, Literal, Loop, Pipe, PipeArm, PipeArms,
+    Program, Then, VariableDeclaration,
 };
 use bytecode::{
     Instruction::{self, Jump, JumpIfFalse},
@@ -15,8 +16,15 @@ impl Visitor<Block, FatalCompilerError> for AstToAssemblyVisitor {
     fn visit(&mut self, block: &Block) -> Result<(), FatalCompilerError> {
         self.begin_scope();
 
-        for expression in &block.body.items {
-            self.visit(expression)?;
+        match block.body.items.is_empty() {
+            true => {
+                self.emit(Instruction::Push(Value::Nil));
+            }
+            false => {
+                for expression in &block.body.items {
+                    self.visit(expression)?;
+                }
+            }
         }
 
         self.end_scope();
@@ -359,6 +367,15 @@ impl Visitor<Identifier, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
+impl Visitor<FunctionDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
+    fn visit(
+        &mut self,
+        _function_declaration: &FunctionDeclaration,
+    ) -> Result<(), FatalCompilerError> {
+        todo!("Function declarations are not yet supported");
+    }
+}
+
 impl Visitor<FunctionCall, FatalCompilerError> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
@@ -465,10 +482,19 @@ impl Visitor<Pipe, FatalCompilerError> for AstToAssemblyVisitor {
         // Open a new scope for the pipe to isolate the 'it' variable
         self.begin_scope();
 
-        // Process the first arm and store its result in 'it'
-        self.visit(&pipe.arms.arms[0])?;
+        let (first_arm, remaining_arms) = pipe
+            .arms
+            .arms
+            .split_first()
+            .ok_or(FatalCompilerError::ExpectedAtLeastTwoPipeArms)?;
 
-        let it_identifier = Identifier::synthetic("it".to_string());
+        // Process the first arm and put it on the stack
+        self.visit(first_arm)?;
+
+        // Declare the 'it' variable in the current scope
+        // and initialize it with the value from the first arm
+        let it_identifier =
+            Identifier::new("it".to_string(), pipe.span.clone());
         self.declare_local(&it_identifier.id, &it_identifier.span);
         self.mark_local_initialized();
 
@@ -479,7 +505,6 @@ impl Visitor<Pipe, FatalCompilerError> for AstToAssemblyVisitor {
         }
 
         // Process remaining arms
-        let remaining_arms = &pipe.arms.arms[1..];
         for (index, arm) in remaining_arms.iter().enumerate() {
             self.visit(arm)?;
 
@@ -544,13 +569,7 @@ impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
                 }
             }
             Block(block) => {
-                self.begin_scope();
-
-                for expression in &block.body.items {
-                    self.visit(expression)?;
-                }
-
-                self.end_scope();
+                self.visit(block)?;
             }
             Dyadic(dyadic) => {
                 self.visit(dyadic)?;
@@ -559,11 +578,7 @@ impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
                 self.visit(function_call)?;
             }
             FunctionDeclaration(function_declaration) => {
-                if let Some(body) = &function_declaration.body {
-                    self.visit(&*body.body)?;
-                }
-
-                self.visit(&function_declaration.params)?;
+                self.visit(function_declaration)?
             }
             Then(then_expression) => {
                 self.visit(then_expression)?;

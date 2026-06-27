@@ -60,6 +60,9 @@ pub enum FatalCompilerError {
         expected: Instruction,
         found: Instruction,
     },
+
+    #[error("Expected at least two pipe arms, but found fewer")]
+    ExpectedAtLeastTwoPipeArms,
 }
 
 impl AstToAssemblyVisitor {
@@ -71,6 +74,11 @@ impl AstToAssemblyVisitor {
             locals: Locals::new(),
             scope_depth: 0,
         }
+    }
+
+    /// Emit a debug instruction to the assembly builder.
+    fn _debug(&mut self) {
+        self.emit(Instruction::Debug);
     }
 
     /// Add an error to the list of encountered non-fatal errors during the AST

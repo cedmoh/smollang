@@ -1,4 +1,4 @@
-use bytecode::Value;
+use bytecode::{FunctionObject, StringObject, Value};
 
 /// A trait for displaying values to the user.
 /// Called by the `OUT` instruction to format values for output.
@@ -30,5 +30,16 @@ impl ToIoString for String {
 impl ToIoString for &str {
     fn to_io_string(&self) -> String {
         self.to_string()
+    }
+}
+
+impl ToIoString for StringObject {
+    fn to_io_string(&self) -> String {
+        self.0.clone()
+    }
+}
+impl ToIoString for FunctionObject {
+    fn to_io_string(&self) -> String {
+        todo!("Implement ToIoString for FunctionObject");
     }
 }

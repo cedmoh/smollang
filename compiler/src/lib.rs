@@ -479,4 +479,38 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn should_compile_function_call_to_user_defined_function() {
+        // Arrange
+        let function_name = "myFunction".to_string();
+        let argument_value = 42;
+
+        let program = Program::builder()
+            // myFunction 42
+            .with_expression(
+                FunctionCallBuilder::new(
+                    Identifier::synthetic(function_name.clone())
+                ).with_argument(
+                    IntegerLiteral::synthetic(argument_value)
+                ).build()
+            )
+            .build();
+
+        // Act
+        let instructions: Vec<Instruction> = Compiler::new()
+            .compile(program)
+            .unwrap()
+            .instructions.into();
+
+        // Assert
+        assert_eq!(
+            instructions,
+            bytecode!(
+                PUSH argument_value
+                CALL 0 // the zero-th constant is the function's name
+                HALT
+            )
+        );
+    }
 }
