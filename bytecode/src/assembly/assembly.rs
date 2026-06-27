@@ -70,6 +70,13 @@ impl AssemblyBuilder {
         self
     }
 
+    pub fn get_mut_instruction(
+        &mut self,
+        index: usize,
+    ) -> Option<&mut Instruction> {
+        self.instructions.get_mut(index)
+    }
+
     pub fn instructions(mut self, instructions: Vec<Instruction>) -> Self {
         self.instructions = instructions;
         self

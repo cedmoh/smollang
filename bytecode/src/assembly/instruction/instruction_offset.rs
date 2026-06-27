@@ -5,6 +5,8 @@ use std::fmt::Display;
 pub struct InstructionOffset(isize);
 
 impl InstructionOffset {
+    pub const DUMMY: Self = Self(0);
+
     pub fn new(offset: isize) -> Self {
         Self(offset)
     }

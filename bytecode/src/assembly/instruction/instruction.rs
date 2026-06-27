@@ -98,6 +98,8 @@ pub enum Instruction {
     Constant(ConstantAddress),
 
     Halt,
+    Modulo,
+    Power,
 }
 
 impl Instruction {
@@ -134,6 +136,8 @@ impl Instruction {
             Out => "OUT",
             Constant(_) => "CONST",
             Halt => "HALT",
+            Modulo => "MOD",
+            Power => "POW",
         }
     }
 
@@ -157,7 +161,7 @@ impl Instruction {
             Pop | Duplicate | DuplicateTwo | Add | Subtract | Multiply
             | Divide | Equals | NotEquals | LessThan | GreaterThan
             | LessThanOrEqual | GreaterThanOrEqual | Return | In | Out
-            | Halt => None,
+            | Halt | Modulo | Power => None,
         }
     }
 }

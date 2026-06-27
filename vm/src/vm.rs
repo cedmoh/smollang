@@ -5,7 +5,7 @@ use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{
     Assembly, Constant, ConstantAddress, Instruction, InstructionAddress,
-    Object, ObjectData, Value,
+    InstructionOffset, Object, ObjectData, Value,
 };
 use thiserror::Error;
 
@@ -196,6 +196,50 @@ where
 
                     self.instruction_pointer.increment();
                 }
+                Modulo => {
+                    use Value::*;
+
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
+
+                    match (a, b) {
+                        (Int(lhs), Int(rhs)) => {
+                            self.stack.push(Int(lhs % rhs));
+                        }
+                        _ => {
+                            return Err(
+                                self::ArithmeticError::UnsupportedModuloOperands(
+                                    a, b,
+                                )
+                                .into(),
+                            );
+                        }
+                    }
+
+                    self.instruction_pointer.increment();
+                }
+                Power => {
+                    use Value::*;
+
+                    let b = self.stack.pop()?;
+                    let a = self.stack.pop()?;
+
+                    match (a, b) {
+                        (Int(lhs), Int(rhs)) => {
+                            self.stack.push(Int(lhs.pow(rhs as u32)));
+                        }
+                        _ => {
+                            return Err(
+                                self::ArithmeticError::UnsupportedPowerOperands(
+                                    a, b,
+                                )
+                                .into(),
+                            );
+                        }
+                    }
+
+                    self.instruction_pointer.increment();
+                }
 
                 // Comparison
                 Equals => {
@@ -255,6 +299,12 @@ where
 
                 // Control flow
                 Jump(offset) => {
+                    // Safety check to ensure that no dummy values are used for
+                    // jumps.
+                    if offset == InstructionOffset::DUMMY {
+                        return Err(VmError::DummyInstructionOffset);
+                    }
+
                     self.instruction_pointer.add_offset(offset);
                 }
                 JumpIfTrue(offset) => {
@@ -506,10 +556,19 @@ pub enum VmError {
 
     #[error("Arithmetic error.")]
     ArithmeticError(#[from] ArithmeticError),
+
+    #[error("Dummy instruction offset encountered.")]
+    DummyInstructionOffset,
 }
 
 #[derive(Debug, Error)]
 pub enum ArithmeticError {
     #[error("Cannot add values {0} and {1}")]
     UnsupportedAdditionOperands(Value, Value),
+
+    #[error("Cannot modulo values {0} and {1}")]
+    UnsupportedModuloOperands(Value, Value),
+
+    #[error("Cannot exponentiate values {0} and {1}")]
+    UnsupportedPowerOperands(Value, Value),
 }
