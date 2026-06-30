@@ -1,4 +1,6 @@
-use crate::visitors::{AstToAssemblyVisitor, FatalCompilerError, Visitor};
+use crate::visitors::{
+    AstToAssemblyVisitor, CompileVisitor, FatalCompilerError,
+};
 use ast::Program;
 use bytecode::Assembly;
 

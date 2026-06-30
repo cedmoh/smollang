@@ -10,21 +10,34 @@ impl AssemblyPrettyPrint for Assembly {
     fn pretty_print(&self, colors_enabled: bool) -> String {
         let mut output = String::new();
 
-        for (i, instruction) in
+        for (instruction_address, instruction) in
             Into::<Vec<Instruction>>::into(self.instructions.clone())
                 .iter()
                 .enumerate()
         {
             let instruction_str = instruction.pretty_print(colors_enabled);
 
+            if let Some(label) =
+                self.labels.get_label(instruction_address.into())
+            {
+                if colors_enabled {
+                    output.push_str(&format!("{}:\n", label.name.red()));
+                } else {
+                    output.push_str(&format!("{}:\n", label.name));
+                }
+            }
+
             if colors_enabled {
                 output.push_str(&format!(
                     "{}  {}\n",
-                    format!("{:04}", i).blue(),
+                    format!("{:04}", instruction_address).blue(),
                     instruction_str
                 ));
             } else {
-                output.push_str(&format!("{:04}  {}\n", i, instruction_str));
+                output.push_str(&format!(
+                    "{:04}  {}\n",
+                    instruction_address, instruction_str
+                ));
             }
         }
 

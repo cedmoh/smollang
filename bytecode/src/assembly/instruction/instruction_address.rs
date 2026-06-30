@@ -6,7 +6,7 @@ use std::{
 use crate::InstructionOffset;
 
 /// An absolute address of an instruction in the program
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct InstructionAddress(usize);
 
 impl InstructionAddress {

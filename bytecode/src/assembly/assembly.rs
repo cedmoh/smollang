@@ -1,7 +1,7 @@
 use crate::{
     Constant, ConstantAddress, Constants,
     Instruction::{self, Halt},
-    Instructions,
+    Instructions, Label, Labels,
 };
 
 /// Represents a complete compiled program.
@@ -17,6 +17,9 @@ pub struct Assembly {
     /// This is used to store literals (e.g., integers, booleans, strings)
     /// That are referenced by the `CONSTANT` instruction.
     pub constants: Constants,
+
+    /// A list of labels used in the program.
+    pub labels: Labels,
 }
 
 impl Assembly {
@@ -26,6 +29,7 @@ impl Assembly {
         Self {
             instructions: vec![Halt].into(),
             constants: Vec::new().into(),
+            labels: Labels::new(),
         }
     }
 
@@ -38,6 +42,7 @@ impl Assembly {
 pub struct AssemblyBuilder {
     instructions: Vec<Instruction>,
     constants: Vec<Constant>,
+    labels: Vec<Label>,
 }
 
 impl AssemblyBuilder {
@@ -45,7 +50,13 @@ impl AssemblyBuilder {
         Self {
             instructions: Vec::new(),
             constants: Vec::new(),
+            labels: Vec::new(),
         }
+    }
+
+    pub fn add_label(&mut self, label: Label) -> &mut Self {
+        self.labels.push(label);
+        self
     }
 
     pub fn add_instruction(&mut self, instruction: Instruction) -> &mut Self {
@@ -113,6 +124,7 @@ impl AssemblyBuilder {
         Assembly {
             instructions: instructions.into(),
             constants: self.constants.into(),
+            labels: self.labels.into(),
         }
     }
 }

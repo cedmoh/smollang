@@ -1,5 +1,6 @@
 use crate::visitors::{
-    AstToAssemblyVisitor, CompilerError, FatalCompilerError, visitor::Visitor,
+    AstToAssemblyVisitor, CompilerError, FatalCompilerError,
+    ast_to_instruction_visitor::visitor::CompileVisitor,
 };
 use ast::{
     Block, Directive, Dyadic, DyadicOperator, Expression, FunctionCall,
@@ -8,11 +9,11 @@ use ast::{
     Program, Then, VariableDeclaration,
 };
 use bytecode::{
-    Instruction::{self, Jump, JumpIfFalse},
-    InstructionOffset, Value,
+    Instruction::{self, Jump, JumpIfFalse, Return},
+    InstructionOffset, Label, Value,
 };
 
-impl Visitor<Block, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Block> for AstToAssemblyVisitor {
     fn visit(&mut self, block: &Block) -> Result<(), FatalCompilerError> {
         self.begin_scope();
 
@@ -33,7 +34,7 @@ impl Visitor<Block, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Program, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Program> for AstToAssemblyVisitor {
     fn visit(&mut self, program: &Program) -> Result<(), FatalCompilerError> {
         for directive in &program.directives.items {
             self.visit(directive)?;
@@ -47,7 +48,7 @@ impl Visitor<Program, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<VariableDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<VariableDeclaration> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         variable_declaration: &VariableDeclaration,
@@ -78,7 +79,7 @@ impl Visitor<VariableDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Then, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Then> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         then_expression: &Then,
@@ -138,7 +139,7 @@ impl Visitor<Then, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Literal, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Literal> for AstToAssemblyVisitor {
     fn visit(&mut self, literal: &Literal) -> Result<(), FatalCompilerError> {
         use Instruction::*;
         use Literal::*;
@@ -188,7 +189,7 @@ impl Visitor<Literal, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Loop, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Loop> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         loop_expression: &Loop,
@@ -204,7 +205,7 @@ impl Visitor<Loop, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Dyadic, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Dyadic> for AstToAssemblyVisitor {
     fn visit(&mut self, dyadic: &Dyadic) -> Result<(), FatalCompilerError> {
         use DyadicOperator::*;
         // Note: The order of visiting the left and right expressions is
@@ -283,7 +284,7 @@ impl Visitor<Dyadic, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<DyadicOperator, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<DyadicOperator> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         operator: &DyadicOperator,
@@ -321,7 +322,7 @@ impl Visitor<DyadicOperator, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Directive, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Directive> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         directive: &Directive,
@@ -337,7 +338,7 @@ impl Visitor<Directive, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Identifier, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Identifier> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         identifier: &Identifier,
@@ -367,16 +368,38 @@ impl Visitor<Identifier, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<FunctionDeclaration, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<FunctionDeclaration> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
-        _function_declaration: &FunctionDeclaration,
+        function_declaration: &FunctionDeclaration,
     ) -> Result<(), FatalCompilerError> {
-        todo!("Function declarations are not yet supported");
+        let span = function_declaration.span.clone();
+        let name =
+            function_declaration.name.clone().unwrap_or(Identifier::new(
+                format!("<fn {}:{}>", span.start, span.end),
+                span.clone(),
+            ));
+
+        let function_address =
+            self.assembly_builder.instruction_length().into();
+        self.assembly_builder
+            .add_label(Label::new(name.clone().id.clone(), function_address));
+
+        // Assume that the function is not being used as an expression.
+        // TODO: Handle function expressions and closures in the future.
+        match &function_declaration.body {
+            Some(body) => {
+                self.visit(body.body.as_ref())?;
+                self.emit(Return);
+            }
+            None => self.emit(Return),
+        }
+
+        Ok(())
     }
 }
 
-impl Visitor<FunctionCall, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<FunctionCall> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         function_call: &FunctionCall,
@@ -415,9 +438,7 @@ impl Visitor<FunctionCall, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<FunctionCallArguments, FatalCompilerError>
-    for AstToAssemblyVisitor
-{
+impl CompileVisitor<FunctionCallArguments> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         arguments: &FunctionCallArguments,
@@ -430,7 +451,7 @@ impl Visitor<FunctionCallArguments, FatalCompilerError>
     }
 }
 
-impl Visitor<FunctionParameters, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<FunctionParameters> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         parameters: &FunctionParameters,
@@ -443,7 +464,7 @@ impl Visitor<FunctionParameters, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<FunctionParameter, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<FunctionParameter> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         _program: &FunctionParameter,
@@ -452,7 +473,7 @@ impl Visitor<FunctionParameter, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<PipeArms, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<PipeArms> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         pipe_arms: &PipeArms,
@@ -465,7 +486,7 @@ impl Visitor<PipeArms, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<PipeArm, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<PipeArm> for AstToAssemblyVisitor {
     fn visit(&mut self, pipe_arm: &PipeArm) -> Result<(), FatalCompilerError> {
         self.visit(&pipe_arm.expression)?;
 
@@ -473,7 +494,7 @@ impl Visitor<PipeArm, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Pipe, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Pipe> for AstToAssemblyVisitor {
     fn visit(&mut self, pipe: &Pipe) -> Result<(), FatalCompilerError> {
         if pipe.arms.arms.is_empty() {
             return Ok(());
@@ -536,7 +557,7 @@ impl Visitor<Pipe, FatalCompilerError> for AstToAssemblyVisitor {
     }
 }
 
-impl Visitor<Expression, FatalCompilerError> for AstToAssemblyVisitor {
+impl CompileVisitor<Expression> for AstToAssemblyVisitor {
     fn visit(
         &mut self,
         expression: &Expression,

@@ -37,8 +37,12 @@ impl Object {
 
 #[derive(Debug, Clone)]
 pub enum ObjectData {
+    /// A string object
     String(StringObject),
+
+    /// A top level function object
     Function(FunctionObject),
+    // TODO: Closure
 }
 
 #[derive(Debug, Clone)]

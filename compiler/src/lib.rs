@@ -139,6 +139,7 @@ mod tests {
         let Assembly {
             instructions,
             constants,
+            ..
         } = compiler.compile(program).unwrap();
 
         let instructions: Vec<Instruction> = instructions.into();
@@ -189,6 +190,7 @@ mod tests {
         let Assembly {
             instructions,
             constants,
+            ..
         } = Compiler::new().compile(program).unwrap();
 
         // Act
@@ -239,6 +241,7 @@ mod tests {
         let Assembly {
             instructions,
             constants,
+            ..
         } = Compiler::new().compile(program).unwrap();
 
         // Act

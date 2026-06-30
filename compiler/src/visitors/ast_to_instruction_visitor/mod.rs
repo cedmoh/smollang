@@ -9,6 +9,9 @@ use bytecode::{
 use thiserror::Error;
 
 mod branches;
+mod visitor;
+
+pub use visitor::CompileVisitor;
 
 pub struct AstToAssemblyVisitor {
     /// A table of global variables and their corresponding constant addresses
