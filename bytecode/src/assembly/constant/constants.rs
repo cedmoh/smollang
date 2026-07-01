@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Index};
 
 use crate::{Constant, ConstantAddress};
 
@@ -36,6 +36,14 @@ impl From<Vec<Constant>> for Constants {
 impl Into<Vec<Constant>> for Constants {
     fn into(self) -> Vec<Constant> {
         self.0
+    }
+}
+
+impl Index<ConstantAddress> for Constants {
+    type Output = Constant;
+
+    fn index(&self, index: ConstantAddress) -> &Self::Output {
+        &self.0[index.as_usize()]
     }
 }
 

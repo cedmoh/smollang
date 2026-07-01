@@ -4,8 +4,13 @@ pub struct Locals {
 }
 
 impl Locals {
-    pub fn new() -> Self {
-        Self { locals: Vec::new() }
+    pub fn with_reserved_first_local() -> Self {
+        Self {
+            locals: vec![Local::Initialized {
+                id: "".to_string(),
+                depth: 0,
+            }],
+        }
     }
 
     pub fn push(&mut self, local: Local) {

@@ -147,7 +147,7 @@ fn compile_file(path: &PathBuf) -> anyhow::Result<()> {
     let ast = parser::parse_string_to_program_ast(&input)?;
 
     let mut compiler = Compiler::new();
-    let assembly = compiler.compile(ast)?;
+    let assembly = compiler.compile(ast)?.chunk;
 
     println!("{}", assembly.pretty_print(true));
 
@@ -160,7 +160,7 @@ fn execute_file(path: &PathBuf, dump: bool) -> anyhow::Result<()> {
     let ast = parser::parse_string_to_program_ast(&input)?;
 
     let mut compiler = Compiler::new();
-    let assembly = compiler.compile(ast)?;
+    let assembly = compiler.compile(ast)?.chunk;
 
     let io = StandardIo::new();
 

@@ -90,18 +90,18 @@ impl VisitAndCompile<Then> for CompilationVisitor {
     ) -> Result<(), FatalCompilationError> {
         self.visit(then_expression.condition.as_ref())?;
 
-        let jump_if_false_index = self.assembly_builder.instruction_length();
+        let jump_if_false_index = self.instruction_count();
         self.emit(Instruction::JumpIfFalse(InstructionOffset::DUMMY));
 
-        let body_start = self.assembly_builder.instruction_length();
+        let body_start = self.instruction_count();
         self.visit(then_expression.then_body.as_ref())?;
-        let body_end = self.assembly_builder.instruction_length();
+        let body_end = self.instruction_count();
 
         let diff = body_end - body_start; // The number of instructions in the then body
         let diff = diff + 1; // +1 for the JumpIfFalse instruction itself
 
         let JumpIfFalse(offset) =
-            self.edit_instruction_at(jump_if_false_index)?
+            self.get_instruction_mut(jump_if_false_index)?
         else {
             return Err(FatalCompilationError::UnexpectedInstruction {
                 expected: Instruction::JumpIfFalse(InstructionOffset::DUMMY),
@@ -115,17 +115,17 @@ impl VisitAndCompile<Then> for CompilationVisitor {
             })?);
 
         if let Some(else_body) = &then_expression.else_body {
-            let jump_index = self.assembly_builder.instruction_length();
+            let jump_index = self.instruction_count();
             self.emit(Instruction::Jump(InstructionOffset::DUMMY));
 
-            let else_start = self.assembly_builder.instruction_length();
+            let else_start = self.instruction_count();
             self.visit(else_body.as_ref())?;
-            let else_end = self.assembly_builder.instruction_length();
+            let else_end = self.instruction_count();
 
             let diff = else_end - else_start; // The number of instructions in the else body
             let diff = diff + 1; // +1 for the Jump instruction itself
 
-            let Jump(offset) = self.edit_instruction_at(jump_index)? else {
+            let Jump(offset) = self.get_instruction_mut(jump_index)? else {
                 return Err(FatalCompilationError::UnexpectedInstruction {
                     expected: Instruction::Jump(InstructionOffset::DUMMY),
                     found: Instruction::Jump(InstructionOffset::DUMMY),
@@ -200,9 +200,9 @@ impl VisitAndCompile<Loop> for CompilationVisitor {
         &mut self,
         loop_expression: &Loop,
     ) -> Result<(), FatalCompilationError> {
-        let loop_start = self.assembly_builder.instruction_length();
+        let loop_start = self.instruction_count();
         self.visit(&*loop_expression.body)?;
-        let loop_end = self.assembly_builder.instruction_length();
+        let loop_end = self.instruction_count();
 
         let difference: isize = loop_start as isize - loop_end as isize;
         self.emit(Instruction::Jump(difference.into()));
@@ -222,16 +222,14 @@ impl VisitAndCompile<Dyadic> for CompilationVisitor {
             And => {
                 self.visit(dyadic.left.as_ref())?;
                 self.emit(Instruction::JumpIfFalse(InstructionOffset::DUMMY));
-                let jump_if_false_index =
-                    self.assembly_builder.instruction_length() - 1;
+                let jump_if_false_index = self.instruction_count() - 1;
 
                 self.visit(dyadic.right.as_ref())?;
 
                 let jump_if_false_offset =
-                    self.assembly_builder.instruction_length()
-                        - jump_if_false_index;
+                    self.instruction_count() - jump_if_false_index;
                 let JumpIfFalse(offset) =
-                    self.edit_instruction_at(jump_if_false_index)?
+                    self.get_instruction_mut(jump_if_false_index)?
                 else {
                     return Err(FatalCompilationError::UnexpectedInstruction {
                         expected: Instruction::JumpIfFalse(
@@ -252,16 +250,14 @@ impl VisitAndCompile<Dyadic> for CompilationVisitor {
             Or => {
                 self.visit(dyadic.left.as_ref())?;
                 self.emit(Instruction::JumpIfFalse(InstructionOffset::DUMMY));
-                let jump_if_false_index =
-                    self.assembly_builder.instruction_length() - 1;
+                let jump_if_false_index = self.instruction_count() - 1;
 
                 self.visit(dyadic.right.as_ref())?;
 
                 let jump_if_false_offset =
-                    self.assembly_builder.instruction_length()
-                        - jump_if_false_index;
+                    self.instruction_count() - jump_if_false_index;
                 let JumpIfFalse(offset) =
-                    self.edit_instruction_at(jump_if_false_index)?
+                    self.get_instruction_mut(jump_if_false_index)?
                 else {
                     return Err(FatalCompilationError::UnexpectedInstruction {
                         expected: Instruction::JumpIfFalse(
@@ -349,7 +345,8 @@ impl VisitAndCompile<Identifier> for CompilationVisitor {
         &mut self,
         identifier: &Identifier,
     ) -> Result<(), FatalCompilationError> {
-        // First, check if the identifier is a local variable in the current scope
+        // First, check if the identifier is a local variable in the current
+        // scope
         if let Some(local_slot) =
             self.resolve_local(&identifier.id, &identifier.span)
         {
@@ -382,7 +379,7 @@ impl VisitAndCompile<FunctionDeclaration> for CompilationVisitor {
         function_declaration: &FunctionDeclaration,
     ) -> Result<(), FatalCompilationError> {
         let span = function_declaration.span.clone();
-        let name =
+        let _name =
             function_declaration.name.clone().unwrap_or(Identifier::new(
                 format!("<fn {}:{}>", span.start, span.end),
                 span.clone(),

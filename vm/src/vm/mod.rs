@@ -1,12 +1,13 @@
 mod runner;
 
-use crate::call_stack::CallStack;
+use crate::call_stack::{CallFrame, CallStack};
 use crate::global_environment::GlobalEnvironment;
 use crate::io::{DummyIo, Io, IoError};
 use crate::memory::{Memory, MemoryError};
 use crate::value_stack::{ValueStack, ValueStackError};
 use bytecode::{
-    Assembly, Constant, ConstantAddress, InstructionAddress, Value,
+    Assembly, Constant, ConstantAddress, InstructionAddress, InstructionOffset,
+    Value,
 };
 use runner::run;
 use thiserror::Error;
@@ -15,23 +16,17 @@ pub struct Vm<I>
 where
     I: Io,
 {
-    /// Points to the current instruction being executed
-    pub instruction_pointer: InstructionAddress,
-
     /// Used for storing intermediate values during execution
     pub stack: ValueStack,
 
     /// Used for storing return addresses when calling functions
-    call_stack: CallStack,
+    pub frames: CallStack,
 
     /// Used for storing values in a simple fixed-size memory
     pub memory: Memory,
 
-    /// The program, which is a list of instructions to be executed
-    assembly: Assembly,
-
     /// The global environment table, which maps variable names to their values
-    global_environment: GlobalEnvironment,
+    pub global_environment: GlobalEnvironment,
 
     /// used for standard input and output (e.g. for the `Print` instruction)
     pub io: I,
@@ -40,11 +35,9 @@ where
 impl Vm<DummyIo> {
     pub fn new() -> Self {
         Self {
-            instruction_pointer: InstructionAddress::zero(),
             stack: ValueStack::new(),
-            call_stack: CallStack::new(),
+            frames: CallStack::new(),
             memory: Memory::new(),
-            assembly: Assembly::new(),
             global_environment: GlobalEnvironment::new(),
             io: DummyIo::new(),
         }
@@ -57,22 +50,55 @@ where
 {
     pub fn new_with_io(io: I) -> Self {
         Self {
-            instruction_pointer: InstructionAddress::zero(),
             stack: ValueStack::new(),
-            call_stack: CallStack::new(),
+            frames: CallStack::new(),
             memory: Memory::new(),
-            assembly: Assembly::new(),
             global_environment: GlobalEnvironment::new(),
             io,
         }
     }
 
-    pub fn load_assembly(&mut self, assembly: Assembly) -> &mut Self {
-        self.assembly = assembly;
+    pub fn load_assembly(
+        &mut self,
+        assembly: impl Into<Assembly>,
+    ) -> &mut Self {
+        self.current_frame_mut().function_object.chunk = assembly.into();
         self
     }
 
+    fn current_frame(&self) -> &CallFrame {
+        self.frames
+            .last()
+            .expect("Expected to always have at least one active frame")
+    }
+
+    fn current_frame_mut(&mut self) -> &mut CallFrame {
+        self.frames
+            .last_mut()
+            .expect("Expected to always have at least one active frame")
+    }
+
+    fn increment_instruction_pointer(&mut self) {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.instruction_pointer.increment();
+        }
+    }
+
+    fn offset_instruction_pointer(&mut self, offset: InstructionOffset) {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.instruction_pointer.add_offset(offset);
+        }
+    }
+
+    fn get_current_instruction_address(&self) -> InstructionAddress {
+        self.current_frame().instruction_pointer
+    }
+
     pub fn run(&mut self) -> Result<(), VmError> {
+        if self.frames.last().is_none() {
+            return Err(VmError::CallStackUnderflow);
+        }
+
         run(self)
     }
 }
@@ -85,6 +111,7 @@ pub enum VmError {
     #[error("Memory error.")]
     MemoryError(#[from] MemoryError),
 
+    /// Can be caused if there are no frames on the call stack
     #[error("Attempted to pop return address from empty call stack")]
     CallStackUnderflow,
 

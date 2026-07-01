@@ -17,16 +17,6 @@ impl AssemblyPrettyPrint for Assembly {
         {
             let instruction_str = instruction.pretty_print(colors_enabled);
 
-            if let Some(label) =
-                self.labels.get_label(instruction_address.into())
-            {
-                if colors_enabled {
-                    output.push_str(&format!("{}:\n", label.name.red()));
-                } else {
-                    output.push_str(&format!("{}:\n", label.name));
-                }
-            }
-
             if colors_enabled {
                 output.push_str(&format!(
                     "{}  {}\n",

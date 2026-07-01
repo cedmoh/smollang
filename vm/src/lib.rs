@@ -41,11 +41,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(1));
         assert_eq!(vm.stack[1], Value::Int(2));
@@ -65,11 +63,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(1));
         assert_eq!(vm.stack.len(), 1);
@@ -84,11 +80,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(1));
         assert_eq!(vm.stack[1], Value::Int(1));
@@ -105,11 +99,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(1));
         assert_eq!(vm.stack[1], Value::Int(2));
@@ -128,11 +120,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(5));
         assert_eq!(vm.stack.len(), 1);
@@ -150,13 +140,14 @@ mod tests {
         let instructions_len = instructions.len();
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
-        assert_eq!(vm.instruction_pointer.as_usize(), instructions_len - 1);
+        assert_eq!(
+            vm.frames.last().unwrap().instruction_pointer.as_usize(),
+            instructions_len - 1
+        );
         assert_eq!(vm.stack[0], Value::Int(42));
     }
 
@@ -175,10 +166,9 @@ mod tests {
 
         let mut vm = Vm::new();
         vm.load_assembly(
-            Assembly::builder()
-                .instructions(instructions)
-                .constants(constants)
-                .build(),
+            Assembly::new()
+                .with_instructions(instructions)
+                .with_constants(constants),
         )
         .run()
         .unwrap();
@@ -203,10 +193,9 @@ mod tests {
         let string = "Hello, world!".to_string();
 
         let constants = vec![String(string.clone())];
-        let assembly = Assembly::builder()
-            .instructions(instructions)
-            .constants(constants)
-            .build();
+        let assembly = Assembly::new()
+            .with_instructions(instructions)
+            .with_constants(constants);
 
         let mut vm = Vm::new();
 
@@ -231,11 +220,9 @@ mod tests {
         vm.io.stdin.push_back(input.clone());
 
         // Act
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         // Assert
         assert_eq!(
@@ -258,11 +245,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(10));
         assert_eq!(vm.stack[1], Value::Int(20));
@@ -280,11 +265,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(9));
         assert_eq!(vm.stack[1], Value::Int(2));
@@ -302,11 +285,9 @@ mod tests {
         );
 
         let mut vm = Vm::new();
-        vm.load_assembly(
-            Assembly::builder().instructions(instructions).build(),
-        )
-        .run()
-        .unwrap();
+        vm.load_assembly(Assembly::new().with_instructions(instructions))
+            .run()
+            .unwrap();
 
         assert_eq!(vm.stack[0], Value::Int(42));
     }

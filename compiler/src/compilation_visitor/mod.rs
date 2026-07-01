@@ -4,7 +4,8 @@ use crate::{
 };
 use ast::Span;
 use bytecode::{
-    Assembly, AssemblyBuilder, Constant, ConstantAddress, Instruction,
+    Assembly, Constant, ConstantAddress, FunctionObject, FunctionType,
+    Instruction::{self, Halt},
     MemoryAddress,
 };
 mod branches;
@@ -18,7 +19,8 @@ pub trait VisitAndCompile<T> {
     fn visit(&mut self, program: &T) -> Result<(), FatalCompilationError>;
 }
 
-/// A visitor that traverses the AST and converts it into an assembly representation.
+/// A visitor that traverses the AST and converts it into an assembly
+/// representation.
 pub struct CompilationVisitor {
     /// A table of global variables and their corresponding constant addresses
     /// in the constant pool.
@@ -30,27 +32,42 @@ pub struct CompilationVisitor {
     /// The current lexical scope depth. Zero means top-level (global scope).
     pub scope_depth: usize,
 
-    /// An assembly builder for constructing the assembly representation of the
-    /// program
-    pub assembly_builder: AssemblyBuilder,
-
     /// A vector of errors encountered during the AST to assembly conversion
     pub errors: Vec<CompilationError>,
+
+    pub function: FunctionObject,
+
+    pub _function_type: FunctionType,
 }
 
 impl CompilationVisitor {
     pub fn new() -> Self {
         Self {
             globals: Globals::new(),
-            assembly_builder: AssemblyBuilder::new(),
             errors: Vec::new(),
-            locals: Locals::new(),
+            locals: Locals::with_reserved_first_local(),
             scope_depth: 0,
+            function: FunctionObject::new(
+                bytecode::StringObject::new("<script>".to_string()),
+                0,
+                Assembly::new(),
+            ),
+            _function_type: FunctionType::TopLevel,
         }
     }
 
-    pub fn build(self) -> Result<Assembly, FatalCompilationError> {
-        Ok(self.assembly_builder.build())
+    pub fn current_chunk(&self) -> &Assembly {
+        &self.function.chunk
+    }
+
+    pub fn current_chunk_mut(&mut self) -> &mut Assembly {
+        &mut self.function.chunk
+    }
+
+    pub fn build(mut self) -> Result<FunctionObject, FatalCompilationError> {
+        self.function.chunk.instructions.push(Halt);
+
+        Ok(self.function)
     }
 
     /// Emit a debug instruction to the assembly builder.
@@ -66,24 +83,32 @@ impl CompilationVisitor {
 
     /// Emit an instruction to the assembly builder.
     fn emit(&mut self, instruction: Instruction) {
-        self.assembly_builder.add_instruction(instruction);
+        self.current_chunk_mut().instructions.push(instruction);
     }
 
-    /// Edit an instruction at a specific index in the assembly builder and
-    /// return a mutable reference to it.
-    fn edit_instruction_at(
+    /// Get the number of instructions in the current chunk.
+    fn instruction_count(&self) -> usize {
+        self.current_chunk().instructions.len()
+    }
+
+    /// Get a mutable reference to an instruction at the given index in the
+    /// current chunk. If the index is out of bounds, a fatal compilation error
+    /// is returned.
+    fn get_instruction_mut(
         &mut self,
         index: usize,
     ) -> Result<&mut Instruction, FatalCompilationError> {
-        self.assembly_builder
-            .get_mut_instruction(index)
+        self.current_chunk_mut()
+            .instructions
+            .get_mut(index)
             .ok_or(FatalCompilationError::InstructionIndexOutOfBounds { index })
     }
 
     /// Emit a constant to the assembly builder and return its address in the
     /// constant pool.
     fn emit_constant(&mut self, constant: Constant) -> ConstantAddress {
-        self.assembly_builder.push_constant(constant)
+        self.current_chunk_mut().constants.push(constant);
+        ConstantAddress::new(self.current_chunk().constants.len() - 1)
     }
 
     /// Begin a new lexical scope. This increases the scope depth and allows for
@@ -148,7 +173,7 @@ impl CompilationVisitor {
         });
     }
 
-    fn define_variable(&mut self, identifier: &String) {
+    fn _define_variable(&mut self, identifier: &String) {
         if self.scope_depth == 0 {
             // Global variable
             let constant_address = self.global_name_constant(identifier);

@@ -26,7 +26,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).unwrap().instructions.into();
+            compiler.compile(program).unwrap().chunk.instructions.into();
 
         // Assert
         assert_eq!(
@@ -52,7 +52,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).unwrap().instructions.into();
+            compiler.compile(program).unwrap().chunk.instructions.into();
 
         assert_eq!(
             instructions,
@@ -75,7 +75,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).unwrap().instructions.into();
+            compiler.compile(program).unwrap().chunk.instructions.into();
 
         assert_eq!(
             instructions,
@@ -105,7 +105,7 @@ mod tests {
 
         // Act
         let instructions: Vec<Instruction> =
-            compiler.compile(program).unwrap().instructions.into();
+            compiler.compile(program).unwrap().chunk.instructions.into();
 
         // Assert
         assert_eq!(
@@ -141,7 +141,7 @@ mod tests {
             instructions,
             constants,
             ..
-        } = compiler.compile(program).unwrap();
+        } = compiler.compile(program).unwrap().chunk;
 
         let instructions: Vec<Instruction> = instructions.into();
         let constants: Vec<Constant> = constants.into();
@@ -192,7 +192,7 @@ mod tests {
             instructions,
             constants,
             ..
-        } = Compiler::new().compile(program).unwrap();
+        } = Compiler::new().compile(program).unwrap().chunk;
 
         // Act
         let instructions: Vec<Instruction> = instructions.into();
@@ -243,7 +243,7 @@ mod tests {
             instructions,
             constants,
             ..
-        } = Compiler::new().compile(program).unwrap();
+        } = Compiler::new().compile(program).unwrap().chunk;
 
         // Act
         let instructions: Vec<Instruction> = instructions.into();
@@ -291,6 +291,7 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
+            .chunk
             .instructions
             .into();
 
@@ -299,7 +300,7 @@ mod tests {
             instructions,
             bytecode!(
                 PUSH initial_value
-                GETLC 0
+                GETLC 1
                 POP
                 HALT
             )
@@ -339,6 +340,7 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
+            .chunk
             .instructions
             .into();
 
@@ -348,7 +350,7 @@ mod tests {
             bytecode!(
                 PUSH initial_value
                 PUSH new_value
-                SETLC 0
+                SETLC 1
                 POP
                 HALT
             )
@@ -381,7 +383,9 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
-            .instructions.into();
+            .chunk
+            .instructions
+            .into();
 
         // Assert
         assert_eq!(
@@ -430,7 +434,9 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
-            .instructions.into();
+            .chunk
+            .instructions
+            .into();
 
         // Assert
         assert_eq!(
@@ -469,15 +475,17 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
-            .instructions.into();
+            .chunk
+            .instructions
+            .into();
 
         // Assert
         assert_eq!(
             instructions,
             bytecode!(
                 CONST 0
-                SETLC 0 // TODO: optimize this to avoid creating a local variable for the pipe value
-                GETLC 0
+                SETLC 1 // TODO: optimize this to avoid creating a local variable for the pipe value
+                GETLC 1
                 OUT
                 HALT
             )
@@ -516,7 +524,9 @@ mod tests {
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
             .unwrap()
-            .instructions.into();
+            .chunk
+            .instructions
+            .into();
 
         // Assert
         assert_eq!(

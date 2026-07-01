@@ -10,25 +10,25 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
     use VmError::*;
 
     loop {
-        let instr = vm.assembly.instructions[vm.instruction_pointer];
+        let instr = *vm.current_frame().get_next_instruction();
 
         match instr {
             // Stack
             Push(value) => {
                 vm.stack.push(value);
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Pop => {
                 vm.stack.pop()?;
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Duplicate => {
                 vm.stack.duplicate()?;
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             DuplicateTwo => {
                 vm.stack.duplicate_two()?;
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             // Arithmetic
@@ -80,7 +80,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     }
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Subtract => {
                 use Value::*;
@@ -97,7 +97,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Multiply => {
                 use Value::*;
@@ -114,7 +114,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Divide => {
                 use Value::*;
@@ -131,7 +131,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Modulo => {
                 use Value::*;
@@ -150,7 +150,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     }
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Power => {
                 use Value::*;
@@ -169,7 +169,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     }
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             // Comparison
@@ -188,7 +188,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             LessThan => {
                 use Value::*;
@@ -205,7 +205,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             GreaterThan => {
                 use Value::*;
@@ -222,7 +222,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     _ => unreachable!(),
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             NotEquals => todo!(),
             LessThanOrEqual => todo!(),
@@ -236,7 +236,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     return Err(VmError::DummyInstructionOffset);
                 }
 
-                vm.instruction_pointer.add_offset(offset);
+                vm.offset_instruction_pointer(offset);
             }
             JumpIfTrue(offset) => {
                 use Value::*;
@@ -244,10 +244,10 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                 let cond = vm.stack.pop()?;
                 match cond {
                     Bool(true) => {
-                        vm.instruction_pointer.add_offset(offset);
+                        vm.offset_instruction_pointer(offset);
                     }
                     Bool(false) => {
-                        vm.instruction_pointer.increment();
+                        vm.increment_instruction_pointer();
                     }
                     // The usage of the VM should ensure that only boolean
                     // values are used for
@@ -261,10 +261,10 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                 let cond = vm.stack.pop()?;
                 match cond {
                     Bool(true) => {
-                        vm.instruction_pointer.increment();
+                        vm.increment_instruction_pointer();
                     }
                     Bool(false) => {
-                        vm.instruction_pointer.add_offset(offset);
+                        vm.offset_instruction_pointer(offset);
                     }
                     // The usage of the VM should ensure that only boolean
                     // values are used for
@@ -282,7 +282,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     addr.cast_to_object_handle(),
                 ));
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Store(_addr) => {
                 todo!("The STORE instruction is not yet implemented");
@@ -294,14 +294,20 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     .ok_or(ValueStackError::StackUnderflow)?
                     .clone();
 
-                vm.stack.set_at(slot.as_usize(), value)?;
-                vm.instruction_pointer.increment();
+                vm.stack.set_at(
+                    slot.as_usize() + vm.current_frame().slot_offset,
+                    value,
+                )?;
+                vm.increment_instruction_pointer();
             }
             GetLocal(slot) => {
-                let value = vm.stack.get_at(slot.as_usize())?.clone();
+                let value = vm
+                    .stack
+                    .get_at(slot.as_usize() + vm.current_frame().slot_offset)?
+                    .clone();
 
                 vm.stack.push(value);
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             // Constants
@@ -312,7 +318,9 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                 // convert it into a value that can be
                 // pushed onto the stack.
                 let value = match vm
-                    .assembly
+                    .current_frame()
+                    .function_object
+                    .chunk
                     .constants
                     .get(addr)
                     .ok_or(InvalidConstantAddress(addr))?
@@ -335,24 +343,15 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                 };
 
                 vm.stack.push(value);
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             // Functions
-            Call(addr) => {
-                let address_to_return_to_when_call_returns =
-                    vm.instruction_pointer.as_usize() + 1;
-
-                vm.call_stack
-                    .push(address_to_return_to_when_call_returns.into());
-
-                vm.instruction_pointer = addr.into();
+            Call(_address) => {
+                todo!()
             }
             Return => {
-                let address_to_return_to =
-                    vm.call_stack.pop().ok_or(CallStackUnderflow)?;
-
-                vm.instruction_pointer = address_to_return_to.into();
+                todo!()
             }
 
             // IO
@@ -368,7 +367,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                         .cast_to_object_handle(),
                 ));
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             Out => {
                 let value = vm.stack.pop()?;
@@ -391,7 +390,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     }
                 }
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             SetGlobal(constant_address) => {
                 // That we don’t pop the value until after we add it to the
@@ -404,7 +403,13 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     .ok_or(ValueStackError::StackUnderflow)?
                     .clone();
 
-                let name = match vm.assembly.constants.get(constant_address) {
+                let name = match vm
+                    .current_frame()
+                    .function_object
+                    .chunk
+                    .constants
+                    .get(constant_address)
+                {
                     Some(bytecode::Constant::String(name)) => name,
                     Some(constant) => {
                         return Err(InvalidConstantType(
@@ -420,11 +425,13 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
 
                 vm.global_environment.insert(name.clone(), value);
                 vm.stack.pop()?;
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
             GetGlobal(constant_address) => {
                 let name = match vm
-                    .assembly
+                    .current_frame()
+                    .function_object
+                    .chunk
                     .constants
                     .get(constant_address)
                     .ok_or(InvalidConstantAddress(constant_address))?
@@ -447,13 +454,13 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                     .clone();
 
                 vm.stack.push(value);
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             Debug => {
-                let ip = vm.instruction_pointer;
+                let ip = vm.get_current_instruction_address();
                 let stack = &vm.stack;
-                let call_stack = &vm.call_stack;
+                let call_stack = &vm.frames;
                 let globals = &vm.global_environment;
                 let memory = &vm.memory;
 
@@ -477,7 +484,7 @@ pub fn run<I: Io>(vm: &mut Vm<I>) -> Result<(), VmError> {
                 message.push_str(&format!("Globals: {:?}\n", globals.table));
                 vm.io.write_line(&message)?;
 
-                vm.instruction_pointer.increment();
+                vm.increment_instruction_pointer();
             }
 
             Halt => break Ok(()),

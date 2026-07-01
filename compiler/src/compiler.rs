@@ -1,5 +1,5 @@
 use ast::Program;
-use bytecode::Assembly;
+use bytecode::FunctionObject;
 
 use crate::compilation_visitor::{
     CompilationVisitor, FatalCompilationError, VisitAndCompile,
@@ -15,7 +15,7 @@ impl Compiler {
     pub fn compile(
         &mut self,
         program: Program,
-    ) -> Result<Assembly, FatalCompilationError> {
+    ) -> Result<FunctionObject, FatalCompilationError> {
         let mut visitor = CompilationVisitor::new();
 
         visitor.visit(&program)?;

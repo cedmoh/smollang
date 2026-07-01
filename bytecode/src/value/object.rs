@@ -1,4 +1,6 @@
-use crate::MemoryAddress;
+use std::fmt::Display;
+
+use crate::{Assembly, MemoryAddress};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ObjectHandle(MemoryAddress);
@@ -63,33 +65,32 @@ impl From<String> for StringObject {
 #[derive(Debug, Clone)]
 pub struct FunctionObject {
     /// The name of the function, if it has one.
-    pub name: Option<StringObject>,
+    pub name: StringObject,
 
     /// The number of parameters the function takes.
     pub arity: usize,
 
-    /// The entry point of the function in the bytecode.
-    pub entry: MemoryAddress,
+    /// The bytecode entry point of the function.
+    pub chunk: Assembly,
 }
 
 impl FunctionObject {
-    pub fn new(
-        name: Option<StringObject>,
-        arity: usize,
-        entry: MemoryAddress,
-    ) -> Self {
-        Self { name, arity, entry }
+    pub fn new(name: StringObject, arity: usize, chunk: Assembly) -> Self {
+        Self { name, arity, chunk }
     }
+}
 
-    pub fn named(
-        name: StringObject,
-        arity: usize,
-        entry: MemoryAddress,
-    ) -> Self {
-        Self::new(Some(name), arity, entry)
+impl Display for FunctionObject {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "<fn {}>", self.name.0)
     }
+}
 
-    pub fn anonymous(arity: usize, entry: MemoryAddress) -> Self {
-        Self::new(None, arity, entry)
-    }
+#[derive(Debug, Clone)]
+pub enum FunctionType {
+    /// A top-level function
+    TopLevel,
+
+    /// A regular function
+    Function,
 }
