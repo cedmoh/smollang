@@ -6,8 +6,8 @@ use crate::{Constant, ConstantAddress};
 pub struct Constants(Vec<Constant>);
 
 impl Constants {
-    pub fn new(constants: Vec<Constant>) -> Self {
-        Self(constants)
+    pub fn new() -> Self {
+        Self(Vec::new())
     }
 
     pub fn get(&self, address: ConstantAddress) -> Option<&Constant> {
@@ -16,6 +16,14 @@ impl Constants {
 
     pub fn iter(&self) -> impl Iterator<Item = &Constant> {
         self.0.iter()
+    }
+
+    pub fn push(&mut self, constant: Constant) {
+        self.0.push(constant);
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 }
 

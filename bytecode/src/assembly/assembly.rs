@@ -23,12 +23,10 @@ pub struct Assembly {
 }
 
 impl Assembly {
-    /// Creates a new, assembly with a single `Halt` instruction
-    /// to prevent running off the end of the instruction list.
     pub fn new() -> Self {
         Self {
-            instructions: vec![Halt].into(),
-            constants: Vec::new().into(),
+            instructions: Instructions::new(),
+            constants: Constants::new(),
             labels: Labels::new(),
         }
     }

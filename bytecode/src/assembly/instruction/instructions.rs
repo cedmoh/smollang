@@ -6,8 +6,20 @@ use crate::{Instruction, InstructionAddress};
 pub struct Instructions(Vec<Instruction>);
 
 impl Instructions {
-    pub fn new(instructions: Vec<Instruction>) -> Self {
-        Self(instructions)
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn push(&mut self, instruction: Instruction) {
+        self.0.push(instruction);
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Instruction> {
+        self.0.get_mut(index)
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 }
 

@@ -148,6 +148,18 @@ impl CompilationVisitor {
         });
     }
 
+    fn define_variable(&mut self, identifier: &String) {
+        if self.scope_depth == 0 {
+            // Global variable
+            let constant_address = self.global_name_constant(identifier);
+            self.emit(Instruction::SetGlobal(constant_address));
+            return;
+        }
+
+        // Local variable
+        self.mark_local_initialized();
+    }
+
     /// Mark the most recently declared local variable as initialized.
     /// This sets its depth to the current scope depth, indicating that
     /// it is now in scope and can be accessed.
@@ -155,8 +167,6 @@ impl CompilationVisitor {
     /// If there are no locals in the current scope, this
     /// function does nothing.
     fn mark_local_initialized(&mut self) {
-        // TODO: Consider removing because locals can be declared in the global
-        // scope as well
         if self.scope_depth == 0 {
             return;
         }

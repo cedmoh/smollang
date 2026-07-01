@@ -382,7 +382,7 @@ impl VisitAndCompile<FunctionDeclaration> for CompilationVisitor {
         function_declaration: &FunctionDeclaration,
     ) -> Result<(), FatalCompilationError> {
         let span = function_declaration.span.clone();
-        let _name =
+        let name =
             function_declaration.name.clone().unwrap_or(Identifier::new(
                 format!("<fn {}:{}>", span.start, span.end),
                 span.clone(),
