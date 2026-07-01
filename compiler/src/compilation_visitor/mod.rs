@@ -4,71 +4,41 @@ use crate::{
 };
 use ast::Span;
 use bytecode::{
-    AssemblyBuilder, Constant, ConstantAddress, Instruction, MemoryAddress,
+    Assembly, AssemblyBuilder, Constant, ConstantAddress, Instruction,
+    MemoryAddress,
 };
-use thiserror::Error;
-
 mod branches;
-mod visitor;
+mod compilation_error;
 
-pub use visitor::CompileVisitor;
+pub use compilation_error::{CompilationError, FatalCompilationError};
 
-pub struct AstToAssemblyVisitor {
+/// A visitor trait for traversing the AST and applying an operation to it.
+pub trait VisitAndCompile<T> {
+    /// Visits a node in the AST and applies an operation to it.
+    fn visit(&mut self, program: &T) -> Result<(), FatalCompilationError>;
+}
+
+/// A visitor that traverses the AST and converts it into an assembly representation.
+pub struct CompilationVisitor {
     /// A table of global variables and their corresponding constant addresses
     /// in the constant pool.
     pub globals: Globals,
-
-    /// An assembly builder for constructing the assembly representation of the
-    /// program
-    pub assembly_builder: AssemblyBuilder,
-
-    /// A vector of errors encountered during the AST to assembly conversion
-    pub errors: Vec<CompilerError>,
 
     /// The set of locals currently in scope, ordered by declaration order.
     pub locals: Locals,
 
     /// The current lexical scope depth. Zero means top-level (global scope).
     pub scope_depth: usize,
+
+    /// An assembly builder for constructing the assembly representation of the
+    /// program
+    pub assembly_builder: AssemblyBuilder,
+
+    /// A vector of errors encountered during the AST to assembly conversion
+    pub errors: Vec<CompilationError>,
 }
 
-#[derive(Debug, Error)]
-pub enum CompilerError {
-    /// An error indicating that an identifier was used but not defined in the
-    /// symbol table.
-    #[error("Unknown identifier: {identifier} at {span}")]
-    UnknownIdentifier { identifier: String, span: Span },
-
-    #[error(
-        "A variable with name '{identifier}' already exists in this scope at {span}"
-    )]
-    DuplicateLocalDeclaration { identifier: String, span: Span },
-
-    #[error(
-        "Cannot read local variable '{identifier}' in its own initializer at {span}"
-    )]
-    LocalReadInOwnInitializer { identifier: String, span: Span },
-}
-
-#[derive(Debug, Error)]
-pub enum FatalCompilerError {
-    #[error("Instruction offset overflow")]
-    InstructionOffsetOverflow,
-
-    #[error("Instruction index out of bounds: {index}")]
-    InstructionIndexOutOfBounds { index: usize },
-
-    #[error("Unexpected instruction: expected {expected}, found {found}")]
-    UnexpectedInstruction {
-        expected: Instruction,
-        found: Instruction,
-    },
-
-    #[error("Expected at least two pipe arms, but found fewer")]
-    ExpectedAtLeastTwoPipeArms,
-}
-
-impl AstToAssemblyVisitor {
+impl CompilationVisitor {
     pub fn new() -> Self {
         Self {
             globals: Globals::new(),
@@ -79,6 +49,10 @@ impl AstToAssemblyVisitor {
         }
     }
 
+    pub fn build(self) -> Result<Assembly, FatalCompilationError> {
+        Ok(self.assembly_builder.build())
+    }
+
     /// Emit a debug instruction to the assembly builder.
     fn _debug(&mut self) {
         self.emit(Instruction::Debug);
@@ -86,7 +60,7 @@ impl AstToAssemblyVisitor {
 
     /// Add an error to the list of encountered non-fatal errors during the AST
     /// to assembly conversion.
-    fn error(&mut self, error: CompilerError) {
+    fn error(&mut self, error: CompilationError) {
         self.errors.push(error);
     }
 
@@ -100,21 +74,16 @@ impl AstToAssemblyVisitor {
     fn edit_instruction_at(
         &mut self,
         index: usize,
-    ) -> Result<&mut Instruction, FatalCompilerError> {
+    ) -> Result<&mut Instruction, FatalCompilationError> {
         self.assembly_builder
             .get_mut_instruction(index)
-            .ok_or(FatalCompilerError::InstructionIndexOutOfBounds { index })
+            .ok_or(FatalCompilationError::InstructionIndexOutOfBounds { index })
     }
 
     /// Emit a constant to the assembly builder and return its address in the
     /// constant pool.
     fn emit_constant(&mut self, constant: Constant) -> ConstantAddress {
         self.assembly_builder.push_constant(constant)
-    }
-
-    /// Emit multiple instructions to the assembly builder.
-    fn _emit_multiple(&mut self, instructions: Vec<Instruction>) {
-        self.assembly_builder.add_instructions(instructions);
     }
 
     /// Begin a new lexical scope. This increases the scope depth and allows for
@@ -166,7 +135,7 @@ impl AstToAssemblyVisitor {
             .any(|local| local.id() == identifier);
 
         if is_already_declared_in_same_scope {
-            self.error(CompilerError::DuplicateLocalDeclaration {
+            self.error(CompilationError::DuplicateLocalDeclaration {
                 identifier: identifier.clone(),
                 span: span.clone(),
             });
@@ -202,9 +171,10 @@ impl AstToAssemblyVisitor {
     /// If the variable is found in the current scope or any enclosing scope,
     /// its memory address is returned.
     ///
-    /// If the variable is not found, `None` is returned. If the variable is
-    /// found but is being accessed in its own initializer, an error is
-    /// recorded.
+    /// If the variable is not found, `None` is returned.
+    ///
+    /// If the variable is found but is being accessed in its own initializer,
+    /// an error is recorded.
     fn resolve_local(
         &mut self,
         identifier: &String,
@@ -216,7 +186,7 @@ impl AstToAssemblyVisitor {
             }
 
             if !local.is_initialized() {
-                self.error(CompilerError::LocalReadInOwnInitializer {
+                self.error(CompilationError::LocalReadInOwnInitializer {
                     identifier: identifier.clone(),
                     span: span.clone(),
                 });

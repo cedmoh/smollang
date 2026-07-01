@@ -127,8 +127,8 @@ impl FunctionDeclarationBuilder {
         self
     }
 
-    pub fn with_body(mut self, body: Expression) -> Self {
-        self.body = Some(FunctionBody::new(body));
+    pub fn with_body(mut self, body: impl Into<Expression>) -> Self {
+        self.body = Some(FunctionBody::new(body.into()));
         self
     }
 
@@ -137,8 +137,8 @@ impl FunctionDeclarationBuilder {
         self
     }
 
-    pub fn body(&mut self, body: Expression) -> &mut Self {
-        self.body = Some(FunctionBody::new(body));
+    pub fn body(&mut self, body: impl Into<Expression>) -> &mut Self {
+        self.body = Some(FunctionBody::new(body.into()));
         self
     }
 

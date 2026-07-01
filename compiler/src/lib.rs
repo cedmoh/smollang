@@ -1,7 +1,8 @@
 mod compiler;
 mod globals;
-mod visitors;
 mod locals;
+mod compilation_visitor;
+
 
 pub use compiler::Compiler;
 
@@ -487,19 +488,30 @@ mod tests {
     fn should_compile_function_call_to_user_defined_function() {
         // Arrange
         let function_name = "myFunction".to_string();
-        let argument_value = 42;
+        let number = 42;
 
         let program = Program::builder()
-            // myFunction 42
+            // myFunction || print 42
+            .with_expression(
+                FunctionDeclarationBuilder::new()
+                .with_name(Identifier::synthetic(function_name.clone()))
+                .with_body(
+                    FunctionCallBuilder::new(
+                        Identifier::synthetic("print".to_string())
+                    ).with_argument(
+                        IntegerLiteral::synthetic(number)
+                    ).build()
+                )
+                .build()
+            )
+            // myFunction()
             .with_expression(
                 FunctionCallBuilder::new(
                     Identifier::synthetic(function_name.clone())
-                ).with_argument(
-                    IntegerLiteral::synthetic(argument_value)
                 ).build()
             )
             .build();
-
+        
         // Act
         let instructions: Vec<Instruction> = Compiler::new()
             .compile(program)
@@ -510,9 +522,11 @@ mod tests {
         assert_eq!(
             instructions,
             bytecode!(
-                PUSH argument_value
-                CALL 0 // the zero-th constant is the function's name
+                CALL 2  // :main
                 HALT
+                PUSH 42 // :myFunction
+                OUT 
+                RET
             )
         );
     }

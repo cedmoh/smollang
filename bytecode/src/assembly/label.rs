@@ -14,6 +14,11 @@ impl Labels {
         self.0.insert(label.instruction_index, label.name);
     }
 
+    pub fn with_label(mut self, label: Label) -> Self {
+        self.add_label(label);
+        self
+    }
+
     pub fn get_label(
         &self,
         instruction_index: InstructionAddress,

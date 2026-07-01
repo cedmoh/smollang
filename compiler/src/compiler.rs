@@ -1,8 +1,9 @@
-use crate::visitors::{
-    AstToAssemblyVisitor, CompileVisitor, FatalCompilerError,
-};
 use ast::Program;
 use bytecode::Assembly;
+
+use crate::compilation_visitor::{
+    CompilationVisitor, FatalCompilationError, VisitAndCompile,
+};
 
 pub struct Compiler {}
 
@@ -14,11 +15,11 @@ impl Compiler {
     pub fn compile(
         &mut self,
         program: Program,
-    ) -> Result<Assembly, FatalCompilerError> {
-        let mut visitor = AstToAssemblyVisitor::new();
+    ) -> Result<Assembly, FatalCompilationError> {
+        let mut visitor = CompilationVisitor::new();
 
         visitor.visit(&program)?;
 
-        Ok(visitor.assembly_builder.build())
+        visitor.build()
     }
 }
